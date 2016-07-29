@@ -1,0 +1,15 @@
+{
+  "name": "smallbasicjs",
+  "version": "0.0.1",
+  "description": "Experimenting with porting SmallBasic to the browser",
+  "main": "index.js",
+  "author": "Matthew Hall <mdhall@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "pegjs": "^0.9.0"
+  },
+  "dependencies": {
+    "express": "^4.14.0",
+    "monaco-editor": "^0.5.3"
+  }
+}

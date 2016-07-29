@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+
+  <title>Small Basic editor</title>
+
+  <style>
+    .monaco-editor.vs .token.predefined.smallbasic {
+      color: #802020 !important;
+    }
+    .monaco-editor.vs .token.keyword.smallbasic {
+      color: #77f !important;
+    }
+    .monaco-editor.vs .token.constant.smallbasic {
+      color: #006060 !important;
+    }
+    .monaco-editor.vs .token.identifier.smallbasic {
+      color: #000 !important;
+    }
+    .monaco-editor.vs .token.operator.smallbasic {
+      color: #000 !important;
+    }
+    .monaco-editor.vs .token.number.smallbasic {
+      color: #d63 !important;
+    }
+    .monaco-editor.vs .token.string.smallbasic {
+      color: #d63 !important;
+    }
+    .monaco-editor.vs .token.comment.smallbasic {
+      color: #008020 !important;
+    }
+  </style>
+</head>
+<body>
+
+<div id="container" style="width:800px;height:600px;border:1px solid grey"></div>
+
+<script src="/monaco/min/vs/loader.js"></script>
+<script>
+  require.config({ paths: { 'vs': '/monaco/min/vs' }});
+
+  require(['smallbasic-language', 'vs/editor/editor.main'], function(sbColorizer) {
+    monaco.languages.register({ id: 'smallbasic' });
+
+    monaco.languages.setMonarchTokensProvider('smallbasic', sbColorizer);
+
+    monaco.languages.registerCompletionItemProvider('smallbasic', {
+      provideCompletionItems: (model, position) => {
+        var textUntilPosition = model.getValueInRange({startLineNumber: position.lineNumber, startColumn: 1, endLineNumber: position.lineNumber, endColumn: position.column-1});
+
+        if (/TextWindow\.$/i.test(textUntilPosition)) {
+          return [
+            {
+              label: 'ForegroundColor',
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              insertText: 'ForegroundColor = "{{color}}"',
+              documentation: 'Set the color of the text in the TextWindow'
+            }
+          ];
+        }
+
+        return [
+          {
+            label: 'TextWindow',
+            kind: monaco.languages.CompletionItemKind.Text
+          }, {
+            label: 'While',
+            kind: monaco.languages.CompletionItemKind.Snippet,
+            insertText: [
+              'While {{condition}}',
+              '\t{{}}',
+              'EndWhile'
+            ].join('\n'),
+            documentation: 'While loop'
+          }
+        ]
+      }
+    });
+
+    var editor = monaco.editor.create(document.getElementById('container'), {
+      value: [
+        'GraphicsWindow.KeyDown = HandleKey',
+        'GraphicsWindow.BackgroundColor = GraphicsWindow.GetColorFromRGB( 253, 252, 251 )',
+        '',
+        'While "True"',
+        '  BOXES = 4      \' number of boxes per piece',
+        '  BWIDTH = 25    \' box width in pixels',
+        '  XOFFSET = 40   \' Screen X offset in pixels of where the board starts',
+        '  YOFFSET = 40   \' Screen Y offset in pixels of where the board starts',
+        '  CWIDTH = 10    \' Canvas Width, in number of boxes',
+        '  CHEIGHT = 20   \' Canvas Height, in number of boxes.',
+        '  STARTDELAY = 800',
+        '  ENDDELAY = 175',
+        '  PREVIEW_xpos = 13',
+        '  PREVIEW_ypos = 2',
+        '',
+        '  GraphicsWindow.Clear()',
+        '  GraphicsWindow.Title = "Small Basic Tetris"',
+        '  GraphicsWindow.Height = 580',
+        '  GraphicsWindow.Width = 700',
+        '  GraphicsWindow.Show()',
+        '',
+        '  SetupTemplates()',
+        '  SetupCanvas()',
+        '  MainLoop()',
+        '',
+        '  GraphicsWindow.ShowMessage( "Game Over", "Small Basic Tetris" )',
+        'EndWhile'
+      ].join('\n'),
+      language: 'smallbasic'
+    });
+  });
+</script>
+</body>
+</html>
