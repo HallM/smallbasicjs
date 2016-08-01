@@ -1,11 +1,16 @@
 const parser = require('./smallbasic');
 const fs = require('fs');
 
+if (!process.argv[2]) {
+  console.log('Must include the file to transpile');
+  process.exit(1);
+}
+
 class CodeGenerator {
   constructor() {
     this.vars = [];
     this.ignoreVars = [];
-    this.blockLevel = -1;
+    this.blockLevel = 0;
     this.indentString = '  ';
   }
 
@@ -39,10 +44,10 @@ class CodeGenerator {
         return this.ignoreVars.indexOf(v) === -1;
       })
       .map((v) => {
-        return 'var ' + v + ';\n'
+        return this.indentString + 'var ' + v + ' = {};\n'
       }).join('');
 
-    return varOutput + '\n' + code;
+    return '"use strict";\nmodule.exports = function* program() {\n' + varOutput + '\n' + code + '}\n';
   }
 
   process_block(node) {
@@ -129,8 +134,10 @@ class CodeGenerator {
       throw new Error('identifier is not valid (is array)');
     }
 
-    this.add_var(node);
-    return node;
+    const varname = '_' + node;
+
+    this.add_var(varname);
+    return varname;
   }
 
   process_variable(node) {
@@ -181,7 +188,7 @@ class CodeGenerator {
       return this.process_expression(pnode);
     }) : [];
 
-    return identifier + '(' + params.join(', ') + ')';
+    return '(yield* ' + identifier + '(' + params.join(', ') + '))';
   }
 
   // Start the statements:
@@ -225,12 +232,11 @@ class CodeGenerator {
     const name = this.process_identifier(node[0][1][0]);
     this.add_ignorevar(name);
 
-    return 'function ' + name + '() {\n' + this.process_block(node[2]) + this.get_indent() + '}\n\n';
+    return 'function* ' + name + '() {\n' + this.process_block(node[2]) + this.get_indent() + '}\n\n';
   }
 
   process_for(node) {
     const iter = this.process_lhs(node[0]);
-    this.add_ignorevar(iter);
 
     const forinfo = node[1];
 
@@ -238,10 +244,14 @@ class CodeGenerator {
     const end = this.process_expression(forinfo[1]);
     const step = this.process_expression(forinfo[2]);
 
+    const forStart = iter + ' = ' + start + '; ';
+    const forCond = '(' + start + ' < ' + end + ' ? (' + iter + ' < ' + end + ') : (' + iter + ' > ' + end + ')); ';
+    const forIter = iter + ' += ' + step;
+
     return 'for (' +
-            'let ' + iter + ' = ' + start + '; ' +
-            iter + ' != ' + end + '; ' +
-            iter + ' += ' + step +
+            forStart +
+            forCond +
+            forIter +
             ') {\n' + this.process_block(node[2]) + this.get_indent() + '}\n\n';
   }
 
@@ -253,7 +263,20 @@ class CodeGenerator {
 
 }
 
-const file = fs.readFileSync('file.sb', 'utf8');
+const file = fs.readFileSync(process.argv[2], 'utf8');
 const gen = new CodeGenerator();
-const code = gen.process_file(file);
-console.log(code);
+
+try {
+  const code = gen.process_file(file);
+  console.log(code);
+} catch (e) {
+  console.log(e.name + ': ' + e.message);
+  console.log();
+  if (e.location) {
+    console.log(e.expected);
+    console.log(e.found);
+    console.log(e.location);
+  }
+
+  console.log(e.stack);
+}
