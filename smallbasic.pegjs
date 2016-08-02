@@ -147,24 +147,7 @@ comparison_expression
     }
 
     return tail.reduce(function(previous, t) {
-      var op = t[1];
-      switch (op) {
-      case '>=':
-      case '<=':
-      case '>':
-      case '<':
-        op = t[1];
-        break;
-
-      case '<>':
-        op = '!==';
-        break;
-
-      case '=':
-        op = '===';
-        break;
-      }
-      return ['binop', [op, previous, t[3]]];
+      return ['binop', [t[1], previous, t[3]]];
     }, l);
   }
 

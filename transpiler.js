@@ -33,7 +33,7 @@ var env = {vars};
 class CodeGenerator {
   constructor() {
     this.vars = [];
-    this.ignoreVars = [];
+    this.callables = [];
     this.blockLevel = 0;
     this.indentString = '  ';
   }
@@ -53,9 +53,9 @@ class CodeGenerator {
       this.vars.push(varname);
     }
   }
-  add_ignorevar(varname) {
-    if (this.ignoreVars.indexOf(varname) === -1) {
-      this.ignoreVars.push(varname);
+  add_callable(varname) {
+    if (this.callables.indexOf(varname) === -1) {
+      this.callables.push(varname);
     }
   }
 
@@ -63,12 +63,15 @@ class CodeGenerator {
     let ast = parser.parse(str);
     const code = this.process_block(ast);
 
+    const doubleIndent = this.indentString + this.indentString;
+
     const varOutput = this.vars
-      .filter((v) => {
-        return this.ignoreVars.indexOf(v) === -1;
-      })
       .map((v) => {
-        return this.indentString + 'var ' + v + ' = new Variable();\n'
+        if (this.callables.indexOf(v) !== -1) {
+          return doubleIndent + 'var ' + v + ' = new DataUnit($' + v + ', DATATYPES.DT_FN);\n';
+        } else {
+          return doubleIndent + 'var ' + v + ' = new DataUnit();\n'
+        }
       }).join('');
 
     return '"use strict";\nmodule.exports = function* program() {\n' + varOutput + '\n' + code + '}\n';
@@ -146,7 +149,14 @@ class CodeGenerator {
   }
 
   process_literal(node) {
-    return node;
+    const value = node[0];
+    if (value[0] === '"') {
+      return 'new DataUnit(' + node + ', DATATYPES.DT_STRING)';
+    } else if ((typeof value === 'number') || (value[0] >= '0' && value[0] <= '9')) {
+      return 'new DataUnit(' + node + ', DATATYPES.DT_NUMBER)';
+    }
+
+    throw new Error('Invalid literal ' + value);
   }
 
   process_identifier(node) {
@@ -183,27 +193,76 @@ class CodeGenerator {
   }
 
   process_array(node) {
-    const thing = this.process_lhs(node[0]) + '.asarray';
+    const thing = this.process_lhs(node[0]);
     const arrayIndecies = node[1];
 
     return thing + arrayIndecies.map((indx) => {
-      return '[' + this.process_expression(indx) + ']';
+      return '.op_index(' + this.process_expression(indx) + ')';
     }).join('');
   }
 
   process_binop(node) {
-    const op = node[0];
     const lhs = this.process_expression(node[1]);
     const rhs = this.process_expression(node[2]);
 
-    return '(' + [lhs, op, rhs].join(' ') + ')';
+    let op = null;
+    switch (node[0]) {
+      case '+':
+        op = 'op_add';
+        break;
+      case '-':
+        op = 'op_sub';
+        break;
+      case '*':
+        op = 'op_mul';
+        break;
+      case '/':
+        op = 'op_div';
+        break;
+      case '=':
+        op = 'op_eq';
+        break;
+      case '<>':
+        op = 'op_neq';
+        break;
+      case '>':
+        op = 'op_gt';
+        break;
+      case '<':
+        op = 'op_lt';
+        break;
+      case '>=':
+        op = 'op_gte';
+        break;
+      case '<=':
+        op = 'op_lte';
+        break;
+      case '||':
+        op = 'op_cmpor';
+        break;
+      case '&&':
+        op = 'op_cmpand';
+        break;
+      default:
+        throw new Error('Invalid operator in expression: ' + node[0]);
+    }
+
+    return '(' + lhs + '.' + op + '(' + rhs + ')' + ')';
   }
 
   process_unop(node) {
-    const op = node[0];
     const lhs = this.process_expression(node[1]);
 
-    return '(' + op + lhs + ')';
+    let op = null;
+    switch (node[0]) {
+      case '-':
+        op = 'op_neg';
+        break;
+      default:
+        throw new Error('Invalid unary operator in expression: ' + node[0]);
+    }
+
+    return '(' + lhs + '.' + op + '())';
   }
 
   process_call(node) {
@@ -212,7 +271,7 @@ class CodeGenerator {
       return this.process_expression(pnode);
     }) : [];
 
-    return '(yield* ' + identifier + '(' + params.join(', ') + '))';
+    return '(yield* ' + identifier + '.op_call([' + params.join(', ') + ']))';
   }
 
   // Start the statements:
@@ -221,7 +280,7 @@ class CodeGenerator {
     const lhs = this.process_lhs(node[0]);
     const value = this.process_expression(node[1]);
 
-    return lhs + ' = ' + value + ';\n';
+    return lhs + '.op_assign(' + value + ');\n';
   }
 
   process_callstatement(node) {
@@ -234,11 +293,11 @@ class CodeGenerator {
     const start = node[0];
     const rest = node.slice(1);
 
-    return 'if (' + this.process_expression(start[0]) + ') {\n' +
+    return 'if (' + this.process_expression(start[0]) + '.as_bool()) {\n' +
             this.process_block(start[1]) + this.get_indent() + '}' +
             rest.map((c) => {
               return ' else ' +
-                      (c[0] ? ('if (' + this.process_expression(c[0]) + ')') : '') +
+                      (c[0] ? ('if (' + this.process_expression(c[0]) + '.as_bool())') : '') +
                       '{\n' + this.process_block(c[1]) + this.get_indent() + '}'
             }).join('') +
             '\n\n';
@@ -254,9 +313,12 @@ class CodeGenerator {
 
   process_fn(node) {
     const name = this.process_identifier(node[0][1][0]);
-    this.add_ignorevar(name);
+    this.add_callable(name);
 
-    return 'function* ' + name + '() {\n' + this.process_block(node[2]) + this.get_indent() + '}\n\n';
+    return 'function* $' + name + '() {\n' +
+            this.process_block(node[2]) +
+            this.get_indent() + this.indentString + 'return new DataUnit();\n' +
+            this.get_indent() + '}\n\n';
   }
 
   process_for(node) {
@@ -268,9 +330,9 @@ class CodeGenerator {
     const end = this.process_expression(forinfo[1]);
     const step = this.process_expression(forinfo[2]);
 
-    const forStart = iter + ' = ' + start + '; ';
-    const forCond = '(' + start + ' < ' + end + ' ? (' + iter + ' < ' + end + ') : (' + iter + ' > ' + end + ')); ';
-    const forIter = iter + ' += ' + step;
+    const forStart  = iter + '.op_assign(' + start + ');\n';
+    const forCond = '(' + start + '.op_lt(' + end + ').as_bool() ? (' + iter + '.op_lt(' + end + ')) : (' + iter + '.op_gt(' + end + '))).as_bool();\n ';
+    const forIter = iter + '.op_assign(' + iter + '.op_add(' + step + '))';
 
     return 'for (' +
             forStart +
@@ -282,7 +344,7 @@ class CodeGenerator {
   process_while(node) {
     const cond = this.process_expression(node[0]);
 
-    return 'while (' + cond+ ') {\n' + this.process_block(node[1]) + this.get_indent() + '}\n\n';
+    return 'while (' + cond + '.as_bool()) {\n' + this.process_block(node[1]) + this.get_indent() + '}\n\n';
   }
 
 }
