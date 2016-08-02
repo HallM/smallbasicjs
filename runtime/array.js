@@ -7,13 +7,13 @@ const wrapFunction = require('./utils').wrapFunction;
 module.exports = function programFactory(env) {
   function __resolvearray(aname) {
     var arr = null;
-    try {
-      arr = eval('env._' + aname);
-    } catch(e) {
-      console.log('create "_' + aname + '"');
-      arr = eval('env._' + aname + ' = new DataUnit({}, DATATYPES.DT_ARRAY);');
+
+    if (!env.hasOwnProperty(aname)) {
+      console.log('create "env._' + aname + '"');
+      env[aname] = new DataUnit({}, DATATYPES.DT_ARRAY);
     }
-    return arr.cast_array();
+
+    return env[aname].cast_array();
   }
 
   return {
