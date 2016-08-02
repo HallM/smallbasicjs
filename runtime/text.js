@@ -1,52 +1,61 @@
 'use strict';
 
-module.exports = {
-  append: function(text1, text2) {
-    return text1 + text2;
-  },
+const DataUnit = require('./data-unit').DataUnit;
+const DATATYPES = require('./data-unit').DATATYPES;
+const wrapFunction = require('./utils').wrapFunction;
 
-  getlength: function(text) {
-    return text.length;
-  },
+const text = {
+  // TODO: update to DataUnit system
+  append: wrapFunction(function*(t1,t2) {
+    return new DataUnit(t1.as_string() + t2.as_string(), DATATYPES.DT_STRING);
+  }),
 
-  issubtext: function(text, subText) {
-    return text.indexOf(subText) !== -1;
-  },
+  getlength: wrapFunction(function*(t) {
+    return new DataUnit(t.as_string().length, DATATYPES.DT_NUMBER);
+  }),
 
-  endswith: function(text, subText) {
-    var diff = text.length - subText.length;
-    return diff >= 0 && text.substring(diff) === subText;
-  },
+  // issubtext: function(text, subText) {
+  //   return text.indexOf(subText) !== -1;
+  // },
 
-  startswith: function(text, subText) {
-    return text.length >= subText.length && text.substring(0, subText.length) === subText;
-  },
+  // endswith: function(text, subText) {
+  //   var diff = text.length - subText.length;
+  //   return diff >= 0 && text.substring(diff) === subText;
+  // },
 
-  getsubtext: function(text, start, length) {
-    return text.substring(start, start + length);
-  },
+  // startswith: function(text, subText) {
+  //   return text.length >= subText.length && text.substring(0, subText.length) === subText;
+  // },
 
-  getsubtexttoend: function(text, start) {
-    return text.substring(start);
-  },
+  getsubtext: wrapFunction(function*(t, s, e) {
+    return new DataUnit(t.as_string().substring(s, s+e), DATATYPES.DT_STRING);
+  }),
 
-  getindexof: function(text, subText) {
-    return text.indexOf(subText);
-  },
+  // getsubtexttoend: function(text, start) {
+  //   return text.substring(start);
+  // },
 
-  converttolowercase: function(text) {
-    return text.toLowerCase();
-  },
+  // getindexof: function(text, subText) {
+  //   return text.indexOf(subText);
+  // },
 
-  converttouppercase: function(text) {
-    return text.toUpperCase();
-  },
+  // converttolowercase: function(text) {
+  //   return text.toLowerCase();
+  // },
 
-  getcharacter: function(characterCode) {
-    return String.fromCharCode(characterCode);
-  },
+  // converttouppercase: function(text) {
+  //   return text.toUpperCase();
+  // },
 
-  getcharactercode: function(character) {
-    return character.charCodeAt(0);
-  }
+  // getcharacter: function(characterCode) {
+  //   return String.fromCharCode(characterCode);
+  // },
+
+  // getcharactercode: function(character) {
+  //   return character.charCodeAt(0);
+  // }
+};
+
+module.exports = function textFactory(env) {
+  return text;
 };

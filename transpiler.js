@@ -6,35 +6,11 @@ if (!process.argv[2]) {
   process.exit(1);
 }
 
-/*
-
-class Variable {
-  value: 0, // num | obj | string,
-  type: 'value' | 'array',
-
-  asArray() {
-    if (type !== 'array') {
-      this.value = {};
-    }
-    return this.value;
-  }
-  asValue() {
-    if (type === 'array') {
-      this.value = 0;
-    }
-    return this.value;
-  }
-};
-
-var env = {vars};
-
-*/
-
 class CodeGenerator {
   constructor() {
     this.vars = [];
     this.callables = [];
-    this.blockLevel = 0;
+    this.blockLevel = 1;
     this.indentString = '  ';
   }
 
@@ -60,21 +36,53 @@ class CodeGenerator {
   }
 
   process_file(str) {
-    let ast = parser.parse(str);
+    // parser gets confused if file does not end with a blank new line
+    const ast = parser.parse(str + '\n');
     const code = this.process_block(ast);
 
-    const doubleIndent = this.indentString + this.indentString;
+    const varIndent = this.indentString + this.indentString + this.indentString;
 
     const varOutput = this.vars
       .map((v) => {
         if (this.callables.indexOf(v) !== -1) {
-          return doubleIndent + 'var ' + v + ' = new DataUnit($' + v + ', DATATYPES.DT_FN);\n';
+          return varIndent + v + ': new DataUnit($' + v + ', DATATYPES.DT_FN)';
         } else {
-          return doubleIndent + 'var ' + v + ' = new DataUnit();\n'
+          return varIndent + v + ': new DataUnit()';
         }
-      }).join('');
+      }).join(',\n');
 
-    return '"use strict";\nmodule.exports = function* program() {\n' + varOutput + '\n' + code + '}\n';
+    return `'use strict';
+
+const bluebird = require('bluebird');
+const DataUnit = require('./runtime/data-unit').DataUnit;
+const DATATYPES = require('./runtime/data-unit').DATATYPES;
+
+function runnable() {
+  function* execute() {
+    const env = {
+${varOutput}
+    };
+
+    const array = require('./runtime/array')(env);
+    const graphicswindow = require('./runtime/graphicswindow')(env);
+    const math = require('./runtime/math')(env);
+    const program = require('./runtime/program')(env);
+    const shapes = require('./runtime/shapes')(env);
+    const text = require('./runtime/text')(env);
+
+${code}
+  }
+
+  (bluebird.coroutine(execute))().then(function() {
+    console.log('program finished!');
+  }).catch(function(e) {
+    console.log('An error occurred');
+    console.log(e);
+  });
+}
+
+runnable();
+`;
   }
 
   process_block(node) {
@@ -159,7 +167,7 @@ class CodeGenerator {
     throw new Error('Invalid literal ' + value);
   }
 
-  process_identifier(node) {
+  process_identifier(node, doNotDecorate) {
     if (!node) {
       throw new Error('identifier is not valid');
     }
@@ -171,7 +179,12 @@ class CodeGenerator {
     const varname = '_' + node;
 
     this.add_var(varname);
-    return varname;
+
+    if (doNotDecorate) {
+      return varname;
+    }
+
+    return 'env.' + varname;
   }
 
   process_variable(node) {
@@ -312,7 +325,7 @@ class CodeGenerator {
   }
 
   process_fn(node) {
-    const name = this.process_identifier(node[0][1][0]);
+    const name = this.process_identifier(node[0][1][0], true);
     this.add_callable(name);
 
     return 'function* $' + name + '() {\n' +

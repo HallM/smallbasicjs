@@ -97,18 +97,26 @@ class DataUnit {
   }
 
   op_assign(rhs) {
+    if (!rhs) {
+      rhs = new DataUnit();
+    }
+
     this.value = rhs.value;
     this.type = rhs.type;
   }
 
   op_index(exp) {
     const arr = cast_array();
-    return arr[exp.value];
+    const key = exp.as_string();
+    if (!arr[key]) {
+      arr[key] = new DataUnit();
+    }
+    return arr[key];
   }
 
   // unary number operators
   op_neg() {
-    const newValue = !this.as_num();
+    const newValue = this.as_num() * -1;
     return new DataUnit(newValue, DATATYPES.DT_NUMBER);
   }
 
@@ -297,7 +305,7 @@ function* program() {
 
   var math = {
     getrandomnumber: wrapFunction(function*(n) {
-      return new DataUnit(Math.round(Math.random() * n.as_num()), DATATYPES.DT_NUMBER);
+      return new DataUnit((Math.round(Math.random() * n.as_num()) + 1), DATATYPES.DT_NUMBER);
     }),
     abs: wrapFunction(function*(n) {
       return new DataUnit(Math.abs(n.as_num()), DATATYPES.DT_NUMBER);
@@ -339,7 +347,7 @@ function* program() {
   var array = {
     getvalue: wrapFunction(function*(a, i) {
       var arr = __resolvearray(a.as_string());
-      return arr[i.as_string()];
+      return arr[i.as_string()] || new DataUnit();
     }),
     setvalue: wrapFunction(function*(a, i, v) {
       var arr = __resolvearray(a.as_string());
@@ -431,6 +439,7 @@ function* program() {
     (yield* _setupcanvas.op_call([]));
     (yield* _mainloop.op_call([]));
     (yield* graphicswindow.showmessage.op_call([new DataUnit("Game Over", DATATYPES.DT_STRING), new DataUnit("Small Basic Tetris", DATATYPES.DT_STRING)]));
+    return;
   }
 
   function* $_mainloop() {

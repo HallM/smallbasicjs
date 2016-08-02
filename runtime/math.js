@@ -1,85 +1,94 @@
 'use strict';
 
-module.exports = {
-  pi: Math.PI,
+const DataUnit = require('./data-unit').DataUnit;
+const DATATYPES = require('./data-unit').DATATYPES;
+const wrapFunction = require('./utils').wrapFunction;
 
-  abs: function(num) {
-    return Math.abs(num);
-  },
+const math = {
+  // TODO: update to DataUnit system
+  // pi: Math.PI,
 
-  ceiling: function(num) {
-    return Math.ciel(num);
-  },
+  abs: wrapFunction(function*(n) {
+    return new DataUnit(Math.abs(n.as_num()), DATATYPES.DT_NUMBER);
+  }),
 
-  floor: function(num) {
-    return Math.floor(num);
-  },
+  ceiling: wrapFunction(function*(n) {
+    return new DataUnit(Math.ceil(n.as_num()), DATATYPES.DT_NUMBER);
+  }),
 
-  naturallog: function(num) {
-    return Math.log(num);
-  },
+  floor: wrapFunction(function*(n) {
+    return new DataUnit(Math.floor(n.as_num()), DATATYPES.DT_NUMBER);
+  }),
 
-  log: function(num) {
-    return Math.log10(num);
-  },
+  round: wrapFunction(function*(n) {
+    return new DataUnit(Math.round(n.as_num()), DATATYPES.DT_NUMBER);
+  }),
 
-  cos: function(num) {
-    return Math.cos(num);
-  },
+  // naturallog: function(num) {
+  //   return Math.log(num);
+  // },
 
-  sin: function(num) {
-    return Math.sin(num);
-  },
+  // log: function(num) {
+  //   return Math.log10(num);
+  // },
 
-  tan: function(num) {
-    return Math.tan(num);
-  },
+  // cos: function(num) {
+  //   return Math.cos(num);
+  // },
 
-  arcsin: function(num) {
-    return Math.asin(num);
-  },
+  // sin: function(num) {
+  //   return Math.sin(num);
+  // },
 
-  arccos: function(num) {
-    return Math.acos(num);
-  },
+  // tan: function(num) {
+  //   return Math.tan(num);
+  // },
 
-  arctan: function(num) {
-    return Math.atan(num);
-  },
+  // arcsin: function(num) {
+  //   return Math.asin(num);
+  // },
 
-  getdegrees: function(num) {
-    return num * 180.0 / Math.PI;
-  },
+  // arccos: function(num) {
+  //   return Math.acos(num);
+  // },
 
-  getradians: function(num) {
-    return num * Math.PI / 180.0;
-  },
+  // arctan: function(num) {
+  //   return Math.atan(num);
+  // },
 
-  squareroot: function(num) {
-    return Math.sqrt(num);
-  },
+  // getdegrees: function(num) {
+  //   return num * 180.0 / Math.PI;
+  // },
 
-  power: function(num, exp) {
-    return Math.pow(num, exp);
-  },
+  // getradians: function(num) {
+  //   return num * Math.PI / 180.0;
+  // },
 
-  round: function(num) {
-    return Math.round(num);
-  },
+  // squareroot: function(num) {
+  //   return Math.sqrt(num);
+  // },
 
-  max: function(num1, num2) {
-    return Math.max(num1, num2);
-  },
+  // power: function(num, exp) {
+  //   return Math.pow(num, exp);
+  // },
 
-  min: function(num1, num2) {
-    return Math.min(num1, num2);
-  },
+  // max: function(num1, num2) {
+  //   return Math.max(num1, num2);
+  // },
 
-  remainder: function(dividend, divisor) {
-    return dividend % divisor;
-  },
+  // min: function(num1, num2) {
+  //   return Math.min(num1, num2);
+  // },
 
-  getrandomnumber: function(num) {
-    return Math.random() * num;
-  }
+  remainder: wrapFunction(function*(t, b) {
+    return new DataUnit(t.as_num() % b.as_num(), DATATYPES.DT_NUMBER);
+  }),
+
+  getrandomnumber: wrapFunction(function*(n) {
+    return new DataUnit((Math.round(Math.random() * n.as_num()) + 1), DATATYPES.DT_NUMBER);
+  })
+};
+
+module.exports = function mathFactory(env) {
+  return math;
 };
