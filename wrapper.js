@@ -2,6 +2,33 @@
 
 var bluebird = require('bluebird');
 
+var justExitError = new Error('justforexiting');
+
+class Variable {
+  constructor() {
+    this.value = 0;
+    this.type = 'value';
+  }
+
+  get asarray() {
+    if (type !== 'array') {
+      this.value = {};
+    }
+    return this.value;
+  }
+  set asarray() {
+  }
+
+  get asvalue() {
+    if (type === 'array') {
+      this.value = 0;
+    }
+    return this.value;
+  }
+  set asvalue() {}
+};
+
+
 function* program() {
   var graphicswindow = {
     keydown: null,
@@ -40,7 +67,7 @@ function* program() {
 
   var math = {
     getrandomnumber: function*(n) {
-      return Math.random() * n;
+      return Math.round(Math.random() * n);
     },
     abs: function*(n) {
       return Math.abs(n);
@@ -62,7 +89,7 @@ function* program() {
     },
 
     end: function*() {
-      // how to make this end the whole program...
+      throw justExitError;
     }
   };
 
@@ -71,6 +98,7 @@ function* program() {
     try {
       arr = eval(aname);
     } catch(e) {
+      console.log('create "' + aname + '"');
       arr = eval('global.' + aname + ' = {};');
     }
     return arr;
@@ -94,6 +122,11 @@ function* program() {
     getleft: function*() {},
     gettop: function*() {}
   };
+
+
+// code goes here
+
+
 }
 
 var c = bluebird.coroutine(program);

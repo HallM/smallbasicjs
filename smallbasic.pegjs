@@ -176,7 +176,7 @@ andor_expression
     }
 
     return tail.reduce(function(previous, t) {
-      var op = t[1] === 'and' ? '&&' : '||';
+      var op = t[1].toLowerCase() === 'and' ? '&&' : '||';
       return ['binop', [op, previous, t[3]]];
     }, l);
   }
@@ -190,7 +190,7 @@ call_statement "Function call"
   { return ['callstatement', [c]]; }
 
 ifElse "If statement"
-  = _ "If"i _ c:andor_expression _ "Then"i endline_comment+ b:block? elif:(_ "ElseIf"i _ c:andor_expression _ "Then" endline_comment+ b:block? { return [c, b]; })* els:(_ "Else"i endline_comment+ b:block? { return [null, b]; })? _ "EndIf"i endline_comment+
+  = _ "If"i _ c:andor_expression _ "Then"i endline_comment+ b:block? elif:(_ "ElseIf"i _ c:andor_expression _ "Then"i endline_comment+ b:block? { return [c, b]; })* els:(_ "Else"i endline_comment+ b:block? { return [null, b]; })? _ "EndIf"i endline_comment+
   {
     var conds = [ [c,b] ];
 

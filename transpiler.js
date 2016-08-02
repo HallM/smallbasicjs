@@ -6,6 +6,30 @@ if (!process.argv[2]) {
   process.exit(1);
 }
 
+/*
+
+class Variable {
+  value: 0, // num | obj | string,
+  type: 'value' | 'array',
+
+  asArray() {
+    if (type !== 'array') {
+      this.value = {};
+    }
+    return this.value;
+  }
+  asValue() {
+    if (type === 'array') {
+      this.value = 0;
+    }
+    return this.value;
+  }
+};
+
+var env = {vars};
+
+*/
+
 class CodeGenerator {
   constructor() {
     this.vars = [];
@@ -44,7 +68,7 @@ class CodeGenerator {
         return this.ignoreVars.indexOf(v) === -1;
       })
       .map((v) => {
-        return this.indentString + 'var ' + v + ' = {};\n'
+        return this.indentString + 'var ' + v + ' = new Variable();\n'
       }).join('');
 
     return '"use strict";\nmodule.exports = function* program() {\n' + varOutput + '\n' + code + '}\n';
@@ -159,7 +183,7 @@ class CodeGenerator {
   }
 
   process_array(node) {
-    const thing = this.process_lhs(node[0]);
+    const thing = this.process_lhs(node[0]) + '.asarray';
     const arrayIndecies = node[1];
 
     return thing + arrayIndecies.map((indx) => {
