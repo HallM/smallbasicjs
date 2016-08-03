@@ -51,11 +51,11 @@ class CodeGenerator {
         }
       }).join(',\n');
 
-    return `'use strict';
+    return `// 'use strict';
 
-const bluebird = require('bluebird');
-const DataUnit = require('./runtime/data-unit').DataUnit;
-const DATATYPES = require('./runtime/data-unit').DATATYPES;
+//const bluebird = require('bluebird');
+//const DataUnit = require('./runtime/data-unit').DataUnit;
+//const DATATYPES = require('./runtime/data-unit').DATATYPES;
 
 function runnable() {
   function* execute() {
@@ -63,12 +63,18 @@ function runnable() {
 ${varOutput}
     };
 
-    const array = require('./runtime/array')(env);
-    const graphicswindow = require('./runtime/graphicswindow')(env);
-    const math = require('./runtime/math')(env);
-    const program = require('./runtime/program')(env);
-    const shapes = require('./runtime/shapes')(env);
-    const text = require('./runtime/text')(env);
+    // const array = require('./runtime/array')(env);
+    // const graphicswindow = require('./runtime/graphicswindow')(env);
+    // const math = require('./runtime/math')(env);
+    // const program = require('./runtime/program')(env);
+    // const shapes = require('./runtime/shapes')(env);
+    // const text = require('./runtime/text')(env);
+    const array = arrayFactory(env);
+    const graphicswindow = graphicswindowFactory(env);
+    const math = mathFactory(env);
+    const program = programFactory(env);
+    const shapes = shapesFactory(env);
+    const text = textFactory(env);
 
 ${code}
   }

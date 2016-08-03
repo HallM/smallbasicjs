@@ -1,8 +1,8 @@
 'use strict';
 
-const DataUnit = require('./data-unit').DataUnit;
-const DATATYPES = require('./data-unit').DATATYPES;
-const wrapFunction = require('./utils').wrapFunction;
+// const DataUnit = require('./data-unit').DataUnit;
+// const DATATYPES = require('./data-unit').DATATYPES;
+// const wrapFunction = require('./utils').wrapFunction;
 
 const text = {
   append: wrapFunction(function*(t1,t2) {
@@ -60,6 +60,7 @@ const text = {
   })
 };
 
-module.exports = function textFactory(env) {
+// module.exports =
+function textFactory(env) {
   return text;
 };

@@ -1,8 +1,8 @@
 'use strict';
 
-const DataUnit = require('./data-unit').DataUnit;
-const DATATYPES = require('./data-unit').DATATYPES;
-const wrapFunction = require('./utils').wrapFunction;
+// const DataUnit = require('./data-unit').DataUnit;
+// const DATATYPES = require('./data-unit').DATATYPES;
+// const wrapFunction = require('./utils').wrapFunction;
 
 const math = {
   pi: new DataUnit(Math.PI, DATATYPES.DT_NUMBER),
@@ -88,6 +88,7 @@ const math = {
   })
 };
 
-module.exports = function mathFactory(env) {
+// module.exports =
+function mathFactory(env) {
   return math;
 };

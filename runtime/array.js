@@ -1,10 +1,11 @@
 'use strict';
 
-const DataUnit = require('./data-unit').DataUnit;
-const DATATYPES = require('./data-unit').DATATYPES;
-const wrapFunction = require('./utils').wrapFunction;
+// const DataUnit = require('./data-unit').DataUnit;
+// const DATATYPES = require('./data-unit').DATATYPES;
+// const wrapFunction = require('./utils').wrapFunction;
 
-module.exports = function programFactory(env) {
+// module.exports =
+function arrayFactory(env) {
   function __resolvearray(aname) {
     var arr = null;
 

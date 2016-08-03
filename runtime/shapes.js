@@ -1,8 +1,8 @@
 'use strict';
 
-const DataUnit = require('./data-unit').DataUnit;
-const DATATYPES = require('./data-unit').DATATYPES;
-const wrapFunction = require('./utils').wrapFunction;
+// const DataUnit = require('./data-unit').DataUnit;
+// const DATATYPES = require('./data-unit').DATATYPES;
+// const wrapFunction = require('./utils').wrapFunction;
 
 const shapes = {
   addrectangle: wrapFunction(function*() { return new DataUnit(); }),
@@ -12,6 +12,7 @@ const shapes = {
   gettop: wrapFunction(function*() { return new DataUnit(); })
 };
 
-module.exports = function shapesFactory(env) {
+// module.exports =
+function shapesFactory(env) {
   return shapes;
 };

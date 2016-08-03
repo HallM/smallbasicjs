@@ -12,10 +12,26 @@ class DataUnit {
   constructor(value, type) {
     this.value = arguments.length > 0 ? value : 0;
     this.type = arguments.length > 1 ? type : DATATYPES.DT_UNINIT;
+    this.onAssignHandlers = [];
   }
 
   make_clone() {
     return new DataUnit(this.value, this.type);
+  }
+
+  // events:
+  on_assign(handler) {
+    if (this.onAssignHandlers.indexOf(handler) === -1) {
+      this.onAssignHandlers.push(handler);
+    }
+
+    // return the unsubscriber
+    return function() {
+      const indx = this.onAssignHandlers.indexOf(handler);
+      if (indx !== -1) {
+        this.onAssignHandlers.splice(indx, 1);
+      }
+    };
   }
 
   // Type casts:
@@ -116,6 +132,10 @@ class DataUnit {
 
     this.value = rhs.value;
     this.type = rhs.type;
+
+    for (let i = 0; i < this.onAssignHandlers.length; i++) {
+      this.onAssignHandlers[i](this);
+    }
   }
 
   op_index(exp) {
@@ -276,5 +296,5 @@ class DataUnit {
   }
 };
 
-exports.DATATYPES = DATATYPES;
-exports.DataUnit = DataUnit;
+// exports.DATATYPES = DATATYPES;
+// exports.DataUnit = DataUnit;
