@@ -69,12 +69,12 @@ ${varOutput}
     // const program = require('./runtime/program')(env);
     // const shapes = require('./runtime/shapes')(env);
     // const text = require('./runtime/text')(env);
-    const array = arrayFactory(env);
-    const graphicswindow = graphicswindowFactory(env);
-    const math = mathFactory(env);
-    const program = programFactory(env);
-    const shapes = shapesFactory(env);
-    const text = textFactory(env);
+    // const array = arrayFactory(env);
+    // const graphicswindow = graphicswindowFactory(env);
+    // const math = mathFactory(env);
+    // const program = programFactory(env);
+    // const shapes = shapesFactory(env);
+    // const text = textFactory(env);
 
 ${code}
   }
@@ -295,7 +295,7 @@ runnable();
       return this.process_expression(pnode);
     }) : [];
 
-    return '(yield* ' + identifier + '.op_call([' + params.join(', ') + ']))';
+    return '(yield* ' + identifier + '.op_call(env, [' + params.join(', ') + ']))';
   }
 
   // Start the statements:

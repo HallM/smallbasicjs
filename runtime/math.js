@@ -87,8 +87,3 @@ const math = {
     return new DataUnit((Math.round(Math.random() * n.as_num()) + 1), DATATYPES.DT_NUMBER);
   })
 };
-
-// module.exports =
-function mathFactory(env) {
-  return math;
-};

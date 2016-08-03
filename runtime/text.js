@@ -59,8 +59,3 @@ const text = {
     return new DataUnit(character.charCodeAt(0), DATATYPES.DT_NUMBER);
   })
 };
-
-// module.exports =
-function textFactory(env) {
-  return text;
-};

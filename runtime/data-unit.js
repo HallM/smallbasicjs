@@ -6,7 +6,15 @@ const DATATYPES = {
   DT_NUMBER: 2,
   DT_STRING: 3,
   DT_ARRAY: 4,
-  DT_FN: 9
+
+  DT_FN: 10,
+
+  // special things:
+  DT_CONTROL: 20,
+  DT_FILE: 21,
+  DT_IMAGE: 22,
+  DT_SOUND: 23,
+  DT_SHAPE: 24
 };
 class DataUnit {
   constructor(value, type) {
@@ -121,8 +129,8 @@ class DataUnit {
 
 
   // operators
-  *op_call(params) {
-    return yield* this.as_fn().apply(null, params);
+  *op_call(env, params) {
+    return yield* this.as_fn().apply(env, params);
   }
 
   op_assign(rhs) {

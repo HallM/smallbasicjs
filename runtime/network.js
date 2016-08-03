@@ -21,7 +21,3 @@ function* getContents(url) {
   let response = yield axios.get(url);
   return response.data;
 }
-
-module.exports = function networkFactory(env) {
-  return network;
-};

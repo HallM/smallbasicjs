@@ -62,7 +62,3 @@ const clock = {
     return new DataUnit(dt.getTime(), DATATYPES.DT_NUMBER);
   },
 };
-
-module.exports = function clockFactory(env) {
-  return clock;
-};

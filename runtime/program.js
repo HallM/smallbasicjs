@@ -30,8 +30,3 @@ const program = {
     throw justExitError;
   })
 };
-
-// module.exports =
-function programFactory(env) {
-  return program;
-};
