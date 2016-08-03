@@ -20,7 +20,15 @@ class DataUnit {
 
   // Type casts:
   as_bool() {
-    return !!this.value;
+    if (this.type === DATATYPES.DT_BOOL) {
+      return this.value;
+    } else if (this.type === DATATYPES.DT_STRING) {
+      return this.value.toLowerCase() === 'true';
+    } else if (this.type === DATATYPES.DT_NUMBER) {
+      return this.value !== 0;
+    } else {
+      return false;
+    }
   }
   cast_bool() {
     if (this.type !== DATATYPES.DT_BOOL) {
@@ -31,10 +39,10 @@ class DataUnit {
   }
 
   as_array() {
-    if (this.type !== DATATYPES.DT_ARRAY) {
-      return {};
+    if (this.type === DATATYPES.DT_ARRAY) {
+      return this.value;
     }
-    return this.value;
+    return {};
   }
   cast_array() {
     if (this.type !== DATATYPES.DT_ARRAY) {
@@ -45,10 +53,15 @@ class DataUnit {
   }
 
   as_num() {
-    if (this.type !== DATATYPES.DT_NUMBER) {
-      return this.type === DATATYPES.DT_STRING ? (parseInt(this.value, 10) || 0) : 0;
+    if (this.type === DATATYPES.DT_NUMBER) {
+      return this.value;
+    } else if (this.type === DATATYPES.DT_STRING) {
+      return parseInt(this.value, 10) || 0;
+    } else if (this.type === DATATYPES.DT_BOOL) {
+      return this.value ? 1 : 0;
+    } else {
+      return 0;
     }
-    return this.value;
   }
   cast_num() {
     if (this.type !== DATATYPES.DT_NUMBER) {
@@ -59,10 +72,15 @@ class DataUnit {
   }
 
   as_string() {
-    if (this.type !== DATATYPES.DT_STRING) {
-      return this.type === DATATYPES.DT_NUMBER ? this.value.toString() : '';
+    if (this.type === DATATYPES.DT_STRING) {
+      return this.value;
+    } else if (this.type === DATATYPES.DT_NUMBER) {
+      return this.value.toString();
+    } else if (this.type === DATATYPES.DT_BOOL) {
+      return this.value ? 'True' : 'False';
+    } else {
+      return '';
     }
-    return this.value;
   }
   cast_string() {
     if (this.type !== DATATYPES.DT_STRING) {
@@ -73,10 +91,10 @@ class DataUnit {
   }
 
   as_fn() {
-    if (this.type !== DATATYPES.DT_FN) {
-      throw new Error('Cannot call something that is not a function');
+    if (this.type === DATATYPES.DT_FN) {
+      return this.value;
     }
-    return this.value;
+    throw new Error('Cannot call something that is not a function');
   }
   cast_fn() {
     if (this.type !== DATATYPES.DT_FN) {
@@ -168,17 +186,18 @@ class DataUnit {
       } else {
         isEq = false;
       }
+    } else if (this.type === rhs.type) {
+      isEq = this.value === rhs.value;
     } else {
-      isEq = this.as_num() == rhs.as_num();
+      isEq = this.as_num() === rhs.as_num();
     }
 
-    const newValue = isEq ? 1 : 0;
-    return new DataUnit(newValue, DATATYPES.DT_NUMBER);
+    return new DataUnit(isEq, DATATYPES.DT_BOOL);
   }
 
   op_neq(rhs) {
     const isEq = this.op_eq(rhs);
-    isEq.value = isEq.value ? 0 : 1;
+    isEq.value = !isEq.value;
     return isEq;
   }
 
@@ -194,8 +213,8 @@ class DataUnit {
       right = rhs.as_num();
     }
 
-    const newValue = left > right ? 1 : 0;
-    return new DataUnit(newValue, DATATYPES.DT_NUMBER);
+    const newValue = left > right;
+    return new DataUnit(newValue, DATATYPES.DT_BOOL);
   }
 
   op_lt(rhs) {
@@ -210,8 +229,8 @@ class DataUnit {
       right = rhs.as_num();
     }
 
-    const newValue = left < right ? 1 : 0;
-    return new DataUnit(newValue, DATATYPES.DT_NUMBER);
+    const newValue = left < right;
+    return new DataUnit(newValue, DATATYPES.DT_BOOL);
   }
 
   op_gte(rhs) {
@@ -226,8 +245,8 @@ class DataUnit {
       right = rhs.as_num();
     }
 
-    const newValue = left >= right ? 1 : 0;
-    return new DataUnit(newValue, DATATYPES.DT_NUMBER);
+    const newValue = left >= right;
+    return new DataUnit(newValue, DATATYPES.DT_BOOL);
   }
 
   op_lte(rhs) {
@@ -242,18 +261,18 @@ class DataUnit {
       right = rhs.as_num();
     }
 
-    const newValue = left <= right ? 1 : 0;
-    return new DataUnit(newValue, DATATYPES.DT_NUMBER);
+    const newValue = left <= right;
+    return new DataUnit(newValue, DATATYPES.DT_BOOL);
   }
 
   op_cmpor(rhs) {
-    const newValue = this.as_num() || rhs.as_num() ? 1 : 0;
-    return new DataUnit(newValue, DATATYPES.DT_NUMBER);
+    const newValue = this.as_bool() || rhs.as_bool();
+    return new DataUnit(newValue, DATATYPES.DT_BOOL);
   }
 
   op_cmpand(rhs) {
-    const newValue = this.as_num() && rhs.as_num() ? 1 : 0;
-    return new DataUnit(newValue, DATATYPES.DT_NUMBER);
+    const newValue = this.as_bool() && rhs.as_bool();
+    return new DataUnit(newValue, DATATYPES.DT_BOOL);
   }
 };
 

@@ -12,6 +12,8 @@ const program = {
   }),
 
   end: wrapFunction(function*() {
+    const justExitError = new Error('justforexiting');
+    justExitError.issafetoignoreexit = true;
     throw justExitError;
   })
 };

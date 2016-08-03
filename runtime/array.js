@@ -17,36 +17,40 @@ module.exports = function programFactory(env) {
   }
 
   return {
-    // TODO: update to DataUnit system
-    // containsindex: function(array, index) {
-    //   if (!array) {
-    //     return false;
-    //   }
+    __resolvearray: __resolvearray,
 
-    //   return Object.keys(array).indexOf(index) !== -1;
-    // },
+    containsindex: wrapFunction(function*(array, index) {
+      var arr = array.as_array();
+      if (!arr) {
+        return new DataUnit(false, DATATYPES.DT_BOOL);
+      }
+      return new DataUnit(Object.keys(arr).indexOf(index.as_string()) !== -1, DATATYPES.DT_BOOL);
+    }),
 
-    // containsvalue: function(array, value) {
-    //   if (!array) {
-    //     return false;
-    //   }
+    containsvalue: wrapFunction(function*(array, value) {
+      var arr = array.as_array();
+      if (!arr) {
+        return new DataUnit(false, DATATYPES.DT_BOOL);
+      }
+      return new DataUnit(Object.values(arr).indexOf(index.as_string()) !== -1, DATATYPES.DT_BOOL);
+    }),
 
-    //   return Object.values(array).indexOf(index) !== -1;
-    // },
+    getallindices: wrapFunction(function*(array) {
+      var arr = array.as_array();
+      var indecies = Object.keys(array).reduce((obj, k, indx) => {
+        obj[indx + 1] = new DataUnit(k, DATATYPES.DT_STRING);
+      }, {});
+      return new DataUnit(indecies, DATATYPES.DT_ARRAY);
+    }),
 
-    // getallindices: function(array) {
-    //   return Object.keys(array).reduce((obj, k, indx) => {
-    //     obj[indx + 1] = k;
-    //   }, {});
-    // },
+    getitemcount: wrapFunction(function*(array) {
+      var arr = array.as_array();
+      return new DataUnit(Object.keys(arr).length, DATATYPES.DT_NUMBER);
+    }),
 
-    // getitemcount: function(array) {
-    //   return Object.keys(array).length;
-    // },
-
-    // isarray: function(array) {
-    //   return array._isarray === true;
-    // },
+    isarray: wrapFunction(function*(array) {
+      return new DataUnit(array.type === DATATYPES.DT_ARRAY, DATATYPES.DT_BOOL);
+    }),
 
     getvalue: wrapFunction(function*(a, i) {
       var arr = __resolvearray(a.as_string());
@@ -58,7 +62,9 @@ module.exports = function programFactory(env) {
       arr[i.as_string()] = v;
     }),
 
-    // removevalue: function(arrayName, index) {
-    // }
+    removevalue: wrapFunction(function*(arrayName, index) {
+      var arr = __resolvearray(a.as_string());
+      delete arr[i.as_string()];
+    })
   };
 };

@@ -76,6 +76,11 @@ ${code}
   (bluebird.coroutine(execute))().then(function() {
     console.log('program finished!');
   }).catch(function(e) {
+    if (e.issafetoignoreexit) {
+      console.log('program finished!');
+      return;
+    }
+
     console.log('An error occurred');
     console.log(e);
   });
