@@ -117,53 +117,114 @@ then, the implicit "main" could act as a psuedo-dispatcher for all labels
 for the stdlib, could just expose all the labels? i guess?
 
 ```
-switch (next) {
-  // all the built in apis/stdlib:
-  case 'textwindow.write':
-    var stackinfo = fnstack[fnstack.length - 1];
-    (yield* textwindow.write.op_call(env, stackinfo[1]));
-    return fnstack.pop()[0];
-  case 'textwindow.writeline':
-    var stackinfo = fnstack[fnstack.length - 1];
-    (yield* textwindow.writeline.op_call(env, stackinfo[1]));
-    return fnstack.pop()[0];
+function generator(next, val) {
+  var retval = undefined;
 
-  // entry into the program
-  case '':
-    env.fnstack.push(['$L0', []])
-    return '_hello'
-  case '$L0':
-    env.fnstack.push(['$L1', []])
-    return '_done'
-  case '$L1':
-    return '!end' // program is complete
+  while (1) {
+    switch (next) {
+      // all the built in apis/stdlib:
+      // example of a call that requires blocking-emulation
+      case 'program.delay':
+        // let the wrapper do the gen style
+        // if we can know ahead of time if it's something to block or not
+        // otherwise, just always return it
+        return program.delay.call(env, fnstack[fnstack.length - 1][1]);
+      case 'program.delay$L0':
+        next = fnstack.pop()[0];
 
-  // the Hello subroutine
-  case '_hello':
-  case '_label1':
-    fnstack.push(['$L2', ['Hello']]);
-    return 'textwindow.write';
-  case '$L2':
-    return '_label2';
+      // example of returning a value that does not require blocking-emulation
+      case 'math.randomnumber':
+        retval = math.randomnumber.call(env, fnstack[fnstack.length - 1][1]);
+        next = fnstack.pop()[0];
 
-  // the World subroutine
-  case '_world':
-  case '_label2':
-  case '_label3':
-  case '_label4':
-    fnstack.push(['$L3', [' World']]);
-    return 'textwindow.write';
-  case '$L3':
-    fnstack.push(['$L4', []]);
-    return 'textwindow.writeline';
-  case '$L4':
-    return fnstack.pop()[0];
+      // example of returning a value that does requires blocking-emulation
+      // this style could be the default if one style must be kept
+      case 'network.getwebpagecontents':
+        return network.getwebpagecontents.call(env, fnstack[fnstack.length - 1][1]);
+      case 'network.getwebpagecontents$L0':
+        retval = val;
+        next = fnstack.pop()[0];
 
-  // the Done subroutine
-  case '_done':
-    fnstack.push(['$L5', ['Done!']]);
-    return 'textwindow.writeline';
-  case '$L5':
-    return fnstack.pop()[0];
+      // example of a non-blocking, non-async, non-returning call
+      case 'textwindow.write':
+        textwindow.write.call(env, fnstack[fnstack.length - 1][1]);
+        next = fnstack.pop()[0];
+        break;
+
+      case 'textwindow.writeline':
+        textwindow.writeline.call(env, fnstack[fnstack.length - 1][1]);
+        next = fnstack.pop()[0];
+        break;
+
+      // entry into the program
+      case '':
+        env.fnstack.push(['$L0', []])
+        next = '_hello';
+        break;
+      case '$L0':
+        env.fnstack.push(['$L1', []])
+        next = '_done';
+        break;
+      case '$L1':
+        return null; // program is complete
+
+      // the Hello subroutine
+      case '_hello':
+      case '_label1':
+        fnstack.push(['$L2', ['Hello']]);
+        next = 'textwindow.write';
+        break;
+      case '$L2':
+        next = '_label2';
+        break;
+
+      // the World subroutine
+      case '_world':
+      case '_label2':
+      case '_label3':
+      case '_label4':
+        fnstack.push(['$L3', [' World']]);
+        next = 'textwindow.write';
+        break;
+      case '$L3':
+        fnstack.push(['$L4', []]);
+        next = 'textwindow.writeline';
+        break;
+      case '$L4':
+        next = fnstack.pop()[0];
+        break;
+
+      // the Done subroutine
+      case '_done':
+        fnstack.push(['$L5', ['Done!']]);
+        next = 'textwindow.writeline';
+        break;
+      case '$L5':
+        next = fnstack.pop()[0];
+        break;
+
+      default:
+        throw new Error('Unknown case ' + next);
+    }
+  }
+}
+function execute() {
+  var curlabel = '';
+  next();
+
+  function next(val) {
+    var nextlabel = generator(curlabel, val);
+    if (!nextlabel) {
+      done();
+    }
+
+    if (isPromise(nextlabel)) {
+      curlabel = nextlabel.label;
+      nextlabel.then(next);
+    } else {
+      curlabel = nextlabel;
+      setImmediate(next);
+    }
+  }
 }
 ```
