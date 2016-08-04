@@ -58,6 +58,25 @@ Done()
 mystring = Network.GetWebPageContents("http://hallm.pw")
 myvalue = 3 * Math.RandomNumber(5) + 4 - Math.ToRadians(0)
 
+If Math.Remainder(myvalue, 2) = 1 Then
+  TextWindow.WriteLine('Is Odd')
+ElseIf myvalue < 4
+  TextWindow.WriteLine('Is Even and less than 4')
+Else
+  TextWindow.WriteLine('Is Even')
+EndIf
+
+' what would the behavior of this be in SmallBasic?
+' is the random number calculated and remembered?
+' or does it recalculate each iteration?
+For i = 1 To Math.RandomNumber(10) Skip 2
+  TextWindow.WriteLine(i)
+EndFor
+
+While Math.RandomNumber(2) <> 1
+  TextWindow.WriteLine("Not 1 yet")
+EndFor
+
 Sub Hello
   label1:
   TextWindow.Write('Hello')
@@ -102,13 +121,58 @@ Goto Math.ToRadians
 $L4:
 myvalue = tmpstack.pop() - retval
 
+fnstack.push('$L5', [myvalue, 2]);
+Goto Math.Remainder
+$L5:
+if (retval == 1) {
+  fnstack.push('$L6', ['Is Odd']);
+  Goto TextWindow.WriteLine
+  $L6:
+  Goto $L7 // skip over next sections
+}
+if (myvalue < 4) {
+  fnstack.push('$L8', ['Is Even and less than 4']);
+  Goto TextWindow.WriteLine
+  $L8:
+  Goto $L7
+}
+fnstack.push('$L9', ['Is Even']);
+Goto TextWindow.WriteLine
+$L9:
+$L7:
+
+i = 1
+fnstack.push('$L10', [10]);
+Goto Math.RandomNumber
+$L10:
+_for0$end = retval
+$L11:
+if ( (2 > 0) ? (i <= _for0$end) : (i >= _for0$end) ) {
+  fnstack.push('$L12', [i]);
+  Goto TextWindow.WriteLine
+  $L12:
+  i = i + 2
+  Goto $L11
+}
+
+$L13:
+fnstack.push('$L14', [2]);
+Goto Math.RandomNumber
+$L14:
+if (retval <> 1) {
+  fnstack.push('$L15', ['Not 1 yet']);
+  Goto TextWindow.WriteLine
+  $L15:
+  Goto $L13
+}
+
 HALT
 
 _Hello:
   label1:
-  fnstack.push('$L5', ['Hello']); // params?
+  fnstack.push('$L15', ['Hello']); // params?
   Goto TextWindow.Write
-  $L5:
+  $L15:
   Goto label2
   // Goto fnstack.pop() < UNREACHABLE CODE
 
@@ -116,18 +180,18 @@ _World:
   label2:
   label3:
   label4:
-  fnstack.push('$L6', [' World']);
+  fnstack.push('$L16', [' World']);
   Goto TextWindow.Write
-  $L6:
-  fnstack.push('$L7', []);
+  $L16:
+  fnstack.push('$L17', []);
   Goto TextWindow.WriteLine
-  $L7:
+  $L17:
   Goto fnstack.pop()
 
 _Done:
-  fnstack.push('$L8', ['Done!']);
+  fnstack.push('$L18', ['Done!']);
   Goto TextWindow.WriteLine
-  $L8:
+  $L18:
   Goto fnstack.pop()
 ```
 
@@ -195,11 +259,13 @@ function generator(next, val) {
       case '$L1':
         fnstack.push('$L2', ['http://hallm.pw']);
         next = 'network.getwebpagecontents';
+        break;
       case '$L2:
         mystring.op_assign(retval);
         tmpstack.push(3);
         fnstack.push('$L3', [5]);
         next = 'math.randomnumber';
+        break;
       case '$L3:
         // could we detect these can be chained? maybe.
         scratch = tmpstack.pop();
@@ -208,19 +274,80 @@ function generator(next, val) {
         tmpstack.push(scratch);
         fnstack.push('$L4', [0]);
         next = 'math.toradians';
+        break;
       case '$L4':
         scratch = tmpstack.pop();
         scratch = scratch.op_sub(retval);
         myvalue.op_assign(scratch);
-        return null; // halt becomes this
+        fnstack.push('$L5', [myvalue, 2]);
+        next = 'math.remainder';
+        break;
+      case '$L5':
+        if (retval.op_eq(1)) {
+          fnstack.push('$L6', ['Is Odd']);
+          next = 'textwindow.writeline';
+          break;
+        }
+        if (myvalue < 4) {
+          fnstack.push('$L8', ['Is Even and less than 4']);
+          next = 'textwindow.writeline';
+          break;
+        }
+        fnstack.push('$L9', ['Is Even']);
+        next = 'textwindow.writeline';
+        break;
+      case '$L6:
+        next = '$L7';
+        break;
+      case '$L8:
+        next = '$L7';
+        break;
+      case '$L9':
+      case '$L7':
+        i.op_assign(1)
+        fnstack.push('$L10', [10]);
+        next = 'math.randomnumber';
+        break;
+      case '$L10':
+        _for0$end = retval
+      case '$L11':
+        if ( (2 > 0) ? (i <= _for0$end) : (i >= _for0$end) ) {
+          fnstack.push('$L12', [i]);
+          next = 'textwindow.writeline';
+          break;
+        }
+        // fallthrough here
+      case '$L13':
+        fnstack.push('$L14', [2]);
+        next = 'math.randomnumber'
+        break;
+
+      // yeah, gets a bit out of order, in theory itll work
+      // the other way is force for and while to have an end label like If/EndIf does
+      case '$L12':
+        i.op_assign(i.op_add(2));
+        next = '$L11';
+        break;
+
+      case '$L14':
+        if (retval.op_neq(1)) {
+          fnstack.push('$L15', ['Not 1 yet']);
+          next = 'textwindow.writeline';
+          break;
+        }
+        return null; // HALT
+      case '$L15':
+        next = '$L13';
+        break;
+
 
       // the Hello subroutine
       case '_hello':
       case '_label1':
-        fnstack.push(['$L5', ['Hello']]);
+        fnstack.push(['$L15', ['Hello']]);
         next = 'textwindow.write';
         break;
-      case '$L5':
+      case '$L15':
         next = '_label2';
         break;
 
@@ -229,23 +356,23 @@ function generator(next, val) {
       case '_label2':
       case '_label3':
       case '_label4':
-        fnstack.push(['$L6', [' World']]);
+        fnstack.push(['$L16', [' World']]);
         next = 'textwindow.write';
         break;
-      case '$L6':
-        fnstack.push(['$L7', []]);
+      case '$L16':
+        fnstack.push(['$L17', []]);
         next = 'textwindow.writeline';
         break;
-      case '$L7':
+      case '$L17':
         next = fnstack.pop()[0];
         break;
 
       // the Done subroutine
       case '_done':
-        fnstack.push(['$L8', ['Done!']]);
+        fnstack.push(['$L18', ['Done!']]);
         next = 'textwindow.writeline';
         break;
-      case '$L8':
+      case '$L18':
         next = fnstack.pop()[0];
         break;
 
