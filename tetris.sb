@@ -24,6 +24,7 @@ While "True"
   MainLoop()
 
   GraphicsWindow.ShowMessage( "Game Over", "Small Basic Tetris" )
+  Program.Exit()
 EndWhile
 
 Sub MainLoop

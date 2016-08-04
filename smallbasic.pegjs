@@ -1,4 +1,20 @@
-// TODO: prevent keywords in identifiers, labels, [a-z] stuff
+{
+  var langKeywords = [
+    "if",
+    "elseif",
+    "else",
+    "endif",
+    "goto",
+    "sub",
+    "endsub",
+    "for",
+    "to",
+    "step",
+    "endfor",
+    "while",
+    "endwhile"
+  ];
+}
 
 start
   = endline_comment* b:block?
@@ -10,12 +26,11 @@ eol "end of line"
   / "\r"
   / "\u2028"
   / "\u2029"
-//  / !.
 
-_
+_ "whitespace"
   = [\t\v\f \u00A0\uFEFF]*
 
-comment
+comment "comment"
   = _ "'" _ c:(!eol c:. { return c; })*
   { return ['comment', [c.join('')]]; }
 
@@ -50,8 +65,8 @@ literal
   { return ['literal', [l]]; }
 
 identifier "identifier"
-  = start:[a-zA-Z] rest:[a-zA-Z0-9_]*
-  { return ['identifier', [(start + rest.join('')).toLowerCase()]]; }
+  = start:[a-zA-Z] rest:[a-zA-Z0-9_]* &{ return langKeywords.indexOf(text()) === -1; }
+  { return ['identifier', [text().toLowerCase()]]; }
 
 variable "variable"
   = i:identifier
@@ -62,7 +77,7 @@ internalProperty "property"
   { return ['property', [i, p]]; }
 
 array "array"
-  = e:(internalProperty / variable) indecies:("[" i:expression "]")+
+  = e:(internalProperty / variable) indecies:("[" i:expression "]" { return i; })+
   { return ['array', [e, indecies]]; }
 
 lhs "left hand side"
@@ -132,24 +147,7 @@ comparison_expression
     }
 
     return tail.reduce(function(previous, t) {
-      var op = t[1];
-      switch (op) {
-      case '>=':
-      case '<=':
-      case '>':
-      case '<':
-        op = t[1];
-        break;
-
-      case '<>':
-        op = '!==';
-        break;
-
-      case '=':
-        op = '===';
-        break;
-      }
-      return ['binop', [op, previous, t[3]]];
+      return ['binop', [t[1], previous, t[3]]];
     }, l);
   }
 
@@ -161,21 +159,21 @@ andor_expression
     }
 
     return tail.reduce(function(previous, t) {
-      var op = t[1] === 'and' ? '&&' : '||';
+      var op = t[1].toLowerCase() === 'and' ? '&&' : '||';
       return ['binop', [op, previous, t[3]]];
     }, l);
   }
 
-assignment_statement "assignment statement"
+assignment_statement "Assignment"
   = _ l:lhs _ "=" _ e:expression _ endline_comment+
   { return ['assign', [l, e]]; }
 
-call_statement "function call statement"
+call_statement "Function call"
   = _ c:call _ endline_comment+
   { return ['callstatement', [c]]; }
 
-ifElse "if statement"
-  = _ "If"i _ c:andor_expression _ "Then"i endline_comment+ b:block? elif:(_ "ElseIf"i _ c:andor_expression _ "Then" endline_comment+ b:block? { return [c, b]; })* els:(_ "Else"i endline_comment+ b:block? { return [null, b]; })? _ "EndIf"i endline_comment+
+ifElse "If statement"
+  = _ "If"i _ c:andor_expression _ "Then"i endline_comment+ b:block? elif:(_ "ElseIf"i _ c:andor_expression _ "Then"i endline_comment+ b:block? { return [c, b]; })* els:(_ "Else"i endline_comment+ b:block? { return [null, b]; })? _ "EndIf"i endline_comment+
   {
     var conds = [ [c,b] ];
 
@@ -189,23 +187,19 @@ ifElse "if statement"
     return ['cond', conds];
   }
 
-labelidentifier
-  = [a-zA-Z0-9_]+
-  { return text(); }
-
-label_statement
-  = _ l:labelidentifier ":" endline_comment+
+label_statement "Label statement"
+  = _ l:identifier ":" endline_comment+
   { return ['label', [l]]; }
 
-goto_statement
-  = _ "Goto"i _ l:labelidentifier endline_comment+
+goto_statement "Goto statement"
+  = _ "Goto"i _ l:identifier endline_comment+
   { return ['goto', [l]]; }
 
-sub_statement
+sub_statement "Sub statement"
   = _ "Sub"i _ n:identifier endline_comment+ b:block? "EndSub"i endline_comment+
   { return ['fn', [n, [], b]]; }
 
-forloop "for loop"
+forloop "For loop"
   = _ "For"i _ l:lhs _ "=" _ from:expression _ "To"i _ to:expression step:(_ "Step"i _ e:expression { return e; })? endline_comment+ b:block? _ "EndFor"i endline_comment+
   {
     return ['for', [
@@ -215,21 +209,21 @@ forloop "for loop"
     ]];
   }
 
-whileloop "while loop"
+whileloop "While loop"
   = _ "While"i _ c:andor_expression endline_comment+ b:block? _ "EndWhile"i endline_comment+
   {
     return ['while', [c, b]];
   }
 
 statement
-  = assignment_statement
-  / call_statement
-  / ifElse
+  = ifElse
   / forloop
   / whileloop
   / label_statement
   / goto_statement
   / sub_statement
+  / assignment_statement
+  / call_statement
 
 block
   = statement*
