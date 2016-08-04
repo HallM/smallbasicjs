@@ -55,6 +55,8 @@ for example
 ```
 Hello()
 Done()
+mystring = Network.GetWebPageContents("http://hallm.pw")
+myvalue = 3 * Math.RandomNumber(5) + 4 - Math.ToRadians(0)
 
 Sub Hello
   label1:
@@ -84,12 +86,29 @@ $L0:
 fnstack.push('$L1', []);
 Goto _Done
 $L1:
+fnstack.push('$L2', ['http://hallm.pw']);
+Goto Network.GetWebPageContents
+$L2:
+mystring = retval
+
+tmpstack.push(3)
+fnstack.push('$L3', [5]);
+Goto Math.RandomNumber
+$L3:
+scratch = tmpstack.pop() * retval + 4
+tmpstack.push(scratch)
+fnstack.push('$L4', [0]);
+Goto Math.ToRadians
+$L4:
+myvalue = tmpstack.pop() - retval
+
+HALT
 
 _Hello:
   label1:
-  fnstack.push('$L2', ['Hello']); // params?
+  fnstack.push('$L5', ['Hello']); // params?
   Goto TextWindow.Write
-  $L2:
+  $L5:
   Goto label2
   // Goto fnstack.pop() < UNREACHABLE CODE
 
@@ -97,18 +116,18 @@ _World:
   label2:
   label3:
   label4:
-  fnstack.push('$L3', [' World']);
+  fnstack.push('$L6', [' World']);
   Goto TextWindow.Write
-  $L3:
-  fnstack.push('$L4', []);
+  $L6:
+  fnstack.push('$L7', []);
   Goto TextWindow.WriteLine
-  $L4:
+  $L7:
   Goto fnstack.pop()
 
 _Done:
-  fnstack.push('$L5', ['Done!']);
+  fnstack.push('$L8', ['Done!']);
   Goto TextWindow.WriteLine
-  $L5:
+  $L8:
   Goto fnstack.pop()
 ```
 
@@ -116,9 +135,14 @@ _Done:
 then, the implicit "main" could act as a psuedo-dispatcher for all labels
 for the stdlib, could just expose all the labels? i guess?
 
+## WIP: emulated code design ##
+
 ```
+var tmpstack = [];
+var fnstack = [];
+var retval = undefined;
 function generator(next, val) {
-  var retval = undefined;
+  var scratch = undefined;
 
   while (1) {
     switch (next) {
@@ -135,6 +159,9 @@ function generator(next, val) {
       // example of returning a value that does not require blocking-emulation
       case 'math.randomnumber':
         retval = math.randomnumber.call(env, fnstack[fnstack.length - 1][1]);
+        next = fnstack.pop()[0];
+      case 'math.toradians':
+        retval = math.toradians.call(env, fnstack[fnstack.length - 1][1]);
         next = fnstack.pop()[0];
 
       // example of returning a value that does requires blocking-emulation
@@ -166,15 +193,34 @@ function generator(next, val) {
         next = '_done';
         break;
       case '$L1':
-        return null; // program is complete
+        fnstack.push('$L2', ['http://hallm.pw']);
+        next = 'network.getwebpagecontents';
+      case '$L2:
+        mystring.op_assign(retval);
+        tmpstack.push(3);
+        fnstack.push('$L3', [5]);
+        next = 'math.randomnumber';
+      case '$L3:
+        // could we detect these can be chained? maybe.
+        scratch = tmpstack.pop();
+        scratch = scratch.op_mul(retval);
+        scratch = scratch.op_add(4);
+        tmpstack.push(scratch);
+        fnstack.push('$L4', [0]);
+        next = 'math.toradians';
+      case '$L4':
+        scratch = tmpstack.pop();
+        scratch = scratch.op_sub(retval);
+        myvalue.op_assign(scratch);
+        return null; // halt becomes this
 
       // the Hello subroutine
       case '_hello':
       case '_label1':
-        fnstack.push(['$L2', ['Hello']]);
+        fnstack.push(['$L5', ['Hello']]);
         next = 'textwindow.write';
         break;
-      case '$L2':
+      case '$L5':
         next = '_label2';
         break;
 
@@ -183,23 +229,23 @@ function generator(next, val) {
       case '_label2':
       case '_label3':
       case '_label4':
-        fnstack.push(['$L3', [' World']]);
+        fnstack.push(['$L6', [' World']]);
         next = 'textwindow.write';
         break;
-      case '$L3':
-        fnstack.push(['$L4', []]);
+      case '$L6':
+        fnstack.push(['$L7', []]);
         next = 'textwindow.writeline';
         break;
-      case '$L4':
+      case '$L7':
         next = fnstack.pop()[0];
         break;
 
       // the Done subroutine
       case '_done':
-        fnstack.push(['$L5', ['Done!']]);
+        fnstack.push(['$L8', ['Done!']]);
         next = 'textwindow.writeline';
         break;
-      case '$L5':
+      case '$L8':
         next = fnstack.pop()[0];
         break;
 
