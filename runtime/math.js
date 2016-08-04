@@ -84,6 +84,6 @@ const math = {
   }),
 
   getrandomnumber: wrapFunction(function*(n) {
-    return new DataUnit((Math.round(Math.random() * n.as_num()) + 1), DATATYPES.DT_NUMBER);
+    return new DataUnit((Math.floor(Math.random() * n.as_num()) + 1), DATATYPES.DT_NUMBER);
   })
 };
