@@ -129,50 +129,61 @@ if (retval == 1) {
   Goto TextWindow.WriteLine
   $L6:
   Goto $L7 // skip over next sections
+} else {
+  Goto $L8
 }
+$L8:
 if (myvalue < 4) {
-  fnstack.push('$L8', ['Is Even and less than 4']);
+  fnstack.push('$L9', ['Is Even and less than 4']);
   Goto TextWindow.WriteLine
-  $L8:
+  $L9:
   Goto $L7
+} else {
+  Goto $L10
 }
-fnstack.push('$L9', ['Is Even']);
+$L10
+fnstack.push('$L11', ['Is Even']);
 Goto TextWindow.WriteLine
-$L9:
+$L11:
 $L7:
 
 i = 1
-fnstack.push('$L10', [10]);
+fnstack.push('$L12', [10]);
 Goto Math.RandomNumber
-$L10:
+$L12:
 _for0$end = retval
-$L11:
-if ( (2 > 0) ? (i <= _for0$end) : (i >= _for0$end) ) {
-  fnstack.push('$L12', [i]);
-  Goto TextWindow.WriteLine
-  $L12:
-  i = i + 2
-  Goto $L11
-}
-
 $L13:
-fnstack.push('$L14', [2]);
-Goto Math.RandomNumber
-$L14:
-if (retval <> 1) {
-  fnstack.push('$L15', ['Not 1 yet']);
+if ( (2 > 0) ? (i <= _for0$end) : (i >= _for0$end) ) {
+  fnstack.push('$L14', [i]);
   Goto TextWindow.WriteLine
-  $L15:
+  $L14:
+  i = i + 2
   Goto $L13
+} else {
+  Goto $L15
 }
 
+$L15:
+$L16:
+fnstack.push('$L17', [2]);
+Goto Math.RandomNumber
+$L17:
+if (retval <> 1) {
+  fnstack.push('$L18', ['Not 1 yet']);
+  Goto TextWindow.WriteLine
+  $L18:
+  Goto $L16
+} else {
+  Goto $L19
+}
+$L19:
 HALT
 
 _Hello:
   label1:
-  fnstack.push('$L15', ['Hello']); // params?
+  fnstack.push('$L20', ['Hello']); // params?
   Goto TextWindow.Write
-  $L15:
+  $L20:
   Goto label2
   // Goto fnstack.pop() < UNREACHABLE CODE
 
@@ -180,18 +191,18 @@ _World:
   label2:
   label3:
   label4:
-  fnstack.push('$L16', [' World']);
+  fnstack.push('$L21', [' World']);
   Goto TextWindow.Write
-  $L16:
-  fnstack.push('$L17', []);
+  $L21:
+  fnstack.push('$L22', []);
   Goto TextWindow.WriteLine
-  $L17:
+  $L22:
   Goto fnstack.pop()
 
 _Done:
-  fnstack.push('$L18', ['Done!']);
+  fnstack.push('$L23', ['Done!']);
   Goto TextWindow.WriteLine
-  $L18:
+  $L23:
   Goto fnstack.pop()
 ```
 
@@ -279,6 +290,8 @@ function generator(next, val) {
         scratch = tmpstack.pop();
         scratch = scratch.op_sub(retval);
         myvalue.op_assign(scratch);
+
+        // now for the if design
         fnstack.push('$L5', [myvalue, 2]);
         next = 'math.remainder';
         break;
@@ -286,68 +299,78 @@ function generator(next, val) {
         if (retval.op_eq(1)) {
           fnstack.push('$L6', ['Is Odd']);
           next = 'textwindow.writeline';
-          break;
+        } else {
+          next = '$L8'
         }
-        if (myvalue < 4) {
-          fnstack.push('$L8', ['Is Even and less than 4']);
-          next = 'textwindow.writeline';
-          break;
-        }
-        fnstack.push('$L9', ['Is Even']);
-        next = 'textwindow.writeline';
         break;
       case '$L6:
         next = '$L7';
         break;
       case '$L8:
+        if (myvalue < 4) {
+          fnstack.push('$L9', ['Is Even and less than 4']);
+          next = 'textwindow.writeline';
+        } else {
+          next = '$L10'
+        }
+        break;
+      case '$L9:
         next = '$L7';
         break;
-      case '$L9':
+      case '$L10:
+        fnstack.push('$L11', ['Is Even']);
+        next = 'textwindow.writeline';
+        break;
+      case '$L11':
       case '$L7':
+        // now for the For loop
         i.op_assign(1)
-        fnstack.push('$L10', [10]);
+        fnstack.push('$L12', [10]);
         next = 'math.randomnumber';
         break;
-      case '$L10':
-        _for0$end = retval
-      case '$L11':
-        if ( (2 > 0) ? (i <= _for0$end) : (i >= _for0$end) ) {
-          fnstack.push('$L12', [i]);
-          next = 'textwindow.writeline';
-          break;
-        }
-        // fallthrough here
-      case '$L13':
-        fnstack.push('$L14', [2]);
-        next = 'math.randomnumber'
-        break;
-
-      // yeah, gets a bit out of order, in theory itll work
-      // the other way is force for and while to have an end label like If/EndIf does
       case '$L12':
-        i.op_assign(i.op_add(2));
-        next = '$L11';
-        break;
-
-      case '$L14':
-        if (retval.op_neq(1)) {
-          fnstack.push('$L15', ['Not 1 yet']);
+        _for0$end = retval
+      case '$L13':
+        if ( (2 > 0) ? (i <= _for0$end) : (i >= _for0$end) ) {
+          fnstack.push('$L14', [i]);
           next = 'textwindow.writeline';
-          break;
+        } else {
+          next = '$L15';
         }
-        return null; // HALT
-      case '$L15':
+        break;
+        // fallthrough here
+      case '$L14':
+        i.op_assign(i.op_add(2));
         next = '$L13';
         break;
+      case '$L15':
+      case '$L16':
+        // now the While loop
+        fnstack.push('$L17', [2]);
+        next = 'math.randomnumber'
+        break;
+      case '$L17':
+        if (retval.op_neq(1)) {
+          fnstack.push('$L18', ['Not 1 yet']);
+          next = 'textwindow.writeline';
+        } else {
+          next = '$L19'
+        }
+        break;
+      case '$L18':
+        next = '$L16';
+        break;
+      case '$L19':
+        return null; // HALT
 
 
       // the Hello subroutine
       case '_hello':
       case '_label1':
-        fnstack.push(['$L15', ['Hello']]);
+        fnstack.push(['$L20', ['Hello']]);
         next = 'textwindow.write';
         break;
-      case '$L15':
+      case '$L20':
         next = '_label2';
         break;
 
@@ -356,23 +379,23 @@ function generator(next, val) {
       case '_label2':
       case '_label3':
       case '_label4':
-        fnstack.push(['$L16', [' World']]);
+        fnstack.push(['$L21', [' World']]);
         next = 'textwindow.write';
         break;
-      case '$L16':
-        fnstack.push(['$L17', []]);
+      case '$L21':
+        fnstack.push(['$L22', []]);
         next = 'textwindow.writeline';
         break;
-      case '$L17':
+      case '$L22':
         next = fnstack.pop()[0];
         break;
 
       // the Done subroutine
       case '_done':
-        fnstack.push(['$L18', ['Done!']]);
+        fnstack.push(['$L23', ['Done!']]);
         next = 'textwindow.writeline';
         break;
-      case '$L18':
+      case '$L23':
         next = fnstack.pop()[0];
         break;
 
