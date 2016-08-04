@@ -24,6 +24,7 @@ let phaserGame = null;
 let phaserGraphics = null;
 
 // TODO: need like an init callback
+let keydown = new DataUnit();
 let backgroundcolor = new DataUnit(0xffffff, DATATYPES.DT_NUMBER);
 let height = new DataUnit(800, DATATYPES.DT_NUMBER);
 let width = new DataUnit(600, DATATYPES.DT_NUMBER);
@@ -33,6 +34,9 @@ let brushcolor = new DataUnit(0x000000, DATATYPES.DT_NUMBER);
 let fontitalic = new DataUnit('false', DATATYPES.DT_STRING);
 let fontname = new DataUnit("Comic Sans MS", DATATYPES.DT_STRING);
 let fontsize = new DataUnit(16, DATATYPES.DT_NUMBER);
+
+// doing this weird caching because of how phaser does text
+let textSpawns = {};
 
 backgroundcolor.on_assign(colorToRgb);
 pencolor.on_assign(colorToRgb);
@@ -55,7 +59,7 @@ function colorToRgb(color) {
 }
 
 const graphicswindow = {
-  keydown: new DataUnit(),
+  keydown: keydown,
 
   backgroundcolor: backgroundcolor,
 
@@ -104,7 +108,8 @@ const graphicswindow = {
     }
 
     // TODO: expand this
-    let keyChar = phaserGame.input.keyboard.lastKey;
+    let keyChar = phaserGame.input.keyboard.lastKey.event.keyCode;
+
     switch (keyChar) {
       case Phaser.KeyCode.SPACEBAR:
         keyChar = 'Space';
@@ -183,6 +188,15 @@ const graphicswindow = {
       return;
     }
 
+    const xPos = x.as_num();
+    const yPos = y.as_num();
+    const spawnLoc = xPos + ':' + yPos;
+
+    if (textSpawns[spawnLoc]) {
+      textSpawns[spawnLoc].text = t.as_string();
+      return;
+    }
+
     let txtOptions = {
       font: fontname.as_string(),
       fontSize: fontsize.as_num() + 'px',
@@ -193,12 +207,15 @@ const graphicswindow = {
       txtOptions.fontStyle = 'italic';
     }
 
-    phaserGame.add.text(x.as_num(), y.as_num(), t.as_string(), txtOptions);
+    const phaserText = phaserGame.add.text(xPos, yPos, t.as_string(), txtOptions);
+    textSpawns[spawnLoc] = phaserText;
   })
 };
 
 function phaserCreateFactory(resolver) {
   return function phaserCreate() {
+    phaserGame.input.keyboard.onDownCallback = phaserKeydown;
+
     phaserGraphics = phaserGame.add.graphics(0, 0);
     phaserGraphics.boundsPadding = 0;
 
@@ -209,5 +226,11 @@ function phaserCreateFactory(resolver) {
     phaserGraphics.endFill();
 
     resolver();
+  }
+}
+
+function phaserKeydown() {
+  if (keydown.type === DATATYPES.DT_FN) {
+    (bluebird.coroutine(keydown.value))();
   }
 }

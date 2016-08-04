@@ -57,7 +57,7 @@ const array = {
 
   setvalue: wrapFunction(function*(a, i, v) {
     var arr = __resolvearray(this, a.as_string());
-    arr[i.as_string()] = v;
+    arr[i.as_string()] = v.make_clone();
   }),
 
   removevalue: wrapFunction(function*(arrayName, index) {

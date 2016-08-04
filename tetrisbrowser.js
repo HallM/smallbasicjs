@@ -97,6 +97,7 @@ function runnable() {
       (yield* env._setupcanvas.op_call(env, []));
       (yield* env._mainloop.op_call(env, []));
       (yield* graphicswindow.showmessage.op_call(env, [new DataUnit("Game Over", DATATYPES.DT_STRING), new DataUnit("Small Basic Tetris", DATATYPES.DT_STRING)]));
+      (yield* program.exit.op_call(env, []));
     }
 
     function* $_mainloop() {
@@ -236,7 +237,7 @@ function runnable() {
       env._l.op_assign((yield* array.getvalue.op_call(env, [env._basetemplate, new DataUnit("dim", DATATYPES.DT_STRING)])));
       if ((env._rotation.op_eq(new DataUnit("CW", DATATYPES.DT_STRING))).as_bool()) {
         for (env._i.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
+(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
  env._i.op_assign(env._i.op_add(new DataUnit(1, DATATYPES.DT_NUMBER)))) {
           env._v.op_assign((yield* array.getvalue.op_call(env, [env._basetemplate, env._i])));
           env._x.op_assign((yield* math.remainder.op_call(env, [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)])));
@@ -246,7 +247,7 @@ function runnable() {
 
       } else if ((env._rotation.op_eq(new DataUnit("CCW", DATATYPES.DT_STRING))).as_bool()){
         for (env._i.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
+(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
  env._i.op_assign(env._i.op_add(new DataUnit(1, DATATYPES.DT_NUMBER)))) {
           env._v.op_assign((yield* array.getvalue.op_call(env, [env._basetemplate, env._i])));
           env._x.op_assign(((env._l.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))).op_sub((yield* math.remainder.op_call(env, [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)])))));
@@ -256,7 +257,7 @@ function runnable() {
 
       } else if ((env._rotation.op_eq(new DataUnit("COPY", DATATYPES.DT_STRING))).as_bool()){
         for (env._i.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
+(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
  env._i.op_assign(env._i.op_add(new DataUnit(1, DATATYPES.DT_NUMBER)))) {
           (yield* array.setvalue.op_call(env, [env._template, env._i, (yield* array.getvalue.op_call(env, [env._basetemplate, env._i]))]));
         }
@@ -281,7 +282,7 @@ function runnable() {
       graphicswindow.pencolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
       graphicswindow.brushcolor.op_assign((yield* array.getvalue.op_call(env, [env._template, new DataUnit("color", DATATYPES.DT_STRING)])));
       for (env._i.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
+(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
  env._i.op_assign(env._i.op_add(new DataUnit(1, DATATYPES.DT_NUMBER)))) {
         env._s.op_assign((yield* shapes.addrectangle.op_call(env, [env._bwidth, env._bwidth])));
         (yield* shapes.move.op_call(env, [env._s, (env._bwidth.op_neg()), (env._bwidth.op_neg())]));
@@ -293,7 +294,7 @@ function runnable() {
 
     function* $_movepiece() {
       for (env._i.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
+(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
  env._i.op_assign(env._i.op_add(new DataUnit(1, DATATYPES.DT_NUMBER)))) {
         env._v.op_assign((yield* array.getvalue.op_call(env, [(yield* array.getvalue.op_call(env, [env._h, (new DataUnit(1, DATATYPES.DT_NUMBER).op_neg())])), env._i])));
         env._x.op_assign((yield* math.floor.op_call(env, [(env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER)))])));
@@ -349,7 +350,7 @@ function runnable() {
 
       if ((env._done.op_eq(new DataUnit(1, DATATYPES.DT_NUMBER))).as_bool()) {
         for (env._i.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
+(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._i.op_lte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._i.op_gte((env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
  env._i.op_assign(env._i.op_add(new DataUnit(1, DATATYPES.DT_NUMBER)))) {
           env._v.op_assign((yield* array.getvalue.op_call(env, [(yield* array.getvalue.op_call(env, [env._h, (new DataUnit(1, DATATYPES.DT_NUMBER).op_neg())])), env._i])));
           (yield* array.setvalue.op_call(env, [new DataUnit("c", DATATYPES.DT_STRING), (((yield* math.floor.op_call(env, [(env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER)))])).op_add(env._xpos)).op_add(((((yield* math.remainder.op_call(env, [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)])).op_add(env._ypos)).op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))).op_mul(env._cwidth)))), (yield* array.getvalue.op_call(env, [env._h, env._i]))]));
@@ -366,7 +367,7 @@ function runnable() {
     function* $_deletelines() {
       env._linescleared.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
       for (env._y.op_assign((env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))));
-((env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))).op_lt(new DataUnit(0, DATATYPES.DT_NUMBER)).as_bool() ? (env._y.op_lt(new DataUnit(0, DATATYPES.DT_NUMBER))) : (env._y.op_gt(new DataUnit(0, DATATYPES.DT_NUMBER)))).as_bool();
+((env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))).op_lt(new DataUnit(0, DATATYPES.DT_NUMBER)).as_bool() ? (env._y.op_lte(new DataUnit(0, DATATYPES.DT_NUMBER))) : (env._y.op_gte(new DataUnit(0, DATATYPES.DT_NUMBER)))).as_bool();
  env._y.op_assign(env._y.op_add((new DataUnit(1, DATATYPES.DT_NUMBER).op_neg())))) {
         env._x.op_assign(env._cwidth);
         while ((env._x.op_eq(env._cwidth)).as_bool()) {
@@ -382,17 +383,17 @@ function runnable() {
 
           if ((env._x.op_eq(env._cwidth)).as_bool()) {
             for (env._x1.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._x1.op_lt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._x1.op_gt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
+(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._x1.op_lte((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._x1.op_gte((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
  env._x1.op_assign(env._x1.op_add(new DataUnit(1, DATATYPES.DT_NUMBER)))) {
               (yield* shapes.remove.op_call(env, [(yield* array.getvalue.op_call(env, [new DataUnit("c", DATATYPES.DT_STRING), (env._x1.op_add((env._y.op_mul(env._cwidth))))]))]));
             }
 
             env._linescleared.op_assign((env._linescleared.op_add(new DataUnit(1, DATATYPES.DT_NUMBER))));
             for (env._y1.op_assign(env._y);
-(env._y.op_lt(new DataUnit(1, DATATYPES.DT_NUMBER)).as_bool() ? (env._y1.op_lt(new DataUnit(1, DATATYPES.DT_NUMBER))) : (env._y1.op_gt(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool();
+(env._y.op_lt(new DataUnit(1, DATATYPES.DT_NUMBER)).as_bool() ? (env._y1.op_lte(new DataUnit(1, DATATYPES.DT_NUMBER))) : (env._y1.op_gte(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool();
  env._y1.op_assign(env._y1.op_add((new DataUnit(1, DATATYPES.DT_NUMBER).op_neg())))) {
               for (env._x1.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._x1.op_lt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._x1.op_gt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
+(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._x1.op_lte((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._x1.op_gte((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
  env._x1.op_assign(env._x1.op_add(new DataUnit(1, DATATYPES.DT_NUMBER)))) {
                 env._piece.op_assign((yield* array.getvalue.op_call(env, [new DataUnit("c", DATATYPES.DT_STRING), (env._x1.op_add(((env._y1.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))).op_mul(env._cwidth))))])));
                 (yield* array.setvalue.op_call(env, [new DataUnit("c", DATATYPES.DT_STRING), (env._x1.op_add((env._y1.op_mul(env._cwidth)))), env._piece]));
@@ -422,10 +423,10 @@ function runnable() {
       graphicswindow.penwidth.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER));
       graphicswindow.pencolor.op_assign(new DataUnit("Pink", DATATYPES.DT_STRING));
       for (env._x.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._x.op_lt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._x.op_gt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
+(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._x.op_lte((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._x.op_gte((env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
  env._x.op_assign(env._x.op_add(new DataUnit(1, DATATYPES.DT_NUMBER)))) {
         for (env._y.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._y.op_lt((env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._y.op_gt((env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
+(new DataUnit(0, DATATYPES.DT_NUMBER).op_lt((env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))).as_bool() ? (env._y.op_lte((env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))))) : (env._y.op_gte((env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)))))).as_bool();
  env._y.op_assign(env._y.op_add(new DataUnit(1, DATATYPES.DT_NUMBER)))) {
           (yield* array.setvalue.op_call(env, [new DataUnit("c", DATATYPES.DT_STRING), (env._x.op_add((env._y.op_mul(env._cwidth)))), new DataUnit(".", DATATYPES.DT_STRING)]));
           (yield* graphicswindow.drawrectangle.op_call(env, [(env._xoffset.op_add((env._x.op_mul(env._bwidth)))), (env._yoffset.op_add((env._y.op_mul(env._bwidth)))), env._bwidth, env._bwidth]));

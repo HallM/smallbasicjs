@@ -355,7 +355,7 @@ runnable();
     const step = this.process_expression(forinfo[2]);
 
     const forStart  = iter + '.op_assign(' + start + ');\n';
-    const forCond = '(' + start + '.op_lt(' + end + ').as_bool() ? (' + iter + '.op_lt(' + end + ')) : (' + iter + '.op_gt(' + end + '))).as_bool();\n ';
+    const forCond = '(' + start + '.op_lt(' + end + ').as_bool() ? (' + iter + '.op_lte(' + end + ')) : (' + iter + '.op_gte(' + end + '))).as_bool();\n ';
     const forIter = iter + '.op_assign(' + iter + '.op_add(' + step + '))';
 
     return 'for (' +

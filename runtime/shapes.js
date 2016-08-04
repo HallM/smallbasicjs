@@ -5,16 +5,8 @@
 // const wrapFunction = require('./utils').wrapFunction;
 
 // module.exports =
-function __makesureenv_enabled(env) {
-  if (!env.$shapes) {
-    env.$shapes = [];
-  }
-}
-
 const shapes = {
   addrectangle: wrapFunction(function*(w, h) {
-    __makesureenv_enabled(this);
-
     const width = w.as_num();
     const height = h.as_num();
 
@@ -22,9 +14,8 @@ const shapes = {
     // TODO get the fill from graphicswindow
     bmd.rect(0, 0, width, height, '#' + brushcolor.value.toString(16));
 
-    const sprite = phaserGame.add.sprite(0, 0, bmd);
+    const sprite = phaserGame.add.sprite(Math.floor(Math.random() * 300), Math.floor(Math.random() * 300), bmd);
 
-    this.$shapes.push(sprite);
     return new DataUnit(sprite, DATATYPES.DT_SHAPE);
   }),
 
@@ -36,14 +27,7 @@ const shapes = {
   }),
 
   remove: wrapFunction(function*(s) {
-    __makesureenv_enabled(this);
-
     if (s.type === DATATYPES.DT_SHAPE) {
-      const indx = this.$shapes.indexOf(s.value);
-      if (indx !== -1) {
-        indx.splice(indx, 1);
-      }
-
       s.value.destroy();
     }
   }),
