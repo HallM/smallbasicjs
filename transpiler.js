@@ -10,6 +10,7 @@ class CodeGenerator {
   constructor() {
     this.vars = [];
     this.callables = [];
+    this.stdlib = [];
     this.blockLevel = 1;
     this.indentString = '';
     this.L = 0;
@@ -35,6 +36,11 @@ class CodeGenerator {
       this.callables.push(varname);
     }
   }
+  add_stdlib(prop) {
+    if (this.stdlib.indexOf(prop) === -1) {
+      this.stdlib.push(prop);
+    }
+  }
 
   process_file(str) {
     // parser gets confused if file does not end with a blank new line
@@ -46,58 +52,87 @@ class CodeGenerator {
     const varOutput = this.vars
       .map((v) => {
         if (this.callables.indexOf(v) !== -1) {
-          return varIndent + v + ': new DataUnit($' + v + ', DATATYPES.DT_FN)';
+          return varIndent + v + ': new DataUnit("' + v + '", DATATYPES.DT_FN)';
         } else {
           return varIndent + v + ': new DataUnit()';
         }
       }).join(',\n');
 
-    return `'use strict';
-var DataUnit = require('./runtime/data-unit').DataUnit;
-var DATATYPES = require('./runtime/data-unit').DATATYPES;
+    const stdlibOutput = this.stdlib
+      .filter(v => this.vars.indexOf(v) === -1)
+      .map((v) => {
+        return 'case "' + v + '":\n' +
+          'retval = impl' + v + '.apply(env, fn[fn.length - 1][1]);\n' +
+          'if (retval && retval.then) {\n' +
+            'retval.next = "' + v + '$0";\n' +
+            'return retval;\n' +
+          '}\n' +
+        'case "' + v + '$0":\n' +
+          'retval = val || retval;\n' +
+          'val = undefined;\n' +
+          'next = fn.pop()[0];\n' +
+          'break;\n';
+      }).join('\n');
 
-function getrandomnumber(v) {
-  return new DataUnit(Math.floor(Math.random() * v.as_num()) + 1, DATATYPES.DT_NUMBER);
-}
-getrandomnumber.fnname = 'math.getrandomnumber';
+    return `//'use strict';
+//var DataUnit = require('./runtime/data-unit').DataUnit;
+//var DATATYPES = require('./runtime/data-unit').DATATYPES;
 
-var math = {
-  getrandomnumber: new DataUnit(getrandomnumber, DATATYPES.DT_FN)
-};
-
-(function() {
+var interrupt = (function() {
   const env = {
 ${varOutput}
   };
 
-  var tmp = [];
-  var fn = [];
+  function thread(fn) {
+    var tmp = [];
+    var fn = fn || [];
 
-  function execute(next, val) {
-    var params = null;
-    var scratch = new DataUnit();
-    var retval = new DataUnit();
+    return function execute(next, val) {
+      var params = null;
+      var scratch = new DataUnit();
+      var retval = new DataUnit();
 
-    while(1) {
-      switch(next) {
-        case 'math.getrandomnumber':
-          retval = math.getrandomnumber.op_call(env, [fn[fn.length - 1][1][0]]);
-          next = fn.pop()[0];
-          break;
+      while(1) {
+        switch(next) {
+  ${stdlibOutput}
 
-        case '':
-${code}
-          console.log(env._test);
+          case '':
+  ${code}
+          default:
+            return null;
+        }
+        if (!next) {
           return null;
+        }
       }
     }
   }
 
-  function runner() {
-    execute('');
+  var curlabel = '';
+  var mainThread = thread();
+  function runner(val) {
+    var ret = mainThread(curlabel, val);
+    if (ret) {
+      curlabel = ret.next;
+      ret.then(runner);
+    }
   }
-
   runner();
+
+  return function interrupt(fnname) {
+    var intlabel = fnname;
+    var intThread = thread([null, []]);
+
+    function intrun(val) {
+      var ret = intThread(intlabel, val);
+      if (ret) {
+        intlabel = ret.next;
+        ret.then(intrun);
+      }
+    }
+
+    intrun();
+  }
 })();
 `;
   }
@@ -135,7 +170,7 @@ ${code}
     return ret;
   }
 
-  process_lhs(node) {
+  process_lhs(node, isCalled) {
     const type = node[0];
     const astnode = node[1];
 
@@ -145,7 +180,7 @@ ${code}
     if (type === 'array') {
       return prefix + this.process_array(astnode) + postfix;
     } else if (type === 'property') {
-      return prefix + this.process_property(astnode) + postfix;
+      return prefix + this.process_property(astnode, isCalled) + postfix;
     } else if (type === 'variable') {
       return prefix + this.process_variable(astnode) + postfix;
     }
@@ -167,7 +202,7 @@ ${code}
     } else if (type === 'array') {
       return prefix + this.process_array(astnode) + postfix;
     } else if (type === 'property') {
-      return this.process_property(astnode) + postfix;
+      return prefix + this.process_property(astnode) + postfix;
     } else if (type === 'variable') {
       return prefix + this.process_variable(astnode) + postfix;
     } else if (type === 'call') {
@@ -221,11 +256,15 @@ ${code}
     throw new Error('invalid type for variable ' + type);
   }
 
-  process_property(node) {
+  process_property(node, isCalled) {
     const obj = node[0][1];
     const prop = node[1][1];
+    const ret = obj + '.' + prop;
 
-    return obj + '.' + prop;
+    if (isCalled) {
+      this.add_stdlib(ret);
+    }
+    return ret;
   }
 
   process_array(node) {
@@ -247,11 +286,8 @@ ${code}
   }
 
   process_binop(node) {
-    // console.log('do lhs')
     const lhs = this.process_expression(node[1]);
-    // console.log('do rhs', lhs)
     const rhs = this.process_expression(node[2], true);
-    // console.log('done', rhs)
 
     let op = null;
     switch (node[0]) {
@@ -325,7 +361,7 @@ ${code}
 
   process_call(node) {
     // this should not mess up scratch, right?
-    const identifier = this.process_lhs(node[0]);
+    const identifier = this.process_lhs(node[0], true);
 
     const params = node[1] ? node[1].map((pnode) => {
       const v = this.process_expression(pnode);
@@ -334,16 +370,12 @@ ${code}
 
     const l_label = '$L' + this.L++;
 
-    //'tmp.push(scratch);\n' +
-    return 'params = [];\n' + params.join('') +
+    return 'tmp.push(retval);\ntmp.push(params);\nparams = [];\n' + params.join('') +
             'fn.push(["' + l_label + '", params.slice()]);\n' +
             identifier +
             'next = scratch.as_string();\nbreak;\n' +
             'case "' + l_label + '":\n' +
-            'scratch = retval';
-
-    // throw new Error('not re-implemented');
-    // return '(yield* ' + identifier + '.op_call(env, [' + params.join(', ') + ']))';
+            'scratch = retval;\nparams = tmp.pop();\nretval = tmp.pop();';
   }
 
   // Start the statements:
@@ -363,7 +395,6 @@ ${code}
   process_callstatement(node) {
     const call = this.process_call(node[0][1]);
 
-    throw new Error('not re-implemented');
     return call + ';\n';
   }
 
@@ -371,34 +402,76 @@ ${code}
     const start = node[0];
     const rest = node.slice(1);
 
-    throw new Error('not re-implemented');
-    return 'if (' + this.process_expression(start[0]) + '.as_bool()) {\n' +
-            this.process_block(start[1]) + this.get_indent() + '}' +
-            rest.map((c) => {
-              return ' else ' +
-                      (c[0] ? ('if (' + this.process_expression(c[0]) + '.as_bool())') : '') +
-                      '{\n' + this.process_block(c[1]) + this.get_indent() + '}'
-            }).join('') +
-            '\n\n';
+    let condition = this.process_expression(start[0]);
+
+    let true_label = '$L' + this.L++;
+    const final_label = '$L' + this.L++;
+    let else_label = rest.length ? ('$L' + this.L++) : final_label;
+
+    let output = condition + 'if (scratch.as_bool()) {\n' +
+                  'next = "' + true_label + '";\n' +
+                '} else {\n' +
+                  'next = "' + else_label + '";\n' +
+                '}\nbreak;\n' +
+              'case "' + true_label + '":\n' +
+                this.process_block(start[1]) +
+                'next = "' + final_label + '";\nbreak;\n';
+
+    rest.forEach((c, i) => {
+      const thisLabel = else_label;
+
+      condition = c[0] ? this.process_expression(c[0]) : null;
+
+      output += 'case "' + thisLabel + '":\n';
+
+      if (condition) {
+        true_label = '$L' + this.L++;
+        else_label = (i+1 < rest.length) ? ('$L' + this.L++) : final_label;
+
+        output += condition + 'if (scratch.as_bool()) {\n' +
+                  'next = "' + true_label + '";\n' +
+                '} else {\n' +
+                  'next = "' + else_label + '";\n' +
+                '}\nbreak;\n' +
+              'case "' + true_label + '":\n' +
+                this.process_block(c[1]) +
+                'next = "' + final_label + '";\nbreak;\n';
+      } else {
+        output += this.process_block(c[1]) + 'next = "' + final_label + '";\nbreak;\n';
+      }
+    });
+
+    output += 'case "' + final_label + '":\n';
+    return output;
   }
 
   process_label(node) {
-    throw new Error('unsupported right now');
+    const labelName = this.process_identifier(node[0][1][0], true);
+    return 'case "' + labelName + '":\n';
   }
 
   process_goto(node) {
-    throw new Error('unsupported right now');
+    const labelName = this.process_identifier(node[0][1][0], true);
+    return 'next = "' + labelName + '";\nbreak;\n';
   }
 
   process_fn(node) {
     const name = this.process_identifier(node[0][1][0], true);
     this.add_callable(name);
 
-    throw new Error('not re-implemented');
-    return 'function* $' + name + '() {\n' +
+    // TODO: fns need to be changed, so that the we have the label
+    // internal subroutines are just a label to jump to
+    // the external ones have a label as well (their own name)
+    // so the internal fn could just be a string (the name)
+    // then add some code that "statically links" in the stdlib
+
+    const skiparound_label = '$L' + this.L++;
+
+    return 'next = "' + skiparound_label + '";\nbreak;\n' +
+            'case "' + name + '":\n' +
             this.process_block(node[2]) +
-            this.get_indent() + this.indentString + 'return new DataUnit();\n' +
-            this.get_indent() + '}\n\n';
+            'retval = new DataUnit();\nnext = fn.pop()[0];\nbreak;\n' +
+            'case "' + skiparound_label + '":\n';
   }
 
   process_for(node) {
@@ -406,36 +479,56 @@ ${code}
 
     const forinfo = node[1];
 
+    const start_label = '$L' + this.L++;
+    const block_label = '$L' + this.L++;
+    const final_label = '$L' + this.L++;
+
     const start = this.process_expression(forinfo[0]);
     const end = this.process_expression(forinfo[1]);
     const step = this.process_expression(forinfo[2]);
 
-    const forStart  = iter + '.op_assign(' + start + ');\n';
-    const forCond = '(' + start + '.op_lt(' + end + ').as_bool() ? (' + iter + '.op_lte(' + end + ')) : (' + iter + '.op_gte(' + end + '))).as_bool();\n ';
-    const forIter = iter + '.op_assign(' + iter + '.op_add(' + step + '))';
+    // TODO: retval could get based in here
 
-    throw new Error('not re-implemented');
-    return 'for (' +
-            forStart +
+    const forStart  = start + 'retval = scratch;\n' + iter + 'scratch.op_assign(retval);\n';
+    const forCond = iter + 'tmp.push(scratch);\n' + end + 'retval = scratch;\n' + start +
+                    'if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {\n' +
+                      'next = "' + block_label + '";\n' +
+                    '} else {\n' +
+                      'next = "' + final_label + '";\n' +
+                    '}\nbreak;\n';
+    const forIter = step + 'retval = scratch;\n' + iter + 'scratch.op_assign(scratch.op_add(retval));\n';
+
+    return forStart +
+            'case "' + start_label + '":\n' +
             forCond +
+            'case "' + block_label + '":\n' +
+            this.process_block(node[2]) +
             forIter +
-            ') {\n' + this.process_block(node[2]) + this.get_indent() + '}\n\n';
+            'next = "' + start_label + '";\nbreak;\n' +
+            'case "' + final_label + '":\n';
   }
 
   process_while(node) {
+    const start_label = '$L' + this.L++;
+    const block_label = '$L' + this.L++;
+    const final_label = '$L' + this.L++;
+
     const cond = this.process_expression(node[0]);
 
-    throw new Error('not re-implemented');
-    return 'while (' + cond + '.as_bool()) {\n' + this.process_block(node[1]) + this.get_indent() + '}\n\n';
+    return 'case "' + start_label + '":\n' +
+            cond + 'if (scratch.as_bool()) {\nnext = "' + block_label + '";\n} else {\nnext = "' + final_label + '";\n}\nbreak;\n' +
+            'case "' + block_label + '":\n' +
+            this.process_block(node[1]) +
+            'next = "' + start_label + '";\nbreak;\n' +
+            'case "' + final_label + '":\n';
   }
 
 }
 
-// const file = fs.readFileSync(process.argv[2], 'utf8');
-const file = `
-ar[0] = 5
-test = ar[0] + -3 * Math.GetRandomNumber(4)
-`;
+const file = fs.readFileSync(process.argv[2], 'utf8');
+// const file = `
+// `;
+
 const gen = new CodeGenerator();
 
 try {

@@ -103,7 +103,7 @@ class DataUnit {
     } else if (this.type === DATATYPES.DT_BOOL) {
       return this.value ? 'True' : 'False';
     } else if (this.type === DATATYPES.DT_FN) {
-      return this.value.fnname;
+      return this.value;
     } else {
       return '';
     }
@@ -116,25 +116,8 @@ class DataUnit {
     return this.value;
   }
 
-  as_fn() {
-    if (this.type === DATATYPES.DT_FN) {
-      return this.value;
-    }
-    throw new Error('Cannot call something that is not a function');
-  }
-  cast_fn() {
-    if (this.type !== DATATYPES.DT_FN) {
-      throw new Error('Cannot call something that is not a function');
-    }
-    return this.value;
-  }
-
 
   // operators
-  op_call(env, params) {
-    return this.as_fn().apply(env, params);
-  }
-
   op_assign(rhs) {
     if (!rhs) {
       rhs = new DataUnit();
@@ -306,5 +289,5 @@ class DataUnit {
   }
 };
 
-exports.DATATYPES = DATATYPES;
-exports.DataUnit = DataUnit;
+// exports.DATATYPES = DATATYPES;
+// exports.DataUnit = DataUnit;

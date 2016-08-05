@@ -49,7 +49,8 @@ module.exports = function timerFactory(env) {
 
   function tick() {
     if (tickHandler.type === DATATYPES.DT_FN) {
-      (bluebird.coroutine(tickHandler.value))();
+      interrupt(tickHandler.value);
+      // (bluebird.coroutine(tickHandler.value))();
     }
   }
 
