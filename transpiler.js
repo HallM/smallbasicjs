@@ -11,7 +11,8 @@ class CodeGenerator {
     this.vars = [];
     this.callables = [];
     this.blockLevel = 1;
-    this.indentString = '  ';
+    this.indentString = '';
+    this.L = 0;
   }
 
   inc_indent() {
@@ -51,48 +52,53 @@ class CodeGenerator {
         }
       }).join(',\n');
 
-    return `// 'use strict';
+    return `'use strict';
+var DataUnit = require('./runtime/data-unit').DataUnit;
+var DATATYPES = require('./runtime/data-unit').DATATYPES;
 
-//const bluebird = require('bluebird');
-//const DataUnit = require('./runtime/data-unit').DataUnit;
-//const DATATYPES = require('./runtime/data-unit').DATATYPES;
+function getrandomnumber(v) {
+  return new DataUnit(Math.floor(Math.random() * v.as_num()) + 1, DATATYPES.DT_NUMBER);
+}
+getrandomnumber.fnname = 'math.getrandomnumber';
 
-function runnable() {
-  function* execute() {
-    const env = {
+var math = {
+  getrandomnumber: new DataUnit(getrandomnumber, DATATYPES.DT_FN)
+};
+
+(function() {
+  const env = {
 ${varOutput}
-    };
+  };
 
-    // const array = require('./runtime/array')(env);
-    // const graphicswindow = require('./runtime/graphicswindow')(env);
-    // const math = require('./runtime/math')(env);
-    // const program = require('./runtime/program')(env);
-    // const shapes = require('./runtime/shapes')(env);
-    // const text = require('./runtime/text')(env);
-    // const array = arrayFactory(env);
-    // const graphicswindow = graphicswindowFactory(env);
-    // const math = mathFactory(env);
-    // const program = programFactory(env);
-    // const shapes = shapesFactory(env);
-    // const text = textFactory(env);
+  var tmp = [];
+  var fn = [];
 
+  function execute(next, val) {
+    var params = null;
+    var scratch = new DataUnit();
+    var retval = new DataUnit();
+
+    while(1) {
+      switch(next) {
+        case 'math.getrandomnumber':
+          retval = math.getrandomnumber.op_call(env, [fn[fn.length - 1][1][0]]);
+          next = fn.pop()[0];
+          break;
+
+        case '':
 ${code}
+          console.log(env._test);
+          return null;
+      }
+    }
   }
 
-  (bluebird.coroutine(execute))().then(function() {
-    console.log('program finished!');
-  }).catch(function(e) {
-    if (e.issafetoignoreexit) {
-      console.log('program finished!');
-      return;
-    }
+  function runner() {
+    execute('');
+  }
 
-    console.log('An error occurred');
-    console.log(e);
-  });
-}
-
-runnable();
+  runner();
+})();
 `;
   }
 
@@ -133,35 +139,41 @@ runnable();
     const type = node[0];
     const astnode = node[1];
 
+    const prefix = 'scratch = ';
+    const postfix = ';\n';
+
     if (type === 'array') {
-      return this.process_array(astnode);
+      return prefix + this.process_array(astnode) + postfix;
     } else if (type === 'property') {
-      return this.process_property(astnode);
+      return prefix + this.process_property(astnode) + postfix;
     } else if (type === 'variable') {
-      return this.process_variable(astnode);
+      return prefix + this.process_variable(astnode) + postfix;
     }
 
     throw new Error('invalid type in lhs ' + type);
   }
 
-  process_expression(node) {
+  process_expression(node, isRhs) {
     const type = node[0];
     const astnode = node[1];
 
+    const prefix = isRhs ? '' : 'scratch = ';
+    const postfix = isRhs ? '' : ';\n';
+
     if (type === 'binop') {
-      return this.process_binop(astnode);
+      return this.process_binop(astnode) + postfix;
     } else if (type === 'unop') {
-      return this.process_unop(astnode);
+      return prefix + this.process_unop(astnode) + postfix;
     } else if (type === 'array') {
-      return this.process_array(astnode);
+      return prefix + this.process_array(astnode) + postfix;
     } else if (type === 'property') {
-      return this.process_property(astnode);
+      return this.process_property(astnode) + postfix;
     } else if (type === 'variable') {
-      return this.process_variable(astnode);
+      return prefix + this.process_variable(astnode) + postfix;
     } else if (type === 'call') {
-      return this.process_call(astnode);
+      return prefix + this.process_call(astnode) + postfix;
     } else if (type === 'literal') {
-      return this.process_literal(astnode);
+      return prefix + this.process_literal(astnode) + postfix;
     }
 
     throw new Error('invalid type in expression ' + type);
@@ -220,14 +232,26 @@ runnable();
     const thing = this.process_lhs(node[0]);
     const arrayIndecies = node[1];
 
-    return thing + arrayIndecies.map((indx) => {
-      return '.op_index(' + this.process_expression(indx) + ')';
-    }).join('');
+    //'tmp.push(scratch);\n' +
+    return arrayIndecies.reduce((lhs, indx) => {
+      const rhs = this.process_expression(indx, true);
+
+      if (rhs.lastIndexOf(';') !== -1) {
+        return prev + 'tmp.push(scratch);\n' +
+                rhs + ';\nretval = scratch;\nscratch = tmp.pop();\nscratch = scratch.op_index(retval);\n';
+      } else {
+        return lhs + 'scratch = scratch.op_index(' + rhs + ');\n';
+      }
+    }, thing);// +
+    // 'scratch = tmp.pop()';
   }
 
   process_binop(node) {
+    // console.log('do lhs')
     const lhs = this.process_expression(node[1]);
-    const rhs = this.process_expression(node[2]);
+    // console.log('do rhs', lhs)
+    const rhs = this.process_expression(node[2], true);
+    // console.log('done', rhs)
 
     let op = null;
     switch (node[0]) {
@@ -271,11 +295,20 @@ runnable();
         throw new Error('Invalid operator in expression: ' + node[0]);
     }
 
-    return '(' + lhs + '.' + op + '(' + rhs + ')' + ')';
+    // this only occurs with a "complex" rhs
+    // fn call, or array
+    if (rhs.lastIndexOf(';') !== -1) {
+      return lhs + 'tmp.push(scratch);\n' +
+              rhs + ';\nretval = scratch;\nscratch = tmp.pop();\nscratch = scratch.' + op + '(retval)';
+    } else {
+      return lhs + 'scratch = scratch.' + op + '(' + rhs + ')';
+    }
+
+    // return '(' + lhs + '.' + op + '(' + rhs + ')' + ')';
   }
 
   process_unop(node) {
-    const lhs = this.process_expression(node[1]);
+    const lhs = this.process_expression(node[1], true);
 
     let op = null;
     switch (node[0]) {
@@ -286,30 +319,51 @@ runnable();
         throw new Error('Invalid unary operator in expression: ' + node[0]);
     }
 
-    return '(' + lhs + '.' + op + '())';
+    return lhs + '.' + op + '()';
+    // return '(' + lhs + '.' + op + '())';
   }
 
   process_call(node) {
+    // this should not mess up scratch, right?
     const identifier = this.process_lhs(node[0]);
+
     const params = node[1] ? node[1].map((pnode) => {
-      return this.process_expression(pnode);
+      const v = this.process_expression(pnode);
+      return v + 'params.push(scratch);\n';
     }) : [];
 
-    return '(yield* ' + identifier + '.op_call(env, [' + params.join(', ') + ']))';
+    const l_label = '$L' + this.L++;
+
+    //'tmp.push(scratch);\n' +
+    return 'params = [];\n' + params.join('') +
+            'fn.push(["' + l_label + '", params.slice()]);\n' +
+            identifier +
+            'next = scratch.as_string();\nbreak;\n' +
+            'case "' + l_label + '":\n' +
+            'scratch = retval';
+
+    // throw new Error('not re-implemented');
+    // return '(yield* ' + identifier + '.op_call(env, [' + params.join(', ') + ']))';
   }
 
   // Start the statements:
 
   process_assign(node) {
-    const lhs = this.process_lhs(node[0]);
-    const value = this.process_expression(node[1]);
+    const lvalue = this.process_lhs(node[0]);
+    const rvalue = this.process_expression(node[1]);
 
-    return lhs + '.op_assign(' + value + ');\n';
+    if (rvalue.lastIndexOf(';') !== -1) {
+      return lvalue + 'tmp.push(scratch);\n' +
+              rvalue + ';\nretval = scratch;\nscratch = tmp.pop();\nscratch = scratch.op_assign(retval);\n';
+    } else {
+      return lvalue + 'scratch = scratch.op_assign(' + rvalue + ');\n';
+    }
   }
 
   process_callstatement(node) {
     const call = this.process_call(node[0][1]);
 
+    throw new Error('not re-implemented');
     return call + ';\n';
   }
 
@@ -317,6 +371,7 @@ runnable();
     const start = node[0];
     const rest = node.slice(1);
 
+    throw new Error('not re-implemented');
     return 'if (' + this.process_expression(start[0]) + '.as_bool()) {\n' +
             this.process_block(start[1]) + this.get_indent() + '}' +
             rest.map((c) => {
@@ -339,6 +394,7 @@ runnable();
     const name = this.process_identifier(node[0][1][0], true);
     this.add_callable(name);
 
+    throw new Error('not re-implemented');
     return 'function* $' + name + '() {\n' +
             this.process_block(node[2]) +
             this.get_indent() + this.indentString + 'return new DataUnit();\n' +
@@ -358,6 +414,7 @@ runnable();
     const forCond = '(' + start + '.op_lt(' + end + ').as_bool() ? (' + iter + '.op_lte(' + end + ')) : (' + iter + '.op_gte(' + end + '))).as_bool();\n ';
     const forIter = iter + '.op_assign(' + iter + '.op_add(' + step + '))';
 
+    throw new Error('not re-implemented');
     return 'for (' +
             forStart +
             forCond +
@@ -368,12 +425,17 @@ runnable();
   process_while(node) {
     const cond = this.process_expression(node[0]);
 
+    throw new Error('not re-implemented');
     return 'while (' + cond + '.as_bool()) {\n' + this.process_block(node[1]) + this.get_indent() + '}\n\n';
   }
 
 }
 
-const file = fs.readFileSync(process.argv[2], 'utf8');
+// const file = fs.readFileSync(process.argv[2], 'utf8');
+const file = `
+ar[0] = 5
+test = ar[0] + -3 * Math.GetRandomNumber(4)
+`;
 const gen = new CodeGenerator();
 
 try {

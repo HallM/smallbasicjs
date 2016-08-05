@@ -56,8 +56,8 @@ class DataUnit {
   }
   cast_bool() {
     if (this.type !== DATATYPES.DT_BOOL) {
-      this.type = DATATYPES.DT_BOOL;
       this.value = this.as_bool();
+      this.type = DATATYPES.DT_BOOL;
     }
     return this.value;
   }
@@ -70,8 +70,8 @@ class DataUnit {
   }
   cast_array() {
     if (this.type !== DATATYPES.DT_ARRAY) {
-      this.type = DATATYPES.DT_ARRAY;
       this.value = this.as_array();
+      this.type = DATATYPES.DT_ARRAY;
     }
     return this.value;
   }
@@ -89,8 +89,8 @@ class DataUnit {
   }
   cast_num() {
     if (this.type !== DATATYPES.DT_NUMBER) {
-      this.type = DATATYPES.DT_NUMBER;
       this.value = this.as_num();
+      this.type = DATATYPES.DT_NUMBER;
     }
     return this.value;
   }
@@ -102,14 +102,16 @@ class DataUnit {
       return this.value.toString();
     } else if (this.type === DATATYPES.DT_BOOL) {
       return this.value ? 'True' : 'False';
+    } else if (this.type === DATATYPES.DT_FN) {
+      return this.value.fnname;
     } else {
       return '';
     }
   }
   cast_string() {
     if (this.type !== DATATYPES.DT_STRING) {
-      this.type = DATATYPES.DT_STRING;
       this.value = this.as_string();
+      this.type = DATATYPES.DT_STRING;
     }
     return this.value;
   }
@@ -129,8 +131,8 @@ class DataUnit {
 
 
   // operators
-  *op_call(env, params) {
-    return yield* this.as_fn().apply(env, params);
+  op_call(env, params) {
+    return this.as_fn().apply(env, params);
   }
 
   op_assign(rhs) {
@@ -147,7 +149,7 @@ class DataUnit {
   }
 
   op_index(exp) {
-    const arr = cast_array();
+    const arr = this.cast_array();
     const key = exp.as_string();
     if (!arr[key]) {
       arr[key] = new DataUnit();
@@ -304,5 +306,5 @@ class DataUnit {
   }
 };
 
-// exports.DATATYPES = DATATYPES;
-// exports.DataUnit = DataUnit;
+exports.DATATYPES = DATATYPES;
+exports.DataUnit = DataUnit;
