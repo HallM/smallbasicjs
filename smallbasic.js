@@ -84,7 +84,7 @@ module.exports = (function() {
         peg$c45 = /^[a-zA-Z0-9_]/,
         peg$c46 = { type: "class", value: "[a-zA-Z0-9_]", description: "[a-zA-Z0-9_]" },
         peg$c47 = function(start, rest) { return langKeywords.indexOf(text()) === -1; },
-        peg$c48 = function(start, rest) { return ['identifier', [text().toLowerCase()]]; },
+        peg$c48 = function(start, rest) { return text().toLowerCase(); },
         peg$c49 = { type: "other", description: "variable" },
         peg$c50 = function(i) { return ['variable', [i]]; },
         peg$c51 = { type: "other", description: "property" },
@@ -95,7 +95,12 @@ module.exports = (function() {
         peg$c56 = "]",
         peg$c57 = { type: "literal", value: "]", description: "\"]\"" },
         peg$c58 = function(e, i) { return i; },
-        peg$c59 = function(e, indecies) { return ['array', [e, indecies]]; },
+        peg$c59 = function(e, indecies) {
+            //return ['array', [e, indecies]];
+            return indecies.reduce(function(lhs, rhs) {
+              return ['binop', ['index', lhs, rhs]];
+            }, e);
+          },
         peg$c60 = { type: "other", description: "left hand side" },
         peg$c61 = "+",
         peg$c62 = { type: "literal", value: "+", description: "\"+\"" },
@@ -162,7 +167,10 @@ module.exports = (function() {
             }, l);
           },
         peg$c98 = { type: "other", description: "Assignment" },
-        peg$c99 = function(l, e) { return ['assign', [l, e]]; },
+        peg$c99 = function(l, e) {
+            //return ['assign', [l, e]];
+            return ['assign', [['binop', ['assign', l, e]]]];
+          },
         peg$c100 = { type: "other", description: "Function call" },
         peg$c101 = function(c) { return ['callstatement', [c]]; },
         peg$c102 = { type: "other", description: "If statement" },

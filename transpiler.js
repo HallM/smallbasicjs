@@ -177,9 +177,7 @@ ${varOutput}
     const prefix = 'scratch = ';
     const postfix = ';\n';
 
-    if (type === 'array') {
-      return prefix + this.process_array(astnode) + postfix;
-    } else if (type === 'property') {
+    if (type === 'property') {
       return prefix + this.process_property(astnode, isCalled) + postfix;
     } else if (type === 'variable') {
       return prefix + this.process_variable(astnode) + postfix;
@@ -199,8 +197,6 @@ ${varOutput}
       return this.process_binop(astnode) + postfix;
     } else if (type === 'unop') {
       return prefix + this.process_unop(astnode) + postfix;
-    } else if (type === 'array') {
-      return prefix + this.process_array(astnode) + postfix;
     } else if (type === 'property') {
       return prefix + this.process_property(astnode) + postfix;
     } else if (type === 'variable') {
@@ -246,19 +242,12 @@ ${varOutput}
   }
 
   process_variable(node) {
-    const varInfo = node[0];
-    const type = varInfo[0];
-
-    if (type === 'identifier') {
-      return this.process_identifier(varInfo[1][0]);
-    }
-
-    throw new Error('invalid type for variable ' + type);
+    return this.process_identifier(node[0]);
   }
 
   process_property(node, isCalled) {
-    const obj = node[0][1];
-    const prop = node[1][1];
+    const obj = node[0];
+    const prop = node[1];
     const ret = obj + '.' + prop;
 
     if (isCalled) {
@@ -267,30 +256,20 @@ ${varOutput}
     return ret;
   }
 
-  process_array(node) {
-    const thing = this.process_lhs(node[0]);
-    const arrayIndecies = node[1];
-
-    //'tmp.push(scratch);\n' +
-    return arrayIndecies.reduce((lhs, indx) => {
-      const rhs = this.process_expression(indx, true);
-
-      if (rhs.lastIndexOf(';') !== -1) {
-        return prev + 'tmp.push(scratch);\n' +
-                rhs + ';\nretval = scratch;\nscratch = tmp.pop();\nscratch = scratch.op_index(retval);\n';
-      } else {
-        return lhs + 'scratch = scratch.op_index(' + rhs + ');\n';
-      }
-    }, thing);// +
-    // 'scratch = tmp.pop()';
-  }
-
   process_binop(node) {
     const lhs = this.process_expression(node[1]);
     const rhs = this.process_expression(node[2], true);
 
     let op = null;
     switch (node[0]) {
+      case 'assign':
+        op = 'op_assign';
+        break;
+
+      case 'index':
+        op = 'op_index';
+        break;
+
       case '+':
         op = 'op_add';
         break;
@@ -303,6 +282,7 @@ ${varOutput}
       case '/':
         op = 'op_div';
         break;
+
       case '=':
         op = 'op_eq';
         break;
@@ -321,6 +301,7 @@ ${varOutput}
       case '<=':
         op = 'op_lte';
         break;
+
       case '||':
         op = 'op_cmpor';
         break;
@@ -339,8 +320,6 @@ ${varOutput}
     } else {
       return lhs + 'scratch = scratch.' + op + '(' + rhs + ')';
     }
-
-    // return '(' + lhs + '.' + op + '(' + rhs + ')' + ')';
   }
 
   process_unop(node) {
@@ -356,11 +335,10 @@ ${varOutput}
     }
 
     return lhs + '.' + op + '()';
-    // return '(' + lhs + '.' + op + '())';
   }
 
   process_call(node) {
-    // this should not mess up scratch, right?
+    // TODO: this should not mess up scratch, right?
     const identifier = this.process_lhs(node[0], true);
 
     const params = node[1] ? node[1].map((pnode) => {
@@ -381,15 +359,7 @@ ${varOutput}
   // Start the statements:
 
   process_assign(node) {
-    const lvalue = this.process_lhs(node[0]);
-    const rvalue = this.process_expression(node[1]);
-
-    if (rvalue.lastIndexOf(';') !== -1) {
-      return lvalue + 'tmp.push(scratch);\n' +
-              rvalue + ';\nretval = scratch;\nscratch = tmp.pop();\nscratch = scratch.op_assign(retval);\n';
-    } else {
-      return lvalue + 'scratch = scratch.op_assign(' + rvalue + ');\n';
-    }
+    return this.process_expression(node[0]);
   }
 
   process_callstatement(node) {
@@ -446,17 +416,17 @@ ${varOutput}
   }
 
   process_label(node) {
-    const labelName = this.process_identifier(node[0][1][0], true);
+    const labelName = this.process_identifier(node[0], true);
     return 'case "' + labelName + '":\n';
   }
 
   process_goto(node) {
-    const labelName = this.process_identifier(node[0][1][0], true);
+    const labelName = this.process_identifier(node[0], true);
     return 'next = "' + labelName + '";\nbreak;\n';
   }
 
   process_fn(node) {
-    const name = this.process_identifier(node[0][1][0], true);
+    const name = this.process_identifier(node[0], true);
     this.add_callable(name);
 
     // TODO: fns need to be changed, so that the we have the label
@@ -486,8 +456,6 @@ ${varOutput}
     const start = this.process_expression(forinfo[0]);
     const end = this.process_expression(forinfo[1]);
     const step = this.process_expression(forinfo[2]);
-
-    // TODO: retval could get based in here
 
     const forStart  = start + 'retval = scratch;\n' + iter + 'scratch.op_assign(retval);\n';
     const forCond = iter + 'tmp.push(scratch);\n' + end + 'retval = scratch;\n' + start +
