@@ -72,17 +72,6 @@ class CodeGenerator {
           didOptimizeThisLine = true;
         }
 
-        if (!didOptimizeThisLine && /^[a-z0-9_]+;$/i.test(line) && line !== 'break;') {
-          didOptimizeThisLine = true;
-        }
-        if (!didOptimizeThisLine && line.substr(0, 'tmp.pop();//PUSHPOP'.length) === 'tmp.pop();//PUSHPOP') {
-          const pp = parseInt(line.substring('tmp.pop();//PUSHPOP'.length), 10);
-          if (pushPopsToRemove.indexOf(pp) === -1) {
-            pushPopsToRemove.push(pp);
-          }
-          didOptimizeThisLine = true;
-        }
-
         if (!didOptimizeThisLine && line.indexOf(' = ') !== -1) {
           var parts = line.substring(0, line.lastIndexOf(';')).split(' = ');
           if (parts.length === 2 && parts[0].trim() === parts[1].trim()) {
@@ -107,7 +96,6 @@ class CodeGenerator {
               const lIndex = otherLine.indexOf(varname, 1);
               const rIndex = otherLine.lastIndexOf(varname);
               if (lIndex === -1) {
-                // TODO: can get rid of the push+pop for "tmp.pop();"
                 out.push(line.substring(equalsIndex+2));
                 didOptimizeThisLine = true;
               } else if (lIndex === rIndex) {
@@ -151,31 +139,6 @@ class CodeGenerator {
                   didOptimizeThisLine = true;
                 }
               }
-            // } else {
-            //   // TODO: find an assignment with no future uses
-            //   let varUsed = false;
-
-            //   // look ahead to see if it's re-assigned without use
-            //   for (let x = j; x < lines.length; x++) {
-            //     const checkLine = lines[x];
-            //     if (checkLine.indexOf('next') !== -1 || checkLine.indexOf('break') !== -1) {
-            //       // assume that someone else may end up using it
-            //       varUsed = true;
-            //       break;
-            //     } else if (checkLine.indexOf(varname, 1) !== -1) {
-            //       varUsed = true;
-            //       break;
-            //     } else if (checkLine.substr(0, varname.length + 3) === (varname + ' = ')) {
-            //       break;
-            //     }
-            //   }
-
-            //   if (!varUsed) {
-            //     // TODO: watch for "tmp.pop();"
-            //     // out.push(line.substring(equalsIndex+2, line.lastIndexOf(';')));
-            //     // didOptimizeThisLine = true;
-            //   }
-
             }
           }
         }
@@ -224,6 +187,16 @@ class CodeGenerator {
               pushPopsToRemove.push(pp);
             }
           }
+        }
+        if (!didOptimizeThisLine && /^[a-z0-9_]+;$/i.test(line) && line !== 'break;') {
+          didOptimizeThisLine = true;
+        }
+        if (!didOptimizeThisLine && line.substr(0, 'tmp.pop();//PUSHPOP'.length) === 'tmp.pop();//PUSHPOP') {
+          const pp = parseInt(line.substring('tmp.pop();//PUSHPOP'.length), 10);
+          if (pushPopsToRemove.indexOf(pp) === -1) {
+            pushPopsToRemove.push(pp);
+          }
+          didOptimizeThisLine = true;
         }
 
         if (!didOptimizeThisLine) {
