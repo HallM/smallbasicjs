@@ -380,6 +380,5 @@ function phaserCreateFactory(resolver) {
 function phaserKeydown() {
   if (keydown.type === DATATYPES.DT_FN) {
     interrupt(keydown.value);
-    // (bluebird.coroutine(keydown.value))();
   }
 }

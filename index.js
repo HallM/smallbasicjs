@@ -16,8 +16,8 @@ app.get('/', function(req, res){
 app.get('/tetris.html', function(req, res){
   res.sendFile(path.resolve('tetris.html'));
 });
-app.get('/tetrisbrowser2.js', function(req, res){
-  res.sendFile(path.resolve('tetrisbrowser3.js'));
+app.get('/tetrisbrowser.js', function(req, res){
+  res.sendFile(path.resolve('tetrisbrowser.js'));
 });
 
 app.listen(3000, function() {
