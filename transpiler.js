@@ -14,6 +14,7 @@ class CodeGenerator {
     this.blockLevel = 1;
     this.indentString = '';
     this.L = 0;
+    this.pushpop = 0;
   }
 
   inc_indent() {
@@ -42,10 +43,228 @@ class CodeGenerator {
     }
   }
 
+  optimize_code(code) {
+    const lines = code
+      .split('\n')
+      .filter(function(l) {
+        return l && l.length;
+      });
+
+    // console.log('original LOC: ', lines.length);
+    let didOptimizeThisPass = false;
+    // let optimizationsDone = [];
+	  // let linestweaked = [];
+
+    function opt(lines) {
+      const pushPopsToRemove = [];
+      didOptimizeThisPass = false;
+      // let lastLine = null;
+      // optimizationsDone = [];
+      // linestweaked = [];
+      const out = [];
+
+      for (let i=0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        let didOptimizeThisLine = false;
+
+        // remove useless lines
+        if (!line.length || line === ';') {
+          didOptimizeThisLine = true;
+        }
+
+        if (!didOptimizeThisLine && /^[a-z0-9_]+;$/i.test(line) && line !== 'break;') {
+          didOptimizeThisLine = true;
+        }
+        if (!didOptimizeThisLine && line.substr(0, 'tmp.pop();//PUSHPOP'.length) === 'tmp.pop();//PUSHPOP') {
+          const pp = parseInt(line.substring('tmp.pop();//PUSHPOP'.length), 10);
+          if (pushPopsToRemove.indexOf(pp) === -1) {
+            pushPopsToRemove.push(pp);
+          }
+          didOptimizeThisLine = true;
+        }
+
+        if (!didOptimizeThisLine && line.indexOf(' = ') !== -1) {
+          var parts = line.substring(0, line.lastIndexOf(';')).split(' = ');
+          if (parts.length === 2 && parts[0].trim() === parts[1].trim()) {
+            // it's a noop
+            didOptimizeThisLine = true;
+          }
+        }
+        if (!didOptimizeThisLine && /^[a-z0-9_]+\s=\s/i.test(line)) {
+          const equalsIndex = line.indexOf('=');
+          const varname = line.substring(0, equalsIndex - 1);
+          let j = i+1;
+
+          if (j < lines.length) {
+            const otherLine = lines[j];
+            if (otherLine.substr(0, (varname.length*2) + 4) === (varname + ' = ' + varname + '.')) {
+              const loc = otherLine.lastIndexOf(varname);
+              const replacement = line.substring(equalsIndex+2, line.lastIndexOf(';'));
+              out.push(otherLine.substring(0, loc) + replacement + otherLine.substring(loc + varname.length));
+              i = j;
+              didOptimizeThisLine = true;
+            } else if (otherLine.substr(0, varname.length + 3) === (varname + ' = ')) {
+              const lIndex = otherLine.indexOf(varname, 1);
+              const rIndex = otherLine.lastIndexOf(varname);
+              if (lIndex === -1) {
+                // TODO: can get rid of the push+pop for "tmp.pop();"
+                out.push(line.substring(equalsIndex+2));
+                didOptimizeThisLine = true;
+              } else if (lIndex === rIndex) {
+                const loc = lIndex;
+                const replacement = line.substring(equalsIndex+2, line.lastIndexOf(';'));
+                out.push(otherLine.substring(0, loc) + replacement + otherLine.substring(loc + varname.length));
+                i = j;
+                didOptimizeThisLine = true;
+              }
+            } else if (otherLine.indexOf(varname) > 0) {
+              // can only be used once
+
+              if (otherLine.indexOf(varname, otherLine.indexOf(varname, 1)+1) === -1) {
+                // do a look ahead to make sure it's not used another time
+                let varUsed = false;
+
+                for (let x = j+1; x < lines.length; x++) {
+                  const checkLine = lines[x];
+                  if (checkLine.indexOf('next') !== -1 || checkLine.indexOf('break') !== -1) {
+                    // assume that someone else may end up using it
+                    varUsed = true;
+                    break;
+                  } else if (checkLine.indexOf(varname, 1) !== -1) {
+                    varUsed = true;
+                    break;
+                  } else if (checkLine.substr(0, varname.length + 3) === (varname + ' = ')) {
+                    break;
+                  }
+                }
+
+                // we cannot have two pops on the same line, they may be out of order
+                if (line.indexOf('tmp.pop') !== -1 && otherLine.indexOf('tmp.pop') !== -1) {
+                  varUsed = true;
+                }
+
+                if (!varUsed) {
+                  const loc = otherLine.lastIndexOf(varname);
+                  const replacement = line.substring(equalsIndex+2, line.lastIndexOf(';'));
+                  out.push(otherLine.substring(0, loc) + replacement + otherLine.substring(loc + varname.length));
+                  i = j;
+                  didOptimizeThisLine = true;
+                }
+              }
+            // } else {
+            //   // TODO: find an assignment with no future uses
+            //   let varUsed = false;
+
+            //   // look ahead to see if it's re-assigned without use
+            //   for (let x = j; x < lines.length; x++) {
+            //     const checkLine = lines[x];
+            //     if (checkLine.indexOf('next') !== -1 || checkLine.indexOf('break') !== -1) {
+            //       // assume that someone else may end up using it
+            //       varUsed = true;
+            //       break;
+            //     } else if (checkLine.indexOf(varname, 1) !== -1) {
+            //       varUsed = true;
+            //       break;
+            //     } else if (checkLine.substr(0, varname.length + 3) === (varname + ' = ')) {
+            //       break;
+            //     }
+            //   }
+
+            //   if (!varUsed) {
+            //     // TODO: watch for "tmp.pop();"
+            //     // out.push(line.substring(equalsIndex+2, line.lastIndexOf(';')));
+            //     // didOptimizeThisLine = true;
+            //   }
+
+            }
+          }
+        }
+        if (!didOptimizeThisLine && line === 'params = [];') {
+          let j = i+1;
+          let canOptimize = true;
+
+          for (; j < lines.length; j++) {
+            const otherLine = lines[j];
+            if (otherLine.substr(0, 'fn.push(["$L'.length) === 'fn.push(["$L') {
+              break;
+            } else if (otherLine.substr(0, 'params.push('.length) !== 'params.push(') {
+              canOptimize = false;
+            }
+          }
+
+          if (canOptimize) {
+            didOptimizeThisLine = true;
+            let newLine = lines[j].substring(0, lines[j].indexOf(',')) + ', [';
+            let first = true;
+            for (i++; i < j; i++) {
+              if (first) {
+                first = false;
+              } else {
+                newLine += ', ';
+              }
+              newLine += lines[i].substring('params.push('.length, lines[i].length-2);
+            }
+            newLine += ']]);';
+            out.push(newLine);
+          }
+        }
+        if (!didOptimizeThisLine && line.substr(0, 'next = "'.length) === 'next = "') {
+          if (i+2 < lines.length) {
+            if (lines[i+1] === 'break;' && lines[i+2] === 'case "' + line.substr('next = "'.length, line.indexOf('"')) + '":') {
+              didOptimizeThisLine = true;
+              out.push(lines[i+2]);
+              i += 2;
+            }
+          }
+        }
+        if (!didOptimizeThisLine && line.substr(0, 'fn.push(["$L'.length) === 'fn.push(["$L') {
+          if (lines[i-1].substr(0, 'tmp.push(params);//PUSHPOP'.length) === 'tmp.push(params);//PUSHPOP') {
+            const pp = parseInt(lines[i-1].substring('tmp.push(params);//PUSHPOP'.length), 10);
+            if (pushPopsToRemove.indexOf(pp) === -1) {
+              pushPopsToRemove.push(pp);
+            }
+          }
+        }
+
+        if (!didOptimizeThisLine) {
+          out.push(line);
+        } else {
+          didOptimizeThisPass = true;
+        }
+      }
+
+      return out.filter(function(line) {
+        const indx = line.indexOf('//PUSHPOP');
+        if (indx !== -1) {
+          const pp = parseInt(line.substring(indx + '//PUSHPOP'.length), 10);
+          if (pushPopsToRemove.indexOf(pp) !== -1) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    let optimized = opt(lines);
+    // console.log('first pass optimized LOC: ', optimized.length);
+    // console.log('optimizationsDone', optimizationsDone)
+    while (didOptimizeThisPass) {
+      optimized = opt(optimized);
+      // console.log('another pass optimized LOC: ', optimized.length);
+      // console.log('optimizationsDone', optimizationsDone)
+      // console.log('', linestweaked)
+    }
+
+    // DO NOT clean up the, what look like, unmatched push+pops. it's just lost comments
+
+    // console.log('optimized LOC: ', optimized.length);
+    return optimized.join('\n');
+  }
+
   process_file(str) {
     // parser gets confused if file does not end with a blank new line
     const ast = parser.parse(str + '\n');
-    const code = this.process_block(ast);
+    const code = this.optimize_code(this.process_block(ast));
 
     const varIndent = this.indentString + this.indentString + this.indentString;
 
@@ -348,12 +567,15 @@ ${varOutput}
 
     const l_label = '$L' + this.L++;
 
-    return 'tmp.push(retval);\ntmp.push(params);\nparams = [];\n' + params.join('') +
-            'fn.push(["' + l_label + '", params.slice()]);\n' +
+    const retvalPushpop = this.pushpop++;
+    const paramsPushpop = this.pushpop++;
+
+    return 'tmp.push(retval);//PUSHPOP'+retvalPushpop+'\ntmp.push(params);//PUSHPOP'+paramsPushpop+'\nparams = [];\n' + params.join('') +
+            'fn.push(["' + l_label + '", params]);\n' +
             identifier +
             'next = scratch.as_string();\nbreak;\n' +
             'case "' + l_label + '":\n' +
-            'scratch = retval;\nparams = tmp.pop();\nretval = tmp.pop();';
+            'params = tmp.pop();//PUSHPOP'+paramsPushpop+'\nscratch = retval;\nretval = tmp.pop();//PUSHPOP'+retvalPushpop+'\n';
   }
 
   // Start the statements:
@@ -459,7 +681,7 @@ ${varOutput}
 
     const forStart  = start + 'retval = scratch;\n' + iter + 'scratch.op_assign(retval);\n';
     const forCond = iter + 'tmp.push(scratch);\n' + end + 'retval = scratch;\n' + start +
-                    'if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {\n' +
+                    'if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {\n' +
                       'next = "' + block_label + '";\n' +
                     '} else {\n' +
                       'next = "' + final_label + '";\n' +
@@ -495,6 +717,24 @@ ${varOutput}
 
 const file = fs.readFileSync(process.argv[2], 'utf8');
 // const file = `
+// GraphicsWindow.BackgroundColor = GraphicsWindow.GetColorFromRGB( 253, 252, 251 )
+
+// BWIDTH = 25    ' box width in pixels
+// XOFFSET = 40   ' Screen X offset in pixels of where the board starts
+// YOFFSET = 40   ' Screen Y offset in pixels of where the board starts
+// PREVIEW_xpos = 13
+// PREVIEW_ypos = 2
+
+// GraphicsWindow.Clear()
+// GraphicsWindow.Height = 580
+// GraphicsWindow.Width = 700
+// GraphicsWindow.Show()
+
+// x = XOFFSET + PREVIEW_xpos * BWIDTH - BWIDTH
+// y = YOFFSET + PREVIEW_ypos * BWIDTH - BWIDTH
+
+// GraphicsWindow.BrushColor = "Blue"
+// GraphicsWindow.FillRectangle(x - 20, y + 190, 310, 170)
 // `;
 
 const gen = new CodeGenerator();

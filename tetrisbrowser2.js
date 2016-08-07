@@ -1652,7 +1652,7 @@ scratch = env._boxes;
 scratch = scratch.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 retval = scratch;
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L92";
 } else {
 next = "$L93";
@@ -1776,7 +1776,7 @@ scratch = env._boxes;
 scratch = scratch.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 retval = scratch;
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L101";
 } else {
 next = "$L102";
@@ -1900,7 +1900,7 @@ scratch = env._boxes;
 scratch = scratch.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 retval = scratch;
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L110";
 } else {
 next = "$L111";
@@ -2200,7 +2200,7 @@ scratch = env._boxes;
 scratch = scratch.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 retval = scratch;
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L129";
 } else {
 next = "$L130";
@@ -2287,7 +2287,7 @@ scratch = env._boxes;
 scratch = scratch.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 retval = scratch;
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L136";
 } else {
 next = "$L137";
@@ -2848,7 +2848,7 @@ scratch = env._boxes;
 scratch = scratch.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 retval = scratch;
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L173";
 } else {
 next = "$L174";
@@ -2977,9 +2977,11 @@ tmp.push(params);
 params = [];
 fn.push(["$L181", params.slice()]);
 scratch = env._printscore;
+console.log('go print score');
 next = scratch.as_string();
 break;
 case "$L181":
+console.log('back from printing the score');
 scratch = retval;
 params = tmp.pop();
 retval = tmp.pop();;
@@ -2991,6 +2993,7 @@ scratch = env._deletelines;
 next = scratch.as_string();
 break;
 case "$L182":
+console.log('back from delete lines');
 scratch = retval;
 params = tmp.pop();
 retval = tmp.pop();;
@@ -3002,6 +3005,7 @@ next = fn.pop()[0];
 break;
 case "$L159":
 next = "$L183";
+console.log('skip', next);
 break;
 case "_deletelines":
 scratch = env._linescleared;
@@ -3023,7 +3027,7 @@ scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
 retval = scratch;
 scratch = env._cheight;
 scratch = scratch.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L185";
 } else {
 next = "$L186";
@@ -3141,7 +3145,7 @@ scratch = env._cwidth;
 scratch = scratch.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 retval = scratch;
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L199";
 } else {
 next = "$L200";
@@ -3206,7 +3210,7 @@ tmp.push(scratch);
 scratch = new DataUnit(1, DATATYPES.DT_NUMBER);
 retval = scratch;
 scratch = env._y;
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L204";
 } else {
 next = "$L205";
@@ -3224,7 +3228,7 @@ scratch = env._cwidth;
 scratch = scratch.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 retval = scratch;
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L207";
 } else {
 next = "$L208";
@@ -3478,7 +3482,7 @@ scratch = env._cwidth;
 scratch = scratch.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 retval = scratch;
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L222";
 } else {
 next = "$L223";
@@ -3496,7 +3500,7 @@ scratch = env._cheight;
 scratch = scratch.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 retval = scratch;
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
-if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : (scratch.op_gte(retval).as_bool()) ) {
+if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
 next = "$L225";
 } else {
 next = "$L226";
