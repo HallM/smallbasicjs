@@ -10,6 +10,27 @@ const impltextwindow = {
   },
 };
 
+// properties
+// TextWindow.ForegroundColor
+// TextWindow.BackgroundColor
+// TextWindow.CursorLeft
+// TextWindow.CursorTop
+// TextWindow.Left
+// TextWindow.Title
+// TextWindow.Top
+
+// fns
+// TextWindow.Show()
+// TextWindow.Hide()
+// TextWindow.Clear()
+// TextWindow.Pause()
+// TextWindow.PauseIfVisible()
+// TextWindow.PauseWithoutMessage()
+// TextWindow.Read()
+// TextWindow.ReadKey()
+// TextWindow.ReadNumber()
+// TextWindow.Write(data)
+
 const textwindow = {
-  writeline: new DataUnit('textwindow.writeline', DATATYPES.DT_FN)
+  get writeline() { return new DataUnit('textwindow.writeline', DATATYPES.DT_FN); }
 };

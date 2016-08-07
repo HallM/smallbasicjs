@@ -51,10 +51,26 @@ const implshapes = {
   }
 };
 
+// need imagelist first I think
+// Shapes.AddImage(imageName)
+
+// Shapes.AddEllipse(width, height)
+// Shapes.AddTriangle(x1, y1, x2, y2, x3, y3)
+// Shapes.AddLine(x1, y1, x2, y2)
+// Shapes.AddText(text)
+// Shapes.SetText(shapeName, text)
+// Shapes.Rotate(shapeName, angle)
+// Shapes.Zoom(shapeName, scaleX, scaleY)
+// Shapes.Animate(shapeName, x, y, duration)
+// Shapes.GetOpacity(shapeName)
+// Shapes.SetOpacity(shapeName, level)
+// Shapes.HideShape(shapeName)
+// Shapes.ShowShape(shapeName)
+
 const shapes = {
-  addrectangle: new DataUnit('shapes.addrectangle', DATATYPES.DT_FN),
-  move: new DataUnit('shapes.move', DATATYPES.DT_FN),
-  remove: new DataUnit('shapes.remove', DATATYPES.DT_FN),
-  getleft: new DataUnit('shapes.getleft', DATATYPES.DT_FN),
-  gettop: new DataUnit('shapes.gettop', DATATYPES.DT_FN)
+  get addrectangle() { return new DataUnit('shapes.addrectangle', DATATYPES.DT_FN); },
+  get move() { return new DataUnit('shapes.move', DATATYPES.DT_FN); },
+  get remove() { return new DataUnit('shapes.remove', DATATYPES.DT_FN); },
+  get getleft() { return new DataUnit('shapes.getleft', DATATYPES.DT_FN); },
+  get gettop() { return new DataUnit('shapes.gettop', DATATYPES.DT_FN); }
 };

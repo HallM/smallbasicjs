@@ -61,16 +61,16 @@ const impltext = {
 };
 
 const text = {
-  append: new DataUnit('text.append', DATATYPES.DT_FN),
-  getlength: new DataUnit('text.getlength', DATATYPES.DT_FN),
-  issubtext: new DataUnit('text.issubtext', DATATYPES.DT_FN),
-  endswith: new DataUnit('text.endswith', DATATYPES.DT_FN),
-  startswith: new DataUnit('text.startswith', DATATYPES.DT_FN),
-  getsubtext: new DataUnit('text.getsubtext', DATATYPES.DT_FN),
-  getsubtexttoend: new DataUnit('text.getsubtexttoend', DATATYPES.DT_FN),
-  getindexof: new DataUnit('text.getindexof', DATATYPES.DT_FN),
-  converttolowercase: new DataUnit('text.converttolowercase', DATATYPES.DT_FN),
-  converttouppercase: new DataUnit('text.converttouppercase', DATATYPES.DT_FN),
-  getcharacter: new DataUnit('text.getcharacter', DATATYPES.DT_FN),
-  getcharactercode: new DataUnit('text.getcharactercode', DATATYPES.DT_FN)
+  get append() { return new DataUnit('text.append', DATATYPES.DT_FN); },
+  get getlength() { return new DataUnit('text.getlength', DATATYPES.DT_FN); },
+  get issubtext() { return new DataUnit('text.issubtext', DATATYPES.DT_FN); },
+  get endswith() { return new DataUnit('text.endswith', DATATYPES.DT_FN); },
+  get startswith() { return new DataUnit('text.startswith', DATATYPES.DT_FN); },
+  get getsubtext() { return new DataUnit('text.getsubtext', DATATYPES.DT_FN); },
+  get getsubtexttoend() { return new DataUnit('text.getsubtexttoend', DATATYPES.DT_FN); },
+  get getindexof() { return new DataUnit('text.getindexof', DATATYPES.DT_FN); },
+  get converttolowercase() { return new DataUnit('text.converttolowercase', DATATYPES.DT_FN); },
+  get converttouppercase() { return new DataUnit('text.converttouppercase', DATATYPES.DT_FN); },
+  get getcharacter() { return new DataUnit('text.getcharacter', DATATYPES.DT_FN); },
+  get getcharactercode() { return new DataUnit('text.getcharactercode', DATATYPES.DT_FN); }
 };

@@ -19,6 +19,6 @@ const implnetwork = {
 };
 
 const network = {
-  downloadfile: new DataUnit('network.downloadfile', DATATYPES.DT_FN),
-  getwebpagecontents: new DataUnit('network.getwebpagecontents', DATATYPES.DT_FN)
+  get downloadfile() { return new DataUnit('network.downloadfile', DATATYPES.DT_FN); },
+  get getwebpagecontents() { return new DataUnit('network.getwebpagecontents', DATATYPES.DT_FN); }
 };

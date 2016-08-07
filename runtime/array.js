@@ -67,12 +67,12 @@ const implarray = {
 };
 
 const array = {
-  containsindex: new DataUnit('array.containsindex', DATATYPES.DT_FN),
-  containsvalue: new DataUnit('array.containsvalue', DATATYPES.DT_FN),
-  getallindices: new DataUnit('array.getallindices', DATATYPES.DT_FN),
-  getitemcount: new DataUnit('array.getitemcount', DATATYPES.DT_FN),
-  isarray: new DataUnit('array.isarray', DATATYPES.DT_FN),
-  getvalue: new DataUnit('array.getvalue', DATATYPES.DT_FN),
-  setvalue: new DataUnit('array.setvalue', DATATYPES.DT_FN),
-  removevalue: new DataUnit('array.removevalue', DATATYPES.DT_FN)
+  get containsindex() { return new DataUnit('array.containsindex', DATATYPES.DT_FN); },
+  get containsvalue() { return new DataUnit('array.containsvalue', DATATYPES.DT_FN); },
+  get getallindices() { return new DataUnit('array.getallindices', DATATYPES.DT_FN); },
+  get getitemcount() { return new DataUnit('array.getitemcount', DATATYPES.DT_FN); },
+  get isarray() { return new DataUnit('array.isarray', DATATYPES.DT_FN); },
+  get getvalue() { return new DataUnit('array.getvalue', DATATYPES.DT_FN); },
+  get setvalue() { return new DataUnit('array.setvalue', DATATYPES.DT_FN); },
+  get removevalue() { return new DataUnit('array.removevalue', DATATYPES.DT_FN); }
 };

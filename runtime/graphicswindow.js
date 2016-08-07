@@ -300,6 +300,37 @@ const implgraphicswindow = {
   }
 };
 
+// properties
+// GraphicsWindow.CanResize
+// GraphicsWindow.FontBold
+// GraphicsWindow.Left
+// GraphicsWindow.Top
+// GraphicsWindow.LastText
+// GraphicsWindow.MouseX
+// GraphicsWindow.MouseY
+
+// events
+// GraphicsWindow.KeyUp
+// GraphicsWindow.MouseDown
+// GraphicsWindow.MouseUp
+// GraphicsWindow.MouseMove
+// GraphicsWindow.TextInput
+
+// fns
+// GraphicsWindow.Hide()
+// GraphicsWindow.DrawEllipse(x, y, width, height)
+// GraphicsWindow.FillEllipse(x, y, width, height)
+// GraphicsWindow.DrawTriangle(x1, y1, x2, y2, x3, y3)
+// GraphicsWindow.FillTriangle(x1, y1, x2, y2, x3, y3)
+// GraphicsWindow.DrawBoundText(x, y, width, text)
+// GraphicsWindow.DrawResizedImage(imageName, x, y, width, height)
+// GraphicsWindow.DrawImage(imageName, x, y)
+// GraphicsWindow.SetPixel(x, y, color)
+// GraphicsWindow.GetPixel(x, y)
+// GraphicsWindow.GetRandomColor()
+// GraphicsWindow.ShowMessage(text, title)
+
+
 const graphicswindow = {
   backgroundcolor: backgroundcolor,
 
@@ -350,14 +381,14 @@ const graphicswindow = {
     return new DataUnit(keyChar, DATATYPES.DT_STRING);
   },
 
-  getcolorfromrgb: new DataUnit('graphicswindow.getcolorfromrgb', DATATYPES.DT_FN),
-  clear: new DataUnit('graphicswindow.clear', DATATYPES.DT_FN),
-  show: new DataUnit('graphicswindow.show', DATATYPES.DT_FN),
-  showmessage: new DataUnit('graphicswindow.showmessage', DATATYPES.DT_FN),
-  fillrectangle: new DataUnit('graphicswindow.fillrectangle', DATATYPES.DT_FN),
-  drawrectangle: new DataUnit('graphicswindow.drawrectangle', DATATYPES.DT_FN),
-  drawline: new DataUnit('graphicswindow.drawline', DATATYPES.DT_FN),
-  drawtext: new DataUnit('graphicswindow.drawtext', DATATYPES.DT_FN)
+  get getcolorfromrgb() { return new DataUnit('graphicswindow.getcolorfromrgb', DATATYPES.DT_FN); },
+  get clear() { return new DataUnit('graphicswindow.clear', DATATYPES.DT_FN); },
+  get show() { return new DataUnit('graphicswindow.show', DATATYPES.DT_FN); },
+  get showmessage() { return new DataUnit('graphicswindow.showmessage', DATATYPES.DT_FN); },
+  get fillrectangle() { return new DataUnit('graphicswindow.fillrectangle', DATATYPES.DT_FN); },
+  get drawrectangle() { return new DataUnit('graphicswindow.drawrectangle', DATATYPES.DT_FN); },
+  get drawline() { return new DataUnit('graphicswindow.drawline', DATATYPES.DT_FN); },
+  get drawtext() { return new DataUnit('graphicswindow.drawtext', DATATYPES.DT_FN); }
 };
 
 function phaserCreateFactory(resolver) {

@@ -29,12 +29,12 @@ const program = {
     return new DataUnit(0, DATATYPES.DT_NUMBER);
   },
 
-  getargument: new DataUnit('program.getargument', DATATYPES.DT_FN),
+  get getargument() { return new DataUnit('program.getargument', DATATYPES.DT_FN); },
 
   get directory() {
     return new DataUnit('/', DATATYPES.DT_STRING);
   },
 
-  delay: new DataUnit('program.delay', DATATYPES.DT_FN),
-  end: new DataUnit('program.end', DATATYPES.DT_FN)
+  get delay() { return new DataUnit('program.delay', DATATYPES.DT_FN); },
+  get end() { return new DataUnit('program.end', DATATYPES.DT_FN); }
 };

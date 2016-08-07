@@ -31,8 +31,8 @@ const timer = {
   interval: timerInterval,
   tick: tickHandler,
 
-  pause: new DataUnit('timer.pause', DATATYPES.DT_FN),
-  resume: new DataUnit('timer.resume', DATATYPES.DT_FN)
+  get pause() { return new DataUnit('timer.pause', DATATYPES.DT_FN); },
+  get resume() { return new DataUnit('timer.resume', DATATYPES.DT_FN); }
 };
 
 function startTimer() {

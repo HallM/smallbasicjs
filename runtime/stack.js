@@ -26,7 +26,7 @@ const implstack = {
 };
 
 const stack = {
-  getcount: new DataUnit('stack.getcount', DATATYPES.DT_FN),
-  pushvalue: new DataUnit('stack.pushvalue', DATATYPES.DT_FN),
-  popvalue: new DataUnit('stack.popvalue', DATATYPES.DT_FN),
+  get getcount() { return new DataUnit('stack.getcount', DATATYPES.DT_FN); },
+  get pushvalue() { return new DataUnit('stack.pushvalue', DATATYPES.DT_FN); },
+  get popvalue() { return new DataUnit('stack.popvalue', DATATYPES.DT_FN); }
 };
