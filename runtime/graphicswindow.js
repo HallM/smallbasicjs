@@ -154,30 +154,6 @@ const stringToColorTable = {
   black: 0x000000
 };
 
-// TODO: unglobalify these
-// global, but should only be one on the screen at a time anyway
-let phaserGame = null;
-let phaserGraphics = null;
-
-// TODO: need like an init callback
-let keydown = new DataUnit();
-let backgroundcolor = new DataUnit(0xffffff, DATATYPES.DT_NUMBER);
-let height = new DataUnit(800, DATATYPES.DT_NUMBER);
-let width = new DataUnit(600, DATATYPES.DT_NUMBER);
-let penwidth = new DataUnit(2, DATATYPES.DT_NUMBER);
-let pencolor = new DataUnit(0x000000, DATATYPES.DT_NUMBER);
-let brushcolor = new DataUnit(0x000000, DATATYPES.DT_NUMBER);
-let fontitalic = new DataUnit('false', DATATYPES.DT_STRING);
-let fontname = new DataUnit("Comic Sans MS", DATATYPES.DT_STRING);
-let fontsize = new DataUnit(16, DATATYPES.DT_NUMBER);
-
-// doing this weird caching because of how phaser does text
-let textSpawns = {};
-
-backgroundcolor.on_assign(colorToRgb);
-pencolor.on_assign(colorToRgb);
-brushcolor.on_assign(colorToRgb);
-
 function colorToRgb(color) {
   if (color.type === DATATYPES.DT_NUMBER) {
     // don't change numbers
@@ -204,10 +180,11 @@ const impl = {
   },
 
   clear: function() {
+    const phaserGraphics = this.$graphicswindow.phaserGraphics;
     if (phaserGraphics) {
       phaserGraphics.clear();
 
-      const fillColor = backgroundcolor.as_num();
+      const fillColor = this.graphicswindow.backgroundcolor.as_num();
       phaserGraphics.beginFill(fillColor);
       phaserGraphics.drawRect(0, 0, width.as_num(), height.as_num());
       phaserGraphics.endFill();
@@ -215,14 +192,19 @@ const impl = {
   },
 
   show: function() {
+    const env = this;
+    const phaserGame = env.$graphicswindow.phaserGame;
     if (phaserGame) {
       phaserGame.destroy();
-      phaserGame = null;
+      env.$graphicswindow.phaserGame = null;
     }
 
+    const width = this.graphicswindow.width.as_num();
+    const height = this.graphicswindow.height.as_num();
+
     return new Promise((resolve) => {
-      phaserGame = new Phaser.Game(width.as_num(), height.as_num(), Phaser.AUTO, 'smallbasicjs-graphicswindow', {
-        create: phaserCreateFactory(resolve)
+      env.$graphicswindow.phaserGame = new Phaser.Game(width, height, Phaser.AUTO, 'smallbasicjs-graphicswindow', {
+        create: phaserCreateFactory(resolve).bind(env)
       });
     });
   },
@@ -233,35 +215,38 @@ const impl = {
   },
 
   fillrectangle: function(x, y, w, h) {
+    const phaserGraphics = this.$graphicswindow.phaserGraphics;
     if (!phaserGraphics) {
       return;
     }
 
-    const fillColor = brushcolor.as_num();
+    const fillColor = this.graphicswindow.brushcolor.as_num();
     phaserGraphics.beginFill(fillColor);
     phaserGraphics.drawRect(x.as_num(), y.as_num(), w.as_num(), h.as_num());
     phaserGraphics.endFill();
   },
 
   drawrectangle: function(x, y, w, h) {
+    const phaserGraphics = this.$graphicswindow.phaserGraphics;
     if (!phaserGraphics) {
       return;
     }
 
-    const strokeColor = pencolor.as_num();
-    const strokeWidth = penwidth.as_num();
+    const strokeColor = this.graphicswindow.pencolor.as_num();
+    const strokeWidth = this.graphicswindow.penwidth.as_num();
 
     phaserGraphics.lineStyle(strokeWidth, strokeColor, 1);
     phaserGraphics.drawRect(x.as_num(), y.as_num(), w.as_num(), h.as_num());
   },
 
   drawline: function(x1, y1, x2, y2) {
+    const phaserGraphics = this.$graphicswindow.phaserGraphics;
     if (!phaserGraphics) {
       return;
     }
 
-    const strokeColor = pencolor.as_num();
-    const strokeWidth = penwidth.as_num();
+    const strokeColor = this.graphicswindow.pencolor.as_num();
+    const strokeWidth = this.graphicswindow.penwidth.as_num();
 
     phaserGraphics.lineStyle(strokeWidth, strokeColor, 1);
     phaserGraphics.moveTo(x1.as_num(), y1.as_num());
@@ -270,6 +255,9 @@ const impl = {
   },
 
   drawtext: function(x, y, t) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+    const textSpawns = this.$graphicswindow.textSpawns;
+
     if (!phaserGame) {
       return;
     }
@@ -284,12 +272,12 @@ const impl = {
     }
 
     let txtOptions = {
-      font: fontname.as_string(),
-      fontSize: fontsize.as_num() + 'px',
-      fill: '#' + brushcolor.as_num().toString(16),
+      font: this.graphicswindow.fontname.as_string(),
+      fontSize: this.graphicswindow.fontsize.as_num() + 'px',
+      fill: '#' + this.graphicswindow.brushcolor.as_num().toString(16),
     };
 
-    if (fontitalic.as_bool()) {
+    if (this.graphicswindow.fontitalic.as_bool()) {
       txtOptions.fontStyle = 'italic';
     }
 
@@ -330,6 +318,30 @@ const impl = {
 
 
 function api(env) {
+  // TODO: need like an init callback
+  let keydown = new DataUnit();
+  let backgroundcolor = new DataUnit(0xffffff, DATATYPES.DT_NUMBER);
+  let height = new DataUnit(800, DATATYPES.DT_NUMBER);
+  let width = new DataUnit(600, DATATYPES.DT_NUMBER);
+  let penwidth = new DataUnit(2, DATATYPES.DT_NUMBER);
+  let pencolor = new DataUnit(0x000000, DATATYPES.DT_NUMBER);
+  let brushcolor = new DataUnit(0x000000, DATATYPES.DT_NUMBER);
+  let fontitalic = new DataUnit('false', DATATYPES.DT_STRING);
+  let fontname = new DataUnit("Comic Sans MS", DATATYPES.DT_STRING);
+  let fontsize = new DataUnit(16, DATATYPES.DT_NUMBER);
+
+  backgroundcolor.on_assign(colorToRgb);
+  pencolor.on_assign(colorToRgb);
+  brushcolor.on_assign(colorToRgb);
+
+  env.$graphicswindow = {
+    phaserGame: null,
+    phaserGraphics: null,
+
+    // doing this weird caching because of how phaser does text
+    textSpawns: {},
+  }
+
   return {
     backgroundcolor: backgroundcolor,
 
@@ -349,6 +361,7 @@ function api(env) {
 
     keydown: keydown,
     get lastkey() {
+      const phaserGame = env.$graphicswindow.phaserGame;
       if (!phaserGame) {
         return new DataUnit();
       }
@@ -393,24 +406,27 @@ function api(env) {
 
 function phaserCreateFactory(resolver) {
   return function phaserCreate() {
-    phaserGame.input.keyboard.onDownCallback = phaserKeydown;
+    const phaserGame = this.$graphicswindow.phaserGame;
+    phaserGame.input.keyboard.onDownCallback = phaserKeydown.bind(this);
 
-    phaserGraphics = phaserGame.add.graphics(0, 0);
+    const phaserGraphics = phaserGame.add.graphics(0, 0);
     phaserGraphics.boundsPadding = 0;
 
     // pre-fill the BG
-    const fillColor = backgroundcolor.as_num();
+    const fillColor = this.graphicswindow.backgroundcolor.as_num();
     phaserGraphics.beginFill(fillColor);
-    phaserGraphics.drawRect(0, 0, width.as_num(), height.as_num());
+    phaserGraphics.drawRect(0, 0, this.graphicswindow.width.as_num(), this.graphicswindow.height.as_num());
     phaserGraphics.endFill();
+
+    this.$graphicswindow.phaserGraphics = phaserGraphics;
 
     resolver(new DataUnit());
   }
 }
 
 function phaserKeydown() {
-  if (keydown.type === DATATYPES.DT_FN) {
-    interrupt(keydown.value);
+  if (this.graphicswindow.keydown.type === DATATYPES.DT_FN) {
+    interrupt(this.graphicswindow.keydown.value);
   }
 }
 

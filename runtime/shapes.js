@@ -5,12 +5,14 @@ import {DataUnit, DATATYPES} from './data-unit';
 // module.exports =
 const impl = {
   addrectangle: function(w, h) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+
     const width = w.as_num();
     const height = h.as_num();
 
     let bmd = phaserGame.add.bitmapData(width, height);
     // TODO get the fill from graphicswindow
-    bmd.rect(0, 0, width, height, '#' + brushcolor.value.toString(16));
+    bmd.rect(0, 0, width, height, '#' + this.graphicswindow.brushcolor.value.toString(16));
 
     const sprite = phaserGame.add.sprite(Math.floor(Math.random() * 300), Math.floor(Math.random() * 300), bmd);
 

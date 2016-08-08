@@ -62,16 +62,22 @@ _y1: new DataUnit()
   var stdlibApi = window.stdlib.api(env);
 var graphicswindow = stdlibApi.graphicswindow;
 var implgraphicswindow = window.stdlib.impl.graphicswindow;
+env.graphicswindow = graphicswindow;
 var program = stdlibApi.program;
 var implprogram = window.stdlib.impl.program;
+env.program = program;
 var text = stdlibApi.text;
 var impltext = window.stdlib.impl.text;
+env.text = text;
 var math = stdlibApi.math;
 var implmath = window.stdlib.impl.math;
+env.math = math;
 var array = stdlibApi.array;
 var implarray = window.stdlib.impl.array;
+env.array = array;
 var shapes = stdlibApi.shapes;
 var implshapes = window.stdlib.impl.shapes;
+env.shapes = shapes;
 
   function thread(fn) {
     var tmp = [];

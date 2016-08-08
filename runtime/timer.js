@@ -2,29 +2,41 @@
 
 import {DataUnit, DATATYPES} from './data-unit';
 
-let jstimer = null;
-
-let timerInterval = new DataUnit(0, DATATYPES.DT_NUMBER);
-timerInterval.on_assign(onIntervalChange);
-
-let tickHandler = new DataUnit();
-
 const impl = {
   pause: function() {
-    if (jstimer) {
-      clearTimeout(jstimer);
+    if (this.$timer.jstimer) {
+      clearTimeout(this.$timer.jstimer);
     }
-    jstimer = null;
+    this.$timer.jstimer = null;
   },
 
   resume: function() {
-    if (!jstimer) {
-      startTimer();
+    if (!this.$timer.jstimer) {
+      this.$timer.jstimer = startTimer(this.$timer.tick, this.env.$timer.timerInterval.as_num());
     }
   }
 };
 
 function api(env) {
+  let jstimer = null;
+  let timerInterval = new DataUnit(0, DATATYPES.DT_NUMBER);
+  let tickHandler = new DataUnit();
+
+  env.$timer = {
+    jstimer: jstimer,
+    timerInterval: timerInterval,
+    tickHandler: tickHandler,
+    tick: tick.bind(env)
+  };
+
+  timerInterval.on_assign(function onIntervalChange(v) {
+    // only restart the timer if the interval changes
+    if (jstimer) {
+      clearTimeout(jstimer);
+      startTimer(env.$timer.tick, v.as_num());
+    }
+  });
+
   return {
     interval: timerInterval,
     tick: tickHandler,
@@ -34,22 +46,15 @@ function api(env) {
   };
 }
 
-function startTimer() {
-  const v = timerInterval.as_num();
+function startTimer(t, v) {
   if (v) {
-    jstimer = setTimeout(tick, v);
+    return setTimeout(t, v);
   }
-}
-
-function onIntervalChange() {
-  // only restart the timer if the interval changes
-  if (jstimer) {
-    clearTimeout(jstimer);
-    startTimer();
-  }
+  return null;
 }
 
 function tick() {
+  const tickHandler = this.$timer.tickHandler;
   if (tickHandler.type === DATATYPES.DT_FN) {
     interrupt(tickHandler.value);
   }

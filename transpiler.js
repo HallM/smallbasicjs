@@ -261,7 +261,8 @@ class CodeGenerator {
         return prev;
       }, []).map(v => {
         return 'var ' + v + ' = stdlibApi.' + v + ';\n' +
-                'var impl' + v + ' = window.stdlib.impl.' + v + ';';
+                'var impl' + v + ' = window.stdlib.impl.' + v + ';\n' +
+                'env.' + v + ' = ' + v + ';';
       }).join('\n');
 
     const stdlibImpl = stdlibs
