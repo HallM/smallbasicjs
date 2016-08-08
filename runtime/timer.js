@@ -1,9 +1,6 @@
 'use strict';
 
-const DataUnit = require('./data-unit').DataUnit;
-const DATATYPES = require('./data-unit').DATATYPES;
-const wrapFunction = require('./utils').wrapFunction;
-const bluebird = require('bluebird');
+import {DataUnit, DATATYPES} from './data-unit';
 
 let jstimer = null;
 
@@ -12,7 +9,7 @@ timerInterval.on_assign(onIntervalChange);
 
 let tickHandler = new DataUnit();
 
-const impltimer = {
+const impl = {
   pause: function() {
     if (jstimer) {
       clearTimeout(jstimer);
@@ -27,13 +24,15 @@ const impltimer = {
   }
 };
 
-const timer = {
-  interval: timerInterval,
-  tick: tickHandler,
+function api(env) {
+  return {
+    interval: timerInterval,
+    tick: tickHandler,
 
-  get pause() { return new DataUnit('timer.pause', DATATYPES.DT_FN); },
-  get resume() { return new DataUnit('timer.resume', DATATYPES.DT_FN); }
-};
+    get pause() { return new DataUnit('timer.pause', DATATYPES.DT_FN); },
+    get resume() { return new DataUnit('timer.resume', DATATYPES.DT_FN); }
+  };
+}
 
 function startTimer() {
   const v = timerInterval.as_num();
@@ -55,3 +54,5 @@ function tick() {
     interrupt(tickHandler.value);
   }
 }
+
+export {impl, api};

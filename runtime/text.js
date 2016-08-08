@@ -1,10 +1,8 @@
 'use strict';
 
-// const DataUnit = require('./data-unit').DataUnit;
-// const DATATYPES = require('./data-unit').DATATYPES;
-// const wrapFunction = require('./utils').wrapFunction;
+import {DataUnit, DATATYPES} from './data-unit';
 
-const impltext = {
+const impl = {
   append: function(t1,t2) {
     return new DataUnit(t1.as_string() + t2.as_string(), DATATYPES.DT_STRING);
   },
@@ -60,17 +58,21 @@ const impltext = {
   }
 };
 
-const text = {
-  get append() { return new DataUnit('text.append', DATATYPES.DT_FN); },
-  get getlength() { return new DataUnit('text.getlength', DATATYPES.DT_FN); },
-  get issubtext() { return new DataUnit('text.issubtext', DATATYPES.DT_FN); },
-  get endswith() { return new DataUnit('text.endswith', DATATYPES.DT_FN); },
-  get startswith() { return new DataUnit('text.startswith', DATATYPES.DT_FN); },
-  get getsubtext() { return new DataUnit('text.getsubtext', DATATYPES.DT_FN); },
-  get getsubtexttoend() { return new DataUnit('text.getsubtexttoend', DATATYPES.DT_FN); },
-  get getindexof() { return new DataUnit('text.getindexof', DATATYPES.DT_FN); },
-  get converttolowercase() { return new DataUnit('text.converttolowercase', DATATYPES.DT_FN); },
-  get converttouppercase() { return new DataUnit('text.converttouppercase', DATATYPES.DT_FN); },
-  get getcharacter() { return new DataUnit('text.getcharacter', DATATYPES.DT_FN); },
-  get getcharactercode() { return new DataUnit('text.getcharactercode', DATATYPES.DT_FN); }
-};
+function api(env) {
+  return {
+    get append() { return new DataUnit('text.append', DATATYPES.DT_FN); },
+    get getlength() { return new DataUnit('text.getlength', DATATYPES.DT_FN); },
+    get issubtext() { return new DataUnit('text.issubtext', DATATYPES.DT_FN); },
+    get endswith() { return new DataUnit('text.endswith', DATATYPES.DT_FN); },
+    get startswith() { return new DataUnit('text.startswith', DATATYPES.DT_FN); },
+    get getsubtext() { return new DataUnit('text.getsubtext', DATATYPES.DT_FN); },
+    get getsubtexttoend() { return new DataUnit('text.getsubtexttoend', DATATYPES.DT_FN); },
+    get getindexof() { return new DataUnit('text.getindexof', DATATYPES.DT_FN); },
+    get converttolowercase() { return new DataUnit('text.converttolowercase', DATATYPES.DT_FN); },
+    get converttouppercase() { return new DataUnit('text.converttouppercase', DATATYPES.DT_FN); },
+    get getcharacter() { return new DataUnit('text.getcharacter', DATATYPES.DT_FN); },
+    get getcharactercode() { return new DataUnit('text.getcharactercode', DATATYPES.DT_FN); }
+  };
+}
+
+export {impl, api};

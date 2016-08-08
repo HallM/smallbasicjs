@@ -1,10 +1,8 @@
 'use strict';
 
-// const DataUnit = require('./data-unit').DataUnit;
-// const DATATYPES = require('./data-unit').DATATYPES;
-// const wrapFunction = require('./utils').wrapFunction;
+import {DataUnit, DATATYPES} from './data-unit';
 
-const impltextwindow = {
+const impl = {
   writeline: function(v) {
     console.log(v.as_string());
   },
@@ -31,6 +29,10 @@ const impltextwindow = {
 // TextWindow.ReadNumber()
 // TextWindow.Write(data)
 
-const textwindow = {
-  get writeline() { return new DataUnit('textwindow.writeline', DATATYPES.DT_FN); }
-};
+function api(env) {
+  return {
+    get writeline() { return new DataUnit('textwindow.writeline', DATATYPES.DT_FN); }
+  };
+}
+
+export {impl, api};

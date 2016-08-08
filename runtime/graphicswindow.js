@@ -1,8 +1,6 @@
 'use strict';
 
-// const DataUnit = require('./data-unit').DataUnit;
-// const DATATYPES = require('./data-unit').DATATYPES;
-// const wrapFunction = require('./utils').wrapFunction;
+import {DataUnit, DATATYPES} from './data-unit';
 
 const stringToColorTable = {
   indianred: 0xcd5c5c,
@@ -196,7 +194,7 @@ function colorToRgb(color) {
   color.type = DATATYPES.DT_NUMBER;
 }
 
-const implgraphicswindow = {
+const impl = {
   getcolorfromrgb: function(r, g, b) {
     const red = r.as_num() << 16;
     const green = g.as_num() << 8;
@@ -331,65 +329,67 @@ const implgraphicswindow = {
 // GraphicsWindow.ShowMessage(text, title)
 
 
-const graphicswindow = {
-  backgroundcolor: backgroundcolor,
+function api(env) {
+  return {
+    backgroundcolor: backgroundcolor,
 
-  // TODO
-  title: new DataUnit(),
+    // TODO
+    title: new DataUnit(),
 
-  height: height,
-  width: width,
+    height: height,
+    width: width,
 
-  penwidth: penwidth,
-  pencolor: pencolor,
-  brushcolor: brushcolor,
+    penwidth: penwidth,
+    pencolor: pencolor,
+    brushcolor: brushcolor,
 
-  fontitalic: fontitalic,
-  fontname: fontname,
-  fontsize: fontsize,
+    fontitalic: fontitalic,
+    fontname: fontname,
+    fontsize: fontsize,
 
-  keydown: keydown,
-  get lastkey() {
-    if (!phaserGame) {
-      return new DataUnit();
-    }
+    keydown: keydown,
+    get lastkey() {
+      if (!phaserGame) {
+        return new DataUnit();
+      }
 
-    // TODO: expand this
-    let keyChar = phaserGame.input.keyboard.lastKey.event.keyCode;
+      // TODO: expand this
+      let keyChar = phaserGame.input.keyboard.lastKey.event.keyCode;
 
-    switch (keyChar) {
-      case Phaser.KeyCode.SPACEBAR:
-        keyChar = 'Space';
-        break;
-      case Phaser.KeyCode.UP:
-        keyChar = 'Up';
-        break;
-      case Phaser.KeyCode.DOWN:
-        keyChar = 'Down';
-        break;
-      case Phaser.KeyCode.LEFT:
-        keyChar = 'Left';
-        break;
-      case Phaser.KeyCode.RIGHT:
-        keyChar = 'Right';
-        break;
-      case Phaser.KeyCode.ESC:
-        keyChar = 'Escape';
-        break;
-    }
+      switch (keyChar) {
+        case Phaser.KeyCode.SPACEBAR:
+          keyChar = 'Space';
+          break;
+        case Phaser.KeyCode.UP:
+          keyChar = 'Up';
+          break;
+        case Phaser.KeyCode.DOWN:
+          keyChar = 'Down';
+          break;
+        case Phaser.KeyCode.LEFT:
+          keyChar = 'Left';
+          break;
+        case Phaser.KeyCode.RIGHT:
+          keyChar = 'Right';
+          break;
+        case Phaser.KeyCode.ESC:
+          keyChar = 'Escape';
+          break;
+      }
 
-    return new DataUnit(keyChar, DATATYPES.DT_STRING);
-  },
+      return new DataUnit(keyChar, DATATYPES.DT_STRING);
+    },
 
-  get getcolorfromrgb() { return new DataUnit('graphicswindow.getcolorfromrgb', DATATYPES.DT_FN); },
-  get clear() { return new DataUnit('graphicswindow.clear', DATATYPES.DT_FN); },
-  get show() { return new DataUnit('graphicswindow.show', DATATYPES.DT_FN); },
-  get showmessage() { return new DataUnit('graphicswindow.showmessage', DATATYPES.DT_FN); },
-  get fillrectangle() { return new DataUnit('graphicswindow.fillrectangle', DATATYPES.DT_FN); },
-  get drawrectangle() { return new DataUnit('graphicswindow.drawrectangle', DATATYPES.DT_FN); },
-  get drawline() { return new DataUnit('graphicswindow.drawline', DATATYPES.DT_FN); },
-  get drawtext() { return new DataUnit('graphicswindow.drawtext', DATATYPES.DT_FN); }
-};
+    get getcolorfromrgb() { return new DataUnit('graphicswindow.getcolorfromrgb', DATATYPES.DT_FN); },
+    get clear() { return new DataUnit('graphicswindow.clear', DATATYPES.DT_FN); },
+    get show() { return new DataUnit('graphicswindow.show', DATATYPES.DT_FN); },
+    get showmessage() { return new DataUnit('graphicswindow.showmessage', DATATYPES.DT_FN); },
+    get fillrectangle() { return new DataUnit('graphicswindow.fillrectangle', DATATYPES.DT_FN); },
+    get drawrectangle() { return new DataUnit('graphicswindow.drawrectangle', DATATYPES.DT_FN); },
+    get drawline() { return new DataUnit('graphicswindow.drawline', DATATYPES.DT_FN); },
+    get drawtext() { return new DataUnit('graphicswindow.drawtext', DATATYPES.DT_FN); }
+  };
+}
 
 function phaserCreateFactory(resolver) {
   return function phaserCreate() {
@@ -413,3 +413,5 @@ function phaserKeydown() {
     interrupt(keydown.value);
   }
 }
+
+export {impl, api};

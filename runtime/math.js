@@ -1,10 +1,8 @@
 'use strict';
 
-// const DataUnit = require('./data-unit').DataUnit;
-// const DATATYPES = require('./data-unit').DATATYPES;
-// const wrapFunction = require('./utils').wrapFunction;
+import {DataUnit, DATATYPES} from './data-unit';
 
-const implmath = {
+const impl = {
   abs: function(n) {
     return new DataUnit(Math.abs(n.as_num()), DATATYPES.DT_NUMBER);
   },
@@ -86,27 +84,31 @@ const implmath = {
   }
 };
 
-const math = {
-  get pi() { return new DataUnit(Math.PI, DATATYPES.DT_NUMBER); },
+function api(env) {
+  return {
+    get pi() { return new DataUnit(Math.PI, DATATYPES.DT_NUMBER); },
 
-  get abs() { return new DataUnit('math.abs', DATATYPES.DT_FN); },
-  get ceiling() { return new DataUnit('math.ceiling', DATATYPES.DT_FN); },
-  get floor() { return new DataUnit('math.floor', DATATYPES.DT_FN); },
-  get round() { return new DataUnit('math.round', DATATYPES.DT_FN); },
-  get naturallog() { return new DataUnit('math.naturallog', DATATYPES.DT_FN); },
-  get log() { return new DataUnit('math.log', DATATYPES.DT_FN); },
-  get cos() { return new DataUnit('math.cos', DATATYPES.DT_FN); },
-  get sin() { return new DataUnit('math.sin', DATATYPES.DT_FN); },
-  get tan() { return new DataUnit('math.tan', DATATYPES.DT_FN); },
-  get arcsin() { return new DataUnit('math.arcsin', DATATYPES.DT_FN); },
-  get arccos() { return new DataUnit('math.arccos', DATATYPES.DT_FN); },
-  get arctan() { return new DataUnit('math.arctan', DATATYPES.DT_FN); },
-  get getdegrees() { return new DataUnit('math.getdegrees', DATATYPES.DT_FN); },
-  get getradians() { return new DataUnit('math.getradians', DATATYPES.DT_FN); },
-  get squareroot() { return new DataUnit('math.squareroot', DATATYPES.DT_FN); },
-  get power() { return new DataUnit('math.power', DATATYPES.DT_FN); },
-  get max() { return new DataUnit('math.max', DATATYPES.DT_FN); },
-  get min() { return new DataUnit('math.min', DATATYPES.DT_FN); },
-  get remainder() { return new DataUnit('math.remainder', DATATYPES.DT_FN); },
-  get getrandomnumber() { return new DataUnit('math.getrandomnumber', DATATYPES.DT_FN); },
-};
+    get abs() { return new DataUnit('math.abs', DATATYPES.DT_FN); },
+    get ceiling() { return new DataUnit('math.ceiling', DATATYPES.DT_FN); },
+    get floor() { return new DataUnit('math.floor', DATATYPES.DT_FN); },
+    get round() { return new DataUnit('math.round', DATATYPES.DT_FN); },
+    get naturallog() { return new DataUnit('math.naturallog', DATATYPES.DT_FN); },
+    get log() { return new DataUnit('math.log', DATATYPES.DT_FN); },
+    get cos() { return new DataUnit('math.cos', DATATYPES.DT_FN); },
+    get sin() { return new DataUnit('math.sin', DATATYPES.DT_FN); },
+    get tan() { return new DataUnit('math.tan', DATATYPES.DT_FN); },
+    get arcsin() { return new DataUnit('math.arcsin', DATATYPES.DT_FN); },
+    get arccos() { return new DataUnit('math.arccos', DATATYPES.DT_FN); },
+    get arctan() { return new DataUnit('math.arctan', DATATYPES.DT_FN); },
+    get getdegrees() { return new DataUnit('math.getdegrees', DATATYPES.DT_FN); },
+    get getradians() { return new DataUnit('math.getradians', DATATYPES.DT_FN); },
+    get squareroot() { return new DataUnit('math.squareroot', DATATYPES.DT_FN); },
+    get power() { return new DataUnit('math.power', DATATYPES.DT_FN); },
+    get max() { return new DataUnit('math.max', DATATYPES.DT_FN); },
+    get min() { return new DataUnit('math.min', DATATYPES.DT_FN); },
+    get remainder() { return new DataUnit('math.remainder', DATATYPES.DT_FN); },
+    get getrandomnumber() { return new DataUnit('math.getrandomnumber', DATATYPES.DT_FN); },
+  };
+}
+
+export {impl, api};

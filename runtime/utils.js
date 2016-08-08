@@ -1,6 +1,13 @@
 'use strict';
 
-// const DataUnit = require('./data-unit').DataUnit;
-// const DATATYPES = require('./data-unit').DATATYPES;
+import {DataUnit, DATATYPES} from './data-unit';
 
-// exports.wrapFunction =
+function resolvearray(env, aname) {
+  if (!env.hasOwnProperty(aname)) {
+    env[aname] = new DataUnit({}, DATATYPES.DT_ARRAY);
+  }
+
+  return env[aname].cast_array();
+}
+
+export { resolvearray };

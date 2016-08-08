@@ -250,8 +250,21 @@ class CodeGenerator {
         }
       }).join(',\n');
 
-    const stdlibOutput = this.stdlib
-      .filter(v => this.vars.indexOf(v) === -1)
+    const stdlibs = this.stdlib.filter(v => this.vars.indexOf(v) === -1);
+
+    const stdlibVars = stdlibs
+      .reduce((prev, v) => {
+        const lib = v.substring(0, v.indexOf('.'));
+        if (prev.indexOf(lib) === -1) {
+          prev.push(lib);
+        }
+        return prev;
+      }, []).map(v => {
+        return 'var ' + v + ' = stdlibApi.' + v + ';\n' +
+                'var impl' + v + ' = window.stdlib.impl.' + v + ';';
+      }).join('\n');
+
+    const stdlibImpl = stdlibs
       .map((v) => {
         return 'case "' + v + '":\n' +
           'retval = impl' + v + '.apply(env, fn[fn.length - 1][1]);\n' +
@@ -266,14 +279,17 @@ class CodeGenerator {
           'break;\n';
       }).join('\n');
 
-    return `//'use strict';
-//var DataUnit = require('./runtime/data-unit').DataUnit;
-//var DATATYPES = require('./runtime/data-unit').DATATYPES;
-
+    return `
 var interrupt = (function() {
+  var DataUnit = window.stdlib.DataUnit;
+  var DATATYPES = window.stdlib.DATATYPES;
+
   const env = {
 ${varOutput}
   };
+
+  var stdlibApi = window.stdlib.api(env);
+${stdlibVars}
 
   function thread(fn) {
     var tmp = [];
@@ -286,7 +302,7 @@ ${varOutput}
 
       while(1) {
         switch(next) {
-  ${stdlibOutput}
+  ${stdlibImpl}
 
           case '':
   ${code}

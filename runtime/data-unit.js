@@ -289,5 +289,4 @@ class DataUnit {
   }
 };
 
-// exports.DATATYPES = DATATYPES;
-// exports.DataUnit = DataUnit;
+export {DATATYPES, DataUnit};

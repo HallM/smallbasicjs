@@ -1,8 +1,8 @@
-//'use strict';
-//var DataUnit = require('./runtime/data-unit').DataUnit;
-//var DATATYPES = require('./runtime/data-unit').DATATYPES;
 
 var interrupt = (function() {
+  var DataUnit = window.stdlib.DataUnit;
+  var DATATYPES = window.stdlib.DATATYPES;
+
   const env = {
 _handlekey: new DataUnit("_handlekey", DATATYPES.DT_FN),
 _boxes: new DataUnit(),
@@ -58,6 +58,20 @@ _piece: new DataUnit(),
 _x1: new DataUnit(),
 _y1: new DataUnit()
   };
+
+  var stdlibApi = window.stdlib.api(env);
+var graphicswindow = stdlibApi.graphicswindow;
+var implgraphicswindow = window.stdlib.impl.graphicswindow;
+var program = stdlibApi.program;
+var implprogram = window.stdlib.impl.program;
+var text = stdlibApi.text;
+var impltext = window.stdlib.impl.text;
+var math = stdlibApi.math;
+var implmath = window.stdlib.impl.math;
+var array = stdlibApi.array;
+var implarray = window.stdlib.impl.array;
+var shapes = stdlibApi.shapes;
+var implshapes = window.stdlib.impl.shapes;
 
   function thread(fn) {
     var tmp = [];

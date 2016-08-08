@@ -1,11 +1,9 @@
 'use strict';
 
-// const DataUnit = require('./data-unit').DataUnit;
-// const DATATYPES = require('./data-unit').DATATYPES;
-// const wrapFunction = require('./utils').wrapFunction;
+import {DataUnit, DATATYPES} from './data-unit';
 
 // module.exports =
-const implcontrols = {
+const impl = {
   // gettop: function(s) {
   //   let y = 0;
   //   if (s.type === DATATYPES.DT_SHAPE) {
@@ -38,6 +36,10 @@ const implcontrols = {
 // Controls.HideControl(controlName)
 // Controls.ShowControl(controlName)
 
-const controls = {
-//  get addrectangle() { return new DataUnit('shapes.addrectangle', DATATYPES.DT_FN); },
-};
+function api(env) {
+  return {
+  //  get addrectangle() { return new DataUnit('shapes.addrectangle', DATATYPES.DT_FN); },
+  };
+}
+
+export {impl, api};

@@ -1,12 +1,10 @@
 'use strict';
 
-// const DataUnit = require('./data-unit').DataUnit;
-// const DATATYPES = require('./data-unit').DATATYPES;
-// const wrapFunction = require('./utils').wrapFunction;
-const axios = require('axios');
+import {DataUnit, DATATYPES} from './data-unit';
+import * as axios from 'axios';
 
 // module.exports =
-const implsound = {
+const impl = {
   // gettop: function(s) {
   //   let y = 0;
   //   if (s.type === DATATYPES.DT_SHAPE) {
@@ -33,6 +31,10 @@ const implsound = {
 // Music Markup Language from QBasic
 // Sound.PlayMusic(notes)
 
-const sound = {
-//  get addrectangle() { return new DataUnit('shapes.addrectangle', DATATYPES.DT_FN); },
-};
+function api(env) {
+  return {
+  //  get addrectangle() { return new DataUnit('shapes.addrectangle', DATATYPES.DT_FN); },
+  };
+}
+
+export {impl, api};

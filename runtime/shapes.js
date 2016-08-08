@@ -1,11 +1,9 @@
 'use strict';
 
-// const DataUnit = require('./data-unit').DataUnit;
-// const DATATYPES = require('./data-unit').DATATYPES;
-// const wrapFunction = require('./utils').wrapFunction;
+import {DataUnit, DATATYPES} from './data-unit';
 
 // module.exports =
-const implshapes = {
+const impl = {
   addrectangle: function(w, h) {
     const width = w.as_num();
     const height = h.as_num();
@@ -67,10 +65,14 @@ const implshapes = {
 // Shapes.HideShape(shapeName)
 // Shapes.ShowShape(shapeName)
 
-const shapes = {
-  get addrectangle() { return new DataUnit('shapes.addrectangle', DATATYPES.DT_FN); },
-  get move() { return new DataUnit('shapes.move', DATATYPES.DT_FN); },
-  get remove() { return new DataUnit('shapes.remove', DATATYPES.DT_FN); },
-  get getleft() { return new DataUnit('shapes.getleft', DATATYPES.DT_FN); },
-  get gettop() { return new DataUnit('shapes.gettop', DATATYPES.DT_FN); }
-};
+function api(env) {
+  return {
+    get addrectangle() { return new DataUnit('shapes.addrectangle', DATATYPES.DT_FN); },
+    get move() { return new DataUnit('shapes.move', DATATYPES.DT_FN); },
+    get remove() { return new DataUnit('shapes.remove', DATATYPES.DT_FN); },
+    get getleft() { return new DataUnit('shapes.getleft', DATATYPES.DT_FN); },
+    get gettop() { return new DataUnit('shapes.gettop', DATATYPES.DT_FN); }
+  };
+}
+
+export {impl, api};

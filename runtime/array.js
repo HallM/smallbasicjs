@@ -1,22 +1,9 @@
 'use strict';
 
-// const DataUnit = require('./data-unit').DataUnit;
-// const DATATYPES = require('./data-unit').DATATYPES;
-// const wrapFunction = require('./utils').wrapFunction;
+import {DataUnit, DATATYPES} from './data-unit';
+import {resolvearray} from './utils';
 
-// module.exports =
-function __resolvearray(env, aname) {
-  var arr = null;
-
-  if (!env.hasOwnProperty(aname)) {
-    console.log('create "env._' + aname + '"');
-    env[aname] = new DataUnit({}, DATATYPES.DT_ARRAY);
-  }
-
-  return env[aname].cast_array();
-}
-
-const implarray = {
+const impl = {
   containsindex: function(array, index) {
     var arr = array.as_array();
     if (!arr) {
@@ -35,7 +22,7 @@ const implarray = {
 
   getallindices: function(array) {
     var arr = array.as_array();
-    var indecies = Object.keys(array).reduce((obj, k, indx) => {
+    var indecies = Object.keys(arr).reduce((obj, k, indx) => {
       obj[indx + 1] = new DataUnit(k, DATATYPES.DT_STRING);
     }, {});
     return new DataUnit(indecies, DATATYPES.DT_ARRAY);
@@ -51,28 +38,32 @@ const implarray = {
   },
 
   getvalue: function(a, i) {
-    var arr = __resolvearray(this, a.as_string());
+    var arr = resolvearray(this, a.as_string());
     return arr[i.as_string()] || new DataUnit();
   },
 
   setvalue: function(a, i, v) {
-    var arr = __resolvearray(this, a.as_string());
+    var arr = resolvearray(this, a.as_string());
     arr[i.as_string()] = v.make_clone();
   },
 
   removevalue: function(arrayName, index) {
-    var arr = __resolvearray(this, a.as_string());
+    var arr = resolvearray(this, a.as_string());
     delete arr[i.as_string()];
   }
 };
 
-const array = {
-  get containsindex() { return new DataUnit('array.containsindex', DATATYPES.DT_FN); },
-  get containsvalue() { return new DataUnit('array.containsvalue', DATATYPES.DT_FN); },
-  get getallindices() { return new DataUnit('array.getallindices', DATATYPES.DT_FN); },
-  get getitemcount() { return new DataUnit('array.getitemcount', DATATYPES.DT_FN); },
-  get isarray() { return new DataUnit('array.isarray', DATATYPES.DT_FN); },
-  get getvalue() { return new DataUnit('array.getvalue', DATATYPES.DT_FN); },
-  get setvalue() { return new DataUnit('array.setvalue', DATATYPES.DT_FN); },
-  get removevalue() { return new DataUnit('array.removevalue', DATATYPES.DT_FN); }
-};
+function api(env) {
+  return {
+    get containsindex() { return new DataUnit('array.containsindex', DATATYPES.DT_FN); },
+    get containsvalue() { return new DataUnit('array.containsvalue', DATATYPES.DT_FN); },
+    get getallindices() { return new DataUnit('array.getallindices', DATATYPES.DT_FN); },
+    get getitemcount() { return new DataUnit('array.getitemcount', DATATYPES.DT_FN); },
+    get isarray() { return new DataUnit('array.isarray', DATATYPES.DT_FN); },
+    get getvalue() { return new DataUnit('array.getvalue', DATATYPES.DT_FN); },
+    get setvalue() { return new DataUnit('array.setvalue', DATATYPES.DT_FN); },
+    get removevalue() { return new DataUnit('array.removevalue', DATATYPES.DT_FN); }
+  };
+}
+
+export {impl, api};
