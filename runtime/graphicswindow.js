@@ -1,8 +1,6 @@
 'use strict';
 
-// const DataUnit = require('./data-unit').DataUnit;
-// const DATATYPES = require('./data-unit').DATATYPES;
-// const wrapFunction = require('./utils').wrapFunction;
+import {DataUnit, DATATYPES} from './data-unit';
 
 const stringToColorTable = {
   indianred: 0xcd5c5c,
@@ -196,20 +194,16 @@ function colorToRgb(color) {
   color.type = DATATYPES.DT_NUMBER;
 }
 
-const graphicswindow = {
-  keydown: keydown,
-
-  backgroundcolor: backgroundcolor,
-
-  getcolorfromrgb: wrapFunction(function*(r, g, b) {
+const impl = {
+  getcolorfromrgb: function(r, g, b) {
     const red = r.as_num() << 16;
     const green = g.as_num() << 8;
     const blue = b.as_num();
     const rgb = red | green | blue;
     return new DataUnit(rgb, DATATYPES.DT_NUMBER);
-  }),
+  },
 
-  clear: wrapFunction(function*() {
+  clear: function() {
     if (phaserGraphics) {
       phaserGraphics.clear();
 
@@ -218,72 +212,27 @@ const graphicswindow = {
       phaserGraphics.drawRect(0, 0, width.as_num(), height.as_num());
       phaserGraphics.endFill();
     }
-  }),
+  },
 
-  // TODO
-  title: new DataUnit(),
-
-  height: height,
-
-  width: width,
-
-  show: wrapFunction(function*() {
+  show: function() {
     if (phaserGame) {
       phaserGame.destroy();
       phaserGame = null;
     }
 
-    yield new Promise((resolve) => {
+    return new Promise((resolve) => {
       phaserGame = new Phaser.Game(width.as_num(), height.as_num(), Phaser.AUTO, 'smallbasicjs-graphicswindow', {
         create: phaserCreateFactory(resolve)
       });
     });
-  }),
-
-  showmessage: wrapFunction(function*() {
-    // TODO
-    return new DataUnit();
-  }),
-
-  get lastkey() {
-    if (!phaserGame) {
-      return new DataUnit();
-    }
-
-    // TODO: expand this
-    let keyChar = phaserGame.input.keyboard.lastKey.event.keyCode;
-
-    switch (keyChar) {
-      case Phaser.KeyCode.SPACEBAR:
-        keyChar = 'Space';
-        break;
-      case Phaser.KeyCode.UP:
-        keyChar = 'Up';
-        break;
-      case Phaser.KeyCode.DOWN:
-        keyChar = 'Down';
-        break;
-      case Phaser.KeyCode.LEFT:
-        keyChar = 'Left';
-        break;
-      case Phaser.KeyCode.RIGHT:
-        keyChar = 'Right';
-        break;
-      case Phaser.KeyCode.ESC:
-        keyChar = 'Escape';
-        break;
-    }
-
-    return new DataUnit(keyChar, DATATYPES.DT_STRING);
   },
 
-  penwidth: penwidth,
+  showmessage: function() {
+    // TODO
+    return new DataUnit();
+  },
 
-  pencolor: pencolor,
-
-  brushcolor: brushcolor,
-
-  fillrectangle: wrapFunction(function*(x, y, w, h) {
+  fillrectangle: function(x, y, w, h) {
     if (!phaserGraphics) {
       return;
     }
@@ -292,9 +241,9 @@ const graphicswindow = {
     phaserGraphics.beginFill(fillColor);
     phaserGraphics.drawRect(x.as_num(), y.as_num(), w.as_num(), h.as_num());
     phaserGraphics.endFill();
-  }),
+  },
 
-  drawrectangle: wrapFunction(function*(x, y, w, h) {
+  drawrectangle: function(x, y, w, h) {
     if (!phaserGraphics) {
       return;
     }
@@ -304,9 +253,9 @@ const graphicswindow = {
 
     phaserGraphics.lineStyle(strokeWidth, strokeColor, 1);
     phaserGraphics.drawRect(x.as_num(), y.as_num(), w.as_num(), h.as_num());
-  }),
+  },
 
-  drawline: wrapFunction(function*(x1, y1, x2, y2) {
+  drawline: function(x1, y1, x2, y2) {
     if (!phaserGraphics) {
       return;
     }
@@ -318,15 +267,9 @@ const graphicswindow = {
     phaserGraphics.moveTo(x1.as_num(), y1.as_num());
     phaserGraphics.lineTo(x2.as_num(), y2.as_num());
     phaserGraphics.endFill();
-  }),
+  },
 
-  fontitalic: fontitalic,
-
-  fontname: fontname,
-
-  fontsize: fontsize,
-
-  drawtext: wrapFunction(function*(x, y, t) {
+  drawtext: function(x, y, t) {
     if (!phaserGame) {
       return;
     }
@@ -352,8 +295,101 @@ const graphicswindow = {
 
     const phaserText = phaserGame.add.text(xPos, yPos, t.as_string(), txtOptions);
     textSpawns[spawnLoc] = phaserText;
-  })
+  }
 };
+
+// properties
+// GraphicsWindow.CanResize
+// GraphicsWindow.FontBold
+// GraphicsWindow.Left
+// GraphicsWindow.Top
+// GraphicsWindow.LastText
+// GraphicsWindow.MouseX
+// GraphicsWindow.MouseY
+
+// events
+// GraphicsWindow.KeyUp
+// GraphicsWindow.MouseDown
+// GraphicsWindow.MouseUp
+// GraphicsWindow.MouseMove
+// GraphicsWindow.TextInput
+
+// fns
+// GraphicsWindow.Hide()
+// GraphicsWindow.DrawEllipse(x, y, width, height)
+// GraphicsWindow.FillEllipse(x, y, width, height)
+// GraphicsWindow.DrawTriangle(x1, y1, x2, y2, x3, y3)
+// GraphicsWindow.FillTriangle(x1, y1, x2, y2, x3, y3)
+// GraphicsWindow.DrawBoundText(x, y, width, text)
+// GraphicsWindow.DrawResizedImage(imageName, x, y, width, height)
+// GraphicsWindow.DrawImage(imageName, x, y)
+// GraphicsWindow.SetPixel(x, y, color)
+// GraphicsWindow.GetPixel(x, y)
+// GraphicsWindow.GetRandomColor()
+// GraphicsWindow.ShowMessage(text, title)
+
+
+function api(env) {
+  return {
+    backgroundcolor: backgroundcolor,
+
+    // TODO
+    title: new DataUnit(),
+
+    height: height,
+    width: width,
+
+    penwidth: penwidth,
+    pencolor: pencolor,
+    brushcolor: brushcolor,
+
+    fontitalic: fontitalic,
+    fontname: fontname,
+    fontsize: fontsize,
+
+    keydown: keydown,
+    get lastkey() {
+      if (!phaserGame) {
+        return new DataUnit();
+      }
+
+      // TODO: expand this
+      let keyChar = phaserGame.input.keyboard.lastKey.event.keyCode;
+
+      switch (keyChar) {
+        case Phaser.KeyCode.SPACEBAR:
+          keyChar = 'Space';
+          break;
+        case Phaser.KeyCode.UP:
+          keyChar = 'Up';
+          break;
+        case Phaser.KeyCode.DOWN:
+          keyChar = 'Down';
+          break;
+        case Phaser.KeyCode.LEFT:
+          keyChar = 'Left';
+          break;
+        case Phaser.KeyCode.RIGHT:
+          keyChar = 'Right';
+          break;
+        case Phaser.KeyCode.ESC:
+          keyChar = 'Escape';
+          break;
+      }
+
+      return new DataUnit(keyChar, DATATYPES.DT_STRING);
+    },
+
+    get getcolorfromrgb() { return new DataUnit('graphicswindow.getcolorfromrgb', DATATYPES.DT_FN); },
+    get clear() { return new DataUnit('graphicswindow.clear', DATATYPES.DT_FN); },
+    get show() { return new DataUnit('graphicswindow.show', DATATYPES.DT_FN); },
+    get showmessage() { return new DataUnit('graphicswindow.showmessage', DATATYPES.DT_FN); },
+    get fillrectangle() { return new DataUnit('graphicswindow.fillrectangle', DATATYPES.DT_FN); },
+    get drawrectangle() { return new DataUnit('graphicswindow.drawrectangle', DATATYPES.DT_FN); },
+    get drawline() { return new DataUnit('graphicswindow.drawline', DATATYPES.DT_FN); },
+    get drawtext() { return new DataUnit('graphicswindow.drawtext', DATATYPES.DT_FN); }
+  };
+}
 
 function phaserCreateFactory(resolver) {
   return function phaserCreate() {
@@ -368,12 +404,14 @@ function phaserCreateFactory(resolver) {
     phaserGraphics.drawRect(0, 0, width.as_num(), height.as_num());
     phaserGraphics.endFill();
 
-    resolver();
+    resolver(new DataUnit());
   }
 }
 
 function phaserKeydown() {
   if (keydown.type === DATATYPES.DT_FN) {
-    (bluebird.coroutine(keydown.value))();
+    interrupt(keydown.value);
   }
 }
+
+export {impl, api};

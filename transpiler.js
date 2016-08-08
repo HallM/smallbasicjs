@@ -10,8 +10,11 @@ class CodeGenerator {
   constructor() {
     this.vars = [];
     this.callables = [];
+    this.stdlib = [];
     this.blockLevel = 1;
-    this.indentString = '  ';
+    this.indentString = '';
+    this.L = 0;
+    this.pushpop = 0;
   }
 
   inc_indent() {
@@ -34,65 +37,311 @@ class CodeGenerator {
       this.callables.push(varname);
     }
   }
+  add_stdlib(prop) {
+    if (this.stdlib.indexOf(prop) === -1) {
+      this.stdlib.push(prop);
+    }
+  }
+
+  optimize_code(code) {
+    const lines = code
+      .split('\n')
+      .filter(function(l) {
+        return l && l.length;
+      });
+
+    // console.log('original LOC: ', lines.length);
+    let didOptimizeThisPass = false;
+    // let optimizationsDone = [];
+	  // let linestweaked = [];
+
+    function opt(lines) {
+      const pushPopsToRemove = [];
+      didOptimizeThisPass = false;
+      // let lastLine = null;
+      // optimizationsDone = [];
+      // linestweaked = [];
+      const out = [];
+
+      for (let i=0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        let didOptimizeThisLine = false;
+
+        // remove useless lines
+        if (!line.length || line === ';') {
+          didOptimizeThisLine = true;
+        }
+
+        if (!didOptimizeThisLine && line.indexOf(' = ') !== -1) {
+          var parts = line.substring(0, line.lastIndexOf(';')).split(' = ');
+          if (parts.length === 2 && parts[0].trim() === parts[1].trim()) {
+            // it's a noop
+            didOptimizeThisLine = true;
+          }
+        }
+        if (!didOptimizeThisLine && /^[a-z0-9_]+\s=\s/i.test(line)) {
+          const equalsIndex = line.indexOf('=');
+          const varname = line.substring(0, equalsIndex - 1);
+          let j = i+1;
+
+          if (j < lines.length) {
+            const otherLine = lines[j];
+            if (otherLine.substr(0, (varname.length*2) + 4) === (varname + ' = ' + varname + '.')) {
+              const loc = otherLine.lastIndexOf(varname);
+              const replacement = line.substring(equalsIndex+2, line.lastIndexOf(';'));
+              out.push(otherLine.substring(0, loc) + replacement + otherLine.substring(loc + varname.length));
+              i = j;
+              didOptimizeThisLine = true;
+            } else if (otherLine.substr(0, varname.length + 3) === (varname + ' = ')) {
+              const lIndex = otherLine.indexOf(varname, 1);
+              const rIndex = otherLine.lastIndexOf(varname);
+              if (lIndex === -1) {
+                out.push(line.substring(equalsIndex+2));
+                didOptimizeThisLine = true;
+              } else if (lIndex === rIndex) {
+                const loc = lIndex;
+                const replacement = line.substring(equalsIndex+2, line.lastIndexOf(';'));
+                out.push(otherLine.substring(0, loc) + replacement + otherLine.substring(loc + varname.length));
+                i = j;
+                didOptimizeThisLine = true;
+              }
+            } else if (otherLine.indexOf(varname) > 0) {
+              // can only be used once
+
+              if (otherLine.indexOf(varname, otherLine.indexOf(varname, 1)+1) === -1) {
+                // do a look ahead to make sure it's not used another time
+                let varUsed = false;
+
+                for (let x = j+1; x < lines.length; x++) {
+                  const checkLine = lines[x];
+                  if (checkLine.indexOf('next') !== -1 || checkLine.indexOf('break') !== -1) {
+                    // assume that someone else may end up using it
+                    varUsed = true;
+                    break;
+                  } else if (checkLine.indexOf(varname, 1) !== -1) {
+                    varUsed = true;
+                    break;
+                  } else if (checkLine.substr(0, varname.length + 3) === (varname + ' = ')) {
+                    break;
+                  }
+                }
+
+                // we cannot have two pops on the same line, they may be out of order
+                if (line.indexOf('tmp.pop') !== -1 && otherLine.indexOf('tmp.pop') !== -1) {
+                  varUsed = true;
+                }
+
+                if (!varUsed) {
+                  const loc = otherLine.lastIndexOf(varname);
+                  const replacement = line.substring(equalsIndex+2, line.lastIndexOf(';'));
+                  out.push(otherLine.substring(0, loc) + replacement + otherLine.substring(loc + varname.length));
+                  i = j;
+                  didOptimizeThisLine = true;
+                }
+              }
+            }
+          }
+        }
+        if (!didOptimizeThisLine && line === 'params = [];') {
+          let j = i+1;
+          let canOptimize = true;
+
+          for (; j < lines.length; j++) {
+            const otherLine = lines[j];
+            if (otherLine.substr(0, 'fn.push(["$L'.length) === 'fn.push(["$L') {
+              break;
+            } else if (otherLine.substr(0, 'params.push('.length) !== 'params.push(') {
+              canOptimize = false;
+            }
+          }
+
+          if (canOptimize) {
+            didOptimizeThisLine = true;
+            let newLine = lines[j].substring(0, lines[j].indexOf(',')) + ', [';
+            let first = true;
+            for (i++; i < j; i++) {
+              if (first) {
+                first = false;
+              } else {
+                newLine += ', ';
+              }
+              newLine += lines[i].substring('params.push('.length, lines[i].length-2);
+            }
+            newLine += ']]);';
+            out.push(newLine);
+          }
+        }
+        if (!didOptimizeThisLine && line.substr(0, 'next = "'.length) === 'next = "') {
+          if (i+2 < lines.length) {
+            if (lines[i+1] === 'break;' && lines[i+2] === 'case "' + line.substr('next = "'.length, line.indexOf('"')) + '":') {
+              didOptimizeThisLine = true;
+              out.push(lines[i+2]);
+              i += 2;
+            }
+          }
+        }
+        if (!didOptimizeThisLine && line.substr(0, 'fn.push(["$L'.length) === 'fn.push(["$L') {
+          if (lines[i-1].substr(0, 'tmp.push(params);//PUSHPOP'.length) === 'tmp.push(params);//PUSHPOP') {
+            const pp = parseInt(lines[i-1].substring('tmp.push(params);//PUSHPOP'.length), 10);
+            if (pushPopsToRemove.indexOf(pp) === -1) {
+              pushPopsToRemove.push(pp);
+            }
+          }
+        }
+        if (!didOptimizeThisLine && /^[a-z0-9_]+;$/i.test(line) && line !== 'break;') {
+          didOptimizeThisLine = true;
+        }
+        if (!didOptimizeThisLine && line.substr(0, 'tmp.pop();//PUSHPOP'.length) === 'tmp.pop();//PUSHPOP') {
+          const pp = parseInt(line.substring('tmp.pop();//PUSHPOP'.length), 10);
+          if (pushPopsToRemove.indexOf(pp) === -1) {
+            pushPopsToRemove.push(pp);
+          }
+          didOptimizeThisLine = true;
+        }
+
+        if (!didOptimizeThisLine) {
+          out.push(line);
+        } else {
+          didOptimizeThisPass = true;
+        }
+      }
+
+      return out.filter(function(line) {
+        const indx = line.indexOf('//PUSHPOP');
+        if (indx !== -1) {
+          const pp = parseInt(line.substring(indx + '//PUSHPOP'.length), 10);
+          if (pushPopsToRemove.indexOf(pp) !== -1) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    let optimized = opt(lines);
+    // console.log('first pass optimized LOC: ', optimized.length);
+    // console.log('optimizationsDone', optimizationsDone)
+    while (didOptimizeThisPass) {
+      optimized = opt(optimized);
+      // console.log('another pass optimized LOC: ', optimized.length);
+      // console.log('optimizationsDone', optimizationsDone)
+      // console.log('', linestweaked)
+    }
+
+    // DO NOT clean up the, what look like, unmatched push+pops. it's just lost comments
+
+    // console.log('optimized LOC: ', optimized.length);
+    return optimized.join('\n');
+  }
 
   process_file(str) {
     // parser gets confused if file does not end with a blank new line
     const ast = parser.parse(str + '\n');
-    const code = this.process_block(ast);
+    const code = this.optimize_code(this.process_block(ast));
 
     const varIndent = this.indentString + this.indentString + this.indentString;
 
     const varOutput = this.vars
       .map((v) => {
         if (this.callables.indexOf(v) !== -1) {
-          return varIndent + v + ': new DataUnit($' + v + ', DATATYPES.DT_FN)';
+          return varIndent + v + ': new DataUnit("' + v + '", DATATYPES.DT_FN)';
         } else {
           return varIndent + v + ': new DataUnit()';
         }
       }).join(',\n');
 
-    return `// 'use strict';
+    const stdlibs = this.stdlib.filter(v => this.vars.indexOf(v) === -1);
 
-//const bluebird = require('bluebird');
-//const DataUnit = require('./runtime/data-unit').DataUnit;
-//const DATATYPES = require('./runtime/data-unit').DATATYPES;
+    const stdlibVars = stdlibs
+      .reduce((prev, v) => {
+        const lib = v.substring(0, v.indexOf('.'));
+        if (prev.indexOf(lib) === -1) {
+          prev.push(lib);
+        }
+        return prev;
+      }, []).map(v => {
+        return 'var ' + v + ' = stdlibApi.' + v + ';\n' +
+                'var impl' + v + ' = window.stdlib.impl.' + v + ';';
+      }).join('\n');
 
-function runnable() {
-  function* execute() {
-    const env = {
+    const stdlibImpl = stdlibs
+      .map((v) => {
+        return 'case "' + v + '":\n' +
+          'retval = impl' + v + '.apply(env, fn[fn.length - 1][1]);\n' +
+          'if (retval && retval.then) {\n' +
+            'retval.next = "' + v + '$0";\n' +
+            'return retval;\n' +
+          '}\n' +
+        'case "' + v + '$0":\n' +
+          'retval = val || retval;\n' +
+          'val = undefined;\n' +
+          'next = fn.pop()[0];\n' +
+          'break;\n';
+      }).join('\n');
+
+    return `
+var interrupt = (function() {
+  var DataUnit = window.stdlib.DataUnit;
+  var DATATYPES = window.stdlib.DATATYPES;
+
+  const env = {
 ${varOutput}
-    };
+  };
 
-    // const array = require('./runtime/array')(env);
-    // const graphicswindow = require('./runtime/graphicswindow')(env);
-    // const math = require('./runtime/math')(env);
-    // const program = require('./runtime/program')(env);
-    // const shapes = require('./runtime/shapes')(env);
-    // const text = require('./runtime/text')(env);
-    // const array = arrayFactory(env);
-    // const graphicswindow = graphicswindowFactory(env);
-    // const math = mathFactory(env);
-    // const program = programFactory(env);
-    // const shapes = shapesFactory(env);
-    // const text = textFactory(env);
+  var stdlibApi = window.stdlib.api(env);
+${stdlibVars}
 
-${code}
+  function thread(fn) {
+    var tmp = [];
+    var fn = fn || [];
+
+    return function execute(next, val) {
+      var params = null;
+      var scratch = new DataUnit();
+      var retval = new DataUnit();
+
+      while(1) {
+        switch(next) {
+  ${stdlibImpl}
+
+          case '':
+  ${code}
+          default:
+            return null;
+        }
+        if (!next) {
+          return null;
+        }
+      }
+    }
   }
 
-  (bluebird.coroutine(execute))().then(function() {
-    console.log('program finished!');
-  }).catch(function(e) {
-    if (e.issafetoignoreexit) {
-      console.log('program finished!');
-      return;
+  var curlabel = '';
+  var mainThread = thread();
+  function runner(val) {
+    var ret = mainThread(curlabel, val);
+    if (ret) {
+      curlabel = ret.next;
+      ret.then(runner);
+    }
+  }
+  runner();
+
+  return function interrupt(fnname) {
+    var intlabel = fnname;
+    var intThread = thread([null, []]);
+
+    function intrun(val) {
+      var ret = intThread(intlabel, val);
+      if (ret) {
+        intlabel = ret.next;
+        ret.then(intrun);
+      }
     }
 
-    console.log('An error occurred');
-    console.log(e);
-  });
-}
-
-runnable();
+    intrun();
+  }
+})();
 `;
   }
 
@@ -129,39 +378,41 @@ runnable();
     return ret;
   }
 
-  process_lhs(node) {
+  process_lhs(node, isCalled) {
     const type = node[0];
     const astnode = node[1];
 
-    if (type === 'array') {
-      return this.process_array(astnode);
-    } else if (type === 'property') {
-      return this.process_property(astnode);
+    const prefix = 'scratch = ';
+    const postfix = ';\n';
+
+    if (type === 'property') {
+      return prefix + this.process_property(astnode, isCalled) + postfix;
     } else if (type === 'variable') {
-      return this.process_variable(astnode);
+      return prefix + this.process_variable(astnode) + postfix;
     }
 
     throw new Error('invalid type in lhs ' + type);
   }
 
-  process_expression(node) {
+  process_expression(node, isRhs) {
     const type = node[0];
     const astnode = node[1];
 
+    const prefix = isRhs ? '' : 'scratch = ';
+    const postfix = isRhs ? '' : ';\n';
+
     if (type === 'binop') {
-      return this.process_binop(astnode);
+      return this.process_binop(astnode) + postfix;
     } else if (type === 'unop') {
-      return this.process_unop(astnode);
-    } else if (type === 'array') {
-      return this.process_array(astnode);
+      return prefix + this.process_unop(astnode) + postfix;
     } else if (type === 'property') {
-      return this.process_property(astnode);
+      return prefix + this.process_property(astnode) + postfix;
     } else if (type === 'variable') {
-      return this.process_variable(astnode);
+      return prefix + this.process_variable(astnode) + postfix;
     } else if (type === 'call') {
-      return this.process_call(astnode);
+      return prefix + this.process_call(astnode) + postfix;
     } else if (type === 'literal') {
-      return this.process_literal(astnode);
+      return prefix + this.process_literal(astnode) + postfix;
     }
 
     throw new Error('invalid type in expression ' + type);
@@ -199,38 +450,34 @@ runnable();
   }
 
   process_variable(node) {
-    const varInfo = node[0];
-    const type = varInfo[0];
+    return this.process_identifier(node[0]);
+  }
 
-    if (type === 'identifier') {
-      return this.process_identifier(varInfo[1][0]);
+  process_property(node, isCalled) {
+    const obj = node[0];
+    const prop = node[1];
+    const ret = obj + '.' + prop;
+
+    if (isCalled) {
+      this.add_stdlib(ret);
     }
-
-    throw new Error('invalid type for variable ' + type);
-  }
-
-  process_property(node) {
-    const obj = node[0][1];
-    const prop = node[1][1];
-
-    return obj + '.' + prop;
-  }
-
-  process_array(node) {
-    const thing = this.process_lhs(node[0]);
-    const arrayIndecies = node[1];
-
-    return thing + arrayIndecies.map((indx) => {
-      return '.op_index(' + this.process_expression(indx) + ')';
-    }).join('');
+    return ret;
   }
 
   process_binop(node) {
     const lhs = this.process_expression(node[1]);
-    const rhs = this.process_expression(node[2]);
+    const rhs = this.process_expression(node[2], true);
 
     let op = null;
     switch (node[0]) {
+      case 'assign':
+        op = 'op_assign';
+        break;
+
+      case 'index':
+        op = 'op_index';
+        break;
+
       case '+':
         op = 'op_add';
         break;
@@ -243,6 +490,7 @@ runnable();
       case '/':
         op = 'op_div';
         break;
+
       case '=':
         op = 'op_eq';
         break;
@@ -261,6 +509,7 @@ runnable();
       case '<=':
         op = 'op_lte';
         break;
+
       case '||':
         op = 'op_cmpor';
         break;
@@ -271,11 +520,18 @@ runnable();
         throw new Error('Invalid operator in expression: ' + node[0]);
     }
 
-    return '(' + lhs + '.' + op + '(' + rhs + ')' + ')';
+    // this only occurs with a "complex" rhs
+    // fn call, or array
+    if (rhs.lastIndexOf(';') !== -1) {
+      return lhs + 'tmp.push(scratch);\n' +
+              rhs + ';\nretval = scratch;\nscratch = tmp.pop();\nscratch = scratch.' + op + '(retval)';
+    } else {
+      return lhs + 'scratch = scratch.' + op + '(' + rhs + ')';
+    }
   }
 
   process_unop(node) {
-    const lhs = this.process_expression(node[1]);
+    const lhs = this.process_expression(node[1], true);
 
     let op = null;
     switch (node[0]) {
@@ -286,25 +542,35 @@ runnable();
         throw new Error('Invalid unary operator in expression: ' + node[0]);
     }
 
-    return '(' + lhs + '.' + op + '())';
+    return lhs + '.' + op + '()';
   }
 
   process_call(node) {
-    const identifier = this.process_lhs(node[0]);
+    // TODO: this should not mess up scratch, right?
+    const identifier = this.process_lhs(node[0], true);
+
     const params = node[1] ? node[1].map((pnode) => {
-      return this.process_expression(pnode);
+      const v = this.process_expression(pnode);
+      return v + 'params.push(scratch);\n';
     }) : [];
 
-    return '(yield* ' + identifier + '.op_call(env, [' + params.join(', ') + ']))';
+    const l_label = '$L' + this.L++;
+
+    const retvalPushpop = this.pushpop++;
+    const paramsPushpop = this.pushpop++;
+
+    return 'tmp.push(retval);//PUSHPOP'+retvalPushpop+'\ntmp.push(params);//PUSHPOP'+paramsPushpop+'\nparams = [];\n' + params.join('') +
+            'fn.push(["' + l_label + '", params]);\n' +
+            identifier +
+            'next = scratch.as_string();\nbreak;\n' +
+            'case "' + l_label + '":\n' +
+            'params = tmp.pop();//PUSHPOP'+paramsPushpop+'\nscratch = retval;\nretval = tmp.pop();//PUSHPOP'+retvalPushpop+'\n';
   }
 
   // Start the statements:
 
   process_assign(node) {
-    const lhs = this.process_lhs(node[0]);
-    const value = this.process_expression(node[1]);
-
-    return lhs + '.op_assign(' + value + ');\n';
+    return this.process_expression(node[0]);
   }
 
   process_callstatement(node) {
@@ -317,32 +583,76 @@ runnable();
     const start = node[0];
     const rest = node.slice(1);
 
-    return 'if (' + this.process_expression(start[0]) + '.as_bool()) {\n' +
-            this.process_block(start[1]) + this.get_indent() + '}' +
-            rest.map((c) => {
-              return ' else ' +
-                      (c[0] ? ('if (' + this.process_expression(c[0]) + '.as_bool())') : '') +
-                      '{\n' + this.process_block(c[1]) + this.get_indent() + '}'
-            }).join('') +
-            '\n\n';
+    let condition = this.process_expression(start[0]);
+
+    let true_label = '$L' + this.L++;
+    const final_label = '$L' + this.L++;
+    let else_label = rest.length ? ('$L' + this.L++) : final_label;
+
+    let output = condition + 'if (scratch.as_bool()) {\n' +
+                  'next = "' + true_label + '";\n' +
+                '} else {\n' +
+                  'next = "' + else_label + '";\n' +
+                '}\nbreak;\n' +
+              'case "' + true_label + '":\n' +
+                this.process_block(start[1]) +
+                'next = "' + final_label + '";\nbreak;\n';
+
+    rest.forEach((c, i) => {
+      const thisLabel = else_label;
+
+      condition = c[0] ? this.process_expression(c[0]) : null;
+
+      output += 'case "' + thisLabel + '":\n';
+
+      if (condition) {
+        true_label = '$L' + this.L++;
+        else_label = (i+1 < rest.length) ? ('$L' + this.L++) : final_label;
+
+        output += condition + 'if (scratch.as_bool()) {\n' +
+                  'next = "' + true_label + '";\n' +
+                '} else {\n' +
+                  'next = "' + else_label + '";\n' +
+                '}\nbreak;\n' +
+              'case "' + true_label + '":\n' +
+                this.process_block(c[1]) +
+                'next = "' + final_label + '";\nbreak;\n';
+      } else {
+        output += this.process_block(c[1]) + 'next = "' + final_label + '";\nbreak;\n';
+      }
+    });
+
+    output += 'case "' + final_label + '":\n';
+    return output;
   }
 
   process_label(node) {
-    throw new Error('unsupported right now');
+    const labelName = this.process_identifier(node[0], true);
+    return 'case "' + labelName + '":\n';
   }
 
   process_goto(node) {
-    throw new Error('unsupported right now');
+    const labelName = this.process_identifier(node[0], true);
+    return 'next = "' + labelName + '";\nbreak;\n';
   }
 
   process_fn(node) {
-    const name = this.process_identifier(node[0][1][0], true);
+    const name = this.process_identifier(node[0], true);
     this.add_callable(name);
 
-    return 'function* $' + name + '() {\n' +
+    // TODO: fns need to be changed, so that the we have the label
+    // internal subroutines are just a label to jump to
+    // the external ones have a label as well (their own name)
+    // so the internal fn could just be a string (the name)
+    // then add some code that "statically links" in the stdlib
+
+    const skiparound_label = '$L' + this.L++;
+
+    return 'next = "' + skiparound_label + '";\nbreak;\n' +
+            'case "' + name + '":\n' +
             this.process_block(node[2]) +
-            this.get_indent() + this.indentString + 'return new DataUnit();\n' +
-            this.get_indent() + '}\n\n';
+            'retval = new DataUnit();\nnext = fn.pop()[0];\nbreak;\n' +
+            'case "' + skiparound_label + '":\n';
   }
 
   process_for(node) {
@@ -350,30 +660,72 @@ runnable();
 
     const forinfo = node[1];
 
+    const start_label = '$L' + this.L++;
+    const block_label = '$L' + this.L++;
+    const final_label = '$L' + this.L++;
+
     const start = this.process_expression(forinfo[0]);
     const end = this.process_expression(forinfo[1]);
     const step = this.process_expression(forinfo[2]);
 
-    const forStart  = iter + '.op_assign(' + start + ');\n';
-    const forCond = '(' + start + '.op_lt(' + end + ').as_bool() ? (' + iter + '.op_lte(' + end + ')) : (' + iter + '.op_gte(' + end + '))).as_bool();\n ';
-    const forIter = iter + '.op_assign(' + iter + '.op_add(' + step + '))';
+    const forStart  = start + 'retval = scratch;\n' + iter + 'scratch.op_assign(retval);\n';
+    const forCond = iter + 'tmp.push(scratch);\n' + end + 'retval = scratch;\n' + start +
+                    'if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {\n' +
+                      'next = "' + block_label + '";\n' +
+                    '} else {\n' +
+                      'next = "' + final_label + '";\n' +
+                    '}\nbreak;\n';
+    const forIter = step + 'retval = scratch;\n' + iter + 'scratch.op_assign(scratch.op_add(retval));\n';
 
-    return 'for (' +
-            forStart +
+    return forStart +
+            'case "' + start_label + '":\n' +
             forCond +
+            'case "' + block_label + '":\n' +
+            this.process_block(node[2]) +
             forIter +
-            ') {\n' + this.process_block(node[2]) + this.get_indent() + '}\n\n';
+            'next = "' + start_label + '";\nbreak;\n' +
+            'case "' + final_label + '":\n';
   }
 
   process_while(node) {
+    const start_label = '$L' + this.L++;
+    const block_label = '$L' + this.L++;
+    const final_label = '$L' + this.L++;
+
     const cond = this.process_expression(node[0]);
 
-    return 'while (' + cond + '.as_bool()) {\n' + this.process_block(node[1]) + this.get_indent() + '}\n\n';
+    return 'case "' + start_label + '":\n' +
+            cond + 'if (scratch.as_bool()) {\nnext = "' + block_label + '";\n} else {\nnext = "' + final_label + '";\n}\nbreak;\n' +
+            'case "' + block_label + '":\n' +
+            this.process_block(node[1]) +
+            'next = "' + start_label + '";\nbreak;\n' +
+            'case "' + final_label + '":\n';
   }
 
 }
 
 const file = fs.readFileSync(process.argv[2], 'utf8');
+// const file = `
+// GraphicsWindow.BackgroundColor = GraphicsWindow.GetColorFromRGB( 253, 252, 251 )
+
+// BWIDTH = 25    ' box width in pixels
+// XOFFSET = 40   ' Screen X offset in pixels of where the board starts
+// YOFFSET = 40   ' Screen Y offset in pixels of where the board starts
+// PREVIEW_xpos = 13
+// PREVIEW_ypos = 2
+
+// GraphicsWindow.Clear()
+// GraphicsWindow.Height = 580
+// GraphicsWindow.Width = 700
+// GraphicsWindow.Show()
+
+// x = XOFFSET + PREVIEW_xpos * BWIDTH - BWIDTH
+// y = YOFFSET + PREVIEW_ypos * BWIDTH - BWIDTH
+
+// GraphicsWindow.BrushColor = "Blue"
+// GraphicsWindow.FillRectangle(x - 20, y + 190, 310, 170)
+// `;
+
 const gen = new CodeGenerator();
 
 try {

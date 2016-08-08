@@ -6,7 +6,6 @@ const express = require('express');
 const app = express();
 
 app.use('/monaco', express.static('node_modules/monaco-editor'));
-app.use('/runtime', express.static('runtime'));
 app.use(express.static('client'));
 
 app.get('/', function(req, res){

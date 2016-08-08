@@ -66,7 +66,7 @@ literal
 
 identifier "identifier"
   = start:[a-zA-Z] rest:[a-zA-Z0-9_]* &{ return langKeywords.indexOf(text()) === -1; }
-  { return ['identifier', [text().toLowerCase()]]; }
+  { return text().toLowerCase(); }
 
 variable "variable"
   = i:identifier
@@ -78,7 +78,12 @@ internalProperty "property"
 
 array "array"
   = e:(internalProperty / variable) indecies:("[" i:expression "]" { return i; })+
-  { return ['array', [e, indecies]]; }
+  {
+    //return ['array', [e, indecies]];
+    return indecies.reduce(function(lhs, rhs) {
+      return ['binop', ['index', lhs, rhs]];
+    }, e);
+  }
 
 lhs "left hand side"
   = internalProperty
@@ -166,7 +171,10 @@ andor_expression
 
 assignment_statement "Assignment"
   = _ l:lhs _ "=" _ e:expression _ endline_comment+
-  { return ['assign', [l, e]]; }
+  {
+    //return ['assign', [l, e]];
+    return ['assign', [['binop', ['assign', l, e]]]];
+  }
 
 call_statement "Function call"
   = _ c:call _ endline_comment+

@@ -1,23 +1,26 @@
 'use strict';
 
-const DataUnit = require('./data-unit').DataUnit;
-const DATATYPES = require('./data-unit').DATATYPES;
-const wrapFunction = require('./utils').wrapFunction;
-const axios = require('axios');
+import {DataUnit, DATATYPES} from './data-unit';
+import * as axios from 'axios';
 
-const network = {
-  downloadfile: wrapFunction(function*(url) {
+const impl = {
+  downloadfile: function(url) {
     // TODO: create an emulation of the file system
     throw new Error('Network.DownloadFile is not available');
-  }),
+  },
 
-  getwebpagecontents: wrapFunction(function*(url) {
-    let pageContents = yield* getContents(url.as_string());
-    return new DataUnit(pageContents, DATATYPES.DT_STRING);
-  })
+  getwebpagecontents: function(url) {
+    return axios.get(url).then(function(response) {
+      return new DataUnit(response.data, DATATYPES.DT_STRING);
+    });
+  }
 };
 
-function* getContents(url) {
-  let response = yield axios.get(url);
-  return response.data;
+function api(env) {
+  return {
+    get downloadfile() { return new DataUnit('network.downloadfile', DATATYPES.DT_FN); },
+    get getwebpagecontents() { return new DataUnit('network.getwebpagecontents', DATATYPES.DT_FN); }
+  };
 }
+
+export {impl, api};
