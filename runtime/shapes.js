@@ -11,7 +11,7 @@ const impl = {
     const height = h.as_num();
 
     const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
-    const penwidth = '#' + ('000000' + this.graphicswindow.penwidth.as_num()).slice(-6);
+    const penwidth = this.graphicswindow.penwidth.as_num();
     const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
 
     let bmd = phaserGame.add.bitmapData(width, height);
@@ -38,16 +38,16 @@ const impl = {
 
     const graphics = phaserGame.add.graphics(0, 0);
 
-    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
-    const penwidth = '#' + ('000000' + this.graphicswindow.penwidth.as_num()).slice(-6);
-    const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
+    const brushcolor = this.graphicswindow.brushcolor.as_num();
+    const penwidth = this.graphicswindow.penwidth.as_num();
+    const pencolor = this.graphicswindow.pencolor.as_num();
 
     graphics.beginFill(brushcolor);
     graphics.lineStyle(penwidth, pencolor, 1);
 
     graphics.drawEllipse(0, 0, width, height);
 
-    phaserGraphics.endFill();
+    graphics.endFill();
 
     const sprite = game.add.sprite(w, h, graphics.generateTexture());
     graphics.destroy();
@@ -59,7 +59,7 @@ const impl = {
     const phaserGame = this.$graphicswindow.phaserGame;
 
     const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
-    const penwidth = '#' + ('000000' + this.graphicswindow.penwidth.as_num()).slice(-6);
+    const penwidth = this.graphicswindow.penwidth.as_num();
     const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
 
     let bmd = phaserGame.add.bitmapData(width, height);
@@ -80,7 +80,7 @@ const impl = {
   addline: function(x1, y1, x2, y2) {
     const phaserGame = this.$graphicswindow.phaserGame;
 
-    const penwidth = '#' + ('000000' + this.graphicswindow.penwidth.as_num()).slice(-6);
+    const penwidth = this.graphicswindow.penwidth.as_num();
     const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
 
     let bmd = phaserGame.add.bitmapData(width, height);
@@ -185,16 +185,10 @@ const impl = {
       return;
     }
 
-    return new Promise(resolve => {
-      var tween = game.add.tween(s.value);
-      tween.to({x: x.as_num(), y: y.as_num()}, duration.as_num(), Phaser.Easing.Linear.None);
-
-      tween.onComplete.addOnce(() => {
-        resolve();
-      }, this);
-
-      tween.start();
-    });
+    var tween = game.add.tween(s.value);
+    tween.to({x: x.as_num(), y: y.as_num()}, duration.as_num(), Phaser.Easing.Linear.None, true);
+    // tween.onComplete.addOnce(() => {
+    // }, this);
   },
 
   getopacity: function(s) {
