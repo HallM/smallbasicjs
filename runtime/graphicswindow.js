@@ -251,7 +251,6 @@ const impl = {
     phaserGraphics.lineStyle(strokeWidth, strokeColor, 1);
     phaserGraphics.moveTo(x1.as_num(), y1.as_num());
     phaserGraphics.lineTo(x2.as_num(), y2.as_num());
-    phaserGraphics.endFill();
   },
 
   drawtext: function(x, y, t) {

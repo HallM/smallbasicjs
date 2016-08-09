@@ -11,41 +11,125 @@ const impl = {
     const height = h.as_num();
 
     const brushcolor = '#' + this.graphicswindow.brushcolor.value.toString(16);
+    const penwidth = this.graphicswindow.penwidth.as_num();
+    const pencolor = '#' + this.graphicswindow.pencolor.value.toString(16);
 
     let bmd = phaserGame.add.bitmapData(width, height);
-    // TODO get the fill from graphicswindow
-    bmd.rect(0, 0, width, height, brushcolor);
+    bmd.ctx.beginPath();
+    bmd.ctx.fillStyle = brushcolor;
+    bmd.ctx.strokeStyle = pencolor;
+    bmd.ctx.lineWidth = penwidth.as_num();
+    bmd.ctx.moveTo(0, 0);
+    bmd.ctx.lineTo(width, 0);
+    bmd.ctx.lineTo(width, height);
+    bmd.ctx.lineTo(0, height);
+    bmd.ctx.fill();
+    bmd.ctx.stroke();
 
     const sprite = phaserGame.add.sprite(0, 0, bmd);
-
     return new DataUnit(sprite, DATATYPES.DT_SHAPE);
   },
 
-// Shapes.AddEllipse(width, height)
-  addtriangle: function(x1, y1, x2, y2, x3, y3) {
+  addellipse: function(w, h) {
     const phaserGame = this.$graphicswindow.phaserGame;
 
     const width = w.as_num();
     const height = h.as_num();
 
+    const graphics = phaserGame.add.graphics(0, 0);
+
+    const brushcolor = '#' + this.graphicswindow.brushcolor.as_num();
+    const penwidth = this.graphicswindow.penwidth.as_num();
+    const pencolor = '#' + this.graphicswindow.pencolor.as_num();
+
+    graphics.beginFill(brushcolor);
+    graphics.lineStyle(penwidth, pencolor, 1);
+
+    graphics.drawEllipse(0, 0, width, height);
+
+    phaserGraphics.endFill();
+
+    const sprite = game.add.sprite(w, h, graphics.generateTexture());
+    graphics.destroy();
+
+    return new DataUnit(sprite, DATATYPES.DT_SHAPE);
+  },
+
+  addtriangle: function(x1, y1, x2, y2, x3, y3) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+
     const brushcolor = '#' + this.graphicswindow.brushcolor.value.toString(16);
+    const penwidth = this.graphicswindow.penwidth.as_num();
+    const pencolor = '#' + this.graphicswindow.pencolor.value.toString(16);
 
     let bmd = phaserGame.add.bitmapData(width, height);
-    // TODO get the fill from graphicswindow
     bmd.ctx.beginPath();
     bmd.ctx.fillStyle = brushcolor;
+    bmd.ctx.strokeStyle = pencolor;
+    bmd.ctx.lineWidth = penwidth.as_num();
     bmd.ctx.moveTo(x1.as_num(), y1.as_num());
     bmd.ctx.lineTo(x2.as_num(), y2.as_num());
     bmd.ctx.lineTo(x3.as_num(), y3.as_num());
     bmd.ctx.fill();
+    bmd.ctx.stroke();
 
     const sprite = phaserGame.add.sprite(0, 0, bmd);
-
     return new DataUnit(sprite, DATATYPES.DT_SHAPE);
   },
-// Shapes.AddLine(x1, y1, x2, y2)
-// Shapes.AddText(text)
-// Shapes.SetText(shapeName, text)
+
+  addline: function(x1, y1, x2, y2) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+
+    const penwidth = this.graphicswindow.penwidth.as_num();
+    const pencolor = '#' + this.graphicswindow.pencolor.value.toString(16);
+
+    let bmd = phaserGame.add.bitmapData(width, height);
+    bmd.ctx.beginPath();
+    bmd.ctx.strokeStyle = pencolor;
+    bmd.ctx.lineWidth = penwidth.as_num();
+    bmd.ctx.moveTo(x1.as_num(), y1.as_num());
+    bmd.ctx.lineTo(x2.as_num(), y2.as_num());
+    bmd.ctx.stroke();
+
+    const sprite = phaserGame.add.sprite(0, 0, bmd);
+    return new DataUnit(sprite, DATATYPES.DT_SHAPE);
+  },
+
+  addtext: function(t) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+
+    const xPos = x.as_num();
+    const yPos = y.as_num();
+
+    let txtOptions = {
+      font: this.graphicswindow.fontname.as_string(),
+      fontSize: this.graphicswindow.fontsize.as_num() + 'px',
+      fill: '#' + this.graphicswindow.brushcolor.as_num().toString(16),
+    };
+
+    if (this.graphicswindow.fontitalic.as_bool()) {
+      txtOptions.fontStyle = 'italic';
+    }
+
+    const phaserText = phaserGame.add.text(xPos, yPos, t.as_string(), txtOptions);
+    return new DataUnit(phaserText, DATATYPES.DT_SHAPE);
+  },
+
+  addimage: function(imageName) {
+    const internalName = env.$imagelist.images[imageName.as_string()];
+    if (!internalName) {
+      return new DataUnit();
+    }
+
+    const image = game.add.sprite(0, 0, internalName.value);
+    return new DataUnit(image, DATATYPES.DT_SHAPE);
+  },
+
+  settext: function(s, t) {
+    if (s.type === DATATYPES.DT_SHAPE) {
+      s.value.text = t.as_string();
+    }
+  },
 
   move: function(s, x, y) {
     if (s.type === DATATYPES.DT_SHAPE) {
@@ -83,8 +167,7 @@ const impl = {
       return;
     }
 
-    // TODO: does SB use radians or degrees?
-    s.value.rotation = angle.as_num();
+    s.value.rotation = angle.as_num() * Math.PI / 180.0;
   },
 
   zoom: function(s, scaleX, scaleY) {
@@ -145,9 +228,6 @@ const impl = {
     s.value.visible = true;
   }
 };
-
-// need imagelist first I think
-// Shapes.AddImage(imageName)
 
 function api(env) {
   return {
