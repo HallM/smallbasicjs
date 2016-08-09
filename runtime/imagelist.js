@@ -1,27 +1,40 @@
 'use strict';
 
 import {DataUnit, DATATYPES} from './data-unit';
-import * as axios from 'axios';
 
 // module.exports =
 const impl = {
-  // gettop: function(s) {
-  //   let y = 0;
-  //   if (s.type === DATATYPES.DT_SHAPE) {
-  //     y = s.value.y;
-  //   }
+  loadimage: function(url) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+    const imgNumber = this.$imagelist.imgNumber++;
+    const imgName = 'pic' + imgNumber;
 
-  //   return new DataUnit(y, DATATYPES.DT_NUMBER);
-  // }
+    phaserGame.load.image(imgName, url.as_string());
+
+    return new DataUnit(imgName, DATATYPES.DT_IMAGE);
+  },
+
+  getwidthofimage: function(imageName) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+    return phaserGame.cache.getImage(imageName.as_string()).width;
+  },
+
+  getheightofimage: function(imageName) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+    return phaserGame.cache.getImage(imageName.as_string()).height;
+  },
 };
 
-// ImageList.LoadImage(fileNameOrUrl)
-// ImageList.GetWidthOfImage(imageName)
-// ImageList.GetHeightOfImage(imageName)
-
 function api(env) {
+  env.$imagelist = {
+    imgNumber: 0,
+    images: []
+  };
+
   return {
-  //  get addrectangle() { return new DataUnit('shapes.addrectangle', DATATYPES.DT_FN); },
+    get loadimage() { return new DataUnit('imagelist.loadimage', DATATYPES.DT_FN); },
+    get getwidthofimage() { return new DataUnit('imagelist.getwidthofimage', DATATYPES.DT_FN); },
+    get getheightofimage() { return new DataUnit('imagelist.getheightofimage', DATATYPES.DT_FN); }
   };
 }
 
