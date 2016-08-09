@@ -20,6 +20,7 @@
     "bluebird": "^3.4.1",
     "express": "^4.14.0",
     "monaco-editor": "^0.5.3",
-    "phaser": "^2.6.1"
+    "phaser": "^2.6.1",
+    "sweetalert": "^1.1.3"
   }
 }
