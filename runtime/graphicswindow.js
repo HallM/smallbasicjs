@@ -1,6 +1,8 @@
 'use strict';
 
 import {DataUnit, DATATYPES} from './data-unit';
+import swal from 'sweetalert';
+require('../node_modules/sweetalert/dist/sweetalert.css');
 
 const stringToColorTable = {
   indianred: 0xcd5c5c,
@@ -153,20 +155,18 @@ const stringToColorTable = {
   darkslategray: 0x2f4f4f,
   black: 0x000000
 };
+const internalColorNames = Object.keys(stringToColorTable);
 
 function colorToRgb(color) {
   if (color.type === DATATYPES.DT_NUMBER) {
     // don't change numbers
-    console.log('dont change');
     return;
   }
 
   // translate anything into a number
   if (color.type !== DATATYPES.DT_STRING) {
-    console.log(color.type);
     color.value = 0x000000;
   } else {
-    console.log(color.as_string(), stringToColorTable[color.as_string().toLowerCase()]);
     color.value = stringToColorTable[color.as_string().toLowerCase()] || 0x000000;
   }
 
@@ -187,9 +187,20 @@ const impl = {
     if (phaserGraphics) {
       phaserGraphics.clear();
 
+      // TODO: do we clear out the shapes too?
+      const textSpawns = this.$graphicswindow.textSpawns;
+
+      for (var prop in textSpawns) {
+        textSpawns[prop].destroy();
+      }
+      this.$graphicswindow.textSpawns = {};
+
+      const width = this.graphicswindow.width.as_num();
+      const height = this.graphicswindow.height.as_num();
+
       const fillColor = this.graphicswindow.backgroundcolor.as_num();
       phaserGraphics.beginFill(fillColor);
-      phaserGraphics.drawRect(0, 0, width.as_num(), height.as_num());
+      phaserGraphics.drawRect(0, 0, width, height);
       phaserGraphics.endFill();
     }
   },
@@ -206,15 +217,30 @@ const impl = {
     const height = this.graphicswindow.height.as_num();
 
     return new Promise((resolve) => {
-      env.$graphicswindow.phaserGame = new Phaser.Game(width, height, Phaser.AUTO, 'smallbasicjs-graphicswindow', {
+      env.$graphicswindow.phaserGame = new Phaser.Game(width, height, Phaser.CANVAS, 'smallbasicjs-graphicswindow', {
         create: phaserCreateFactory(resolve).bind(env)
       });
     });
   },
 
-  showmessage: function() {
-    // TODO
-    return new DataUnit();
+  hide: function() {
+    const env = this;
+    const phaserGame = env.$graphicswindow.phaserGame;
+    if (phaserGame) {
+      phaserGame.destroy();
+      env.$graphicswindow.phaserGame = null;
+    }
+  },
+
+  showmessage: function(text, title) {
+    return new Promise(resolve => {
+      swal({
+        title: title.as_string(),
+        text: text.as_string()
+      }, () => {
+        resolve(new DataUnit());
+      });
+    });
   },
 
   fillrectangle: function(x, y, w, h) {
@@ -270,6 +296,7 @@ const impl = {
 
     if (textSpawns[spawnLoc]) {
       textSpawns[spawnLoc].text = t.as_string();
+      textSpawns[spawnLoc].wordWrap = false;
       return;
     }
 
@@ -284,46 +311,206 @@ const impl = {
     if (this.graphicswindow.fontitalic.as_bool()) {
       txtOptions.fontStyle = 'italic';
     }
+    if (this.graphicswindow.fontbold.as_bool()) {
+      txtOptions.fontWeight = 'bold';
+    }
 
     const phaserText = phaserGame.add.text(xPos, yPos, t.as_string(), txtOptions);
     textSpawns[spawnLoc] = phaserText;
-  }
+  },
+
+  drawboundtext: function(x, y, w, t) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+    const textSpawns = this.$graphicswindow.textSpawns;
+
+    if (!phaserGame) {
+      return;
+    }
+
+    const xPos = x.as_num();
+    const yPos = y.as_num();
+    const spawnLoc = xPos + ':' + yPos;
+
+    const width = w.as_num();
+
+    if (textSpawns[spawnLoc]) {
+      textSpawns[spawnLoc].text = t.as_string();
+      textSpawns[spawnLoc].wordWrap = true;
+      textSpawns[spawnLoc].wordWrapWidth = width;
+      return;
+    }
+
+    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
+
+    let txtOptions = {
+      font: this.graphicswindow.fontname.as_string(),
+      fontSize: this.graphicswindow.fontsize.as_num() + 'px',
+      fill: '#' + brushcolor,
+    };
+
+    if (this.graphicswindow.fontitalic.as_bool()) {
+      txtOptions.fontStyle = 'italic';
+    }
+    if (this.graphicswindow.fontbold.as_bool()) {
+      txtOptions.fontWeight = 'bold';
+    }
+
+    const phaserText = phaserGame.add.text(xPos, yPos, t.as_string(), txtOptions);
+    phaserText.wordWrap = true;
+    phaserText.wordWrapWidth = width;
+    textSpawns[spawnLoc] = phaserText;
+  },
+
+  drawellipse: function(x, y, w, h) {
+    const phaserGraphics = this.$graphicswindow.phaserGraphics;
+    if (!phaserGraphics) {
+      return;
+    }
+
+    const penwidth = this.graphicswindow.penwidth.as_num();
+    const pencolor = this.graphicswindow.pencolor.as_num();
+
+    phaserGraphics.lineStyle(penwidth, pencolor, 1);
+    phaserGraphics.drawEllipse(x.as_num(), y.as_num(), w.as_num(), h.as_num());
+  },
+
+  fillellipse: function(x, y, w, h) {
+    const phaserGraphics = this.$graphicswindow.phaserGraphics;
+    if (!phaserGraphics) {
+      return;
+    }
+
+    const brushcolor = this.graphicswindow.brushcolor.value.as_num();
+
+    phaserGraphics.beginFill(brushcolor);
+    phaserGraphics.drawEllipse(x.as_num(), y.as_num(), w.as_num(), h.as_num());
+    phaserGraphics.endFill();
+  },
+
+  drawtriangle: function(x1, y1, x2, y2, x3, y3) {
+    const phaserGraphics = this.$graphicswindow.phaserGraphics;
+    if (!phaserGraphics) {
+      return;
+    }
+
+    const penwidth = this.graphicswindow.penwidth.as_num();
+    const pencolor = this.graphicswindow.pencolor.as_num();
+
+    phaserGraphics.lineStyle(penwidth, pencolor, 1);
+    phaserGraphics.moveTo(x1.as_num(), y1.as_num());
+    phaserGraphics.lineTo(x2.as_num(), y2.as_num());
+    phaserGraphics.lineTo(x3.as_num(), y3.as_num());
+  },
+
+  filltriangle: function(x1, y1, x2, y2, x3, y3) {
+    const phaserGraphics = this.$graphicswindow.phaserGraphics;
+    if (!phaserGraphics) {
+      return;
+    }
+
+    const brushcolor = this.graphicswindow.brushcolor.value.as_num();
+
+    phaserGraphics.beginFill(brushcolor);
+    phaserGraphics.moveTo(x1.as_num(), y1.as_num());
+    phaserGraphics.lineTo(x2.as_num(), y2.as_num());
+    phaserGraphics.lineTo(x3.as_num(), y3.as_num());
+    phaserGraphics.endFill();
+  },
+
+  drawresizedimage: function(imageName, x, y, width, height) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+    if (!phaserGame) {
+      return;
+    }
+
+    const image = this.$imagelist[imageName.as_string()];
+    if (!image) {
+      return;
+    }
+
+    const ctx = phaserGame.context;
+    ctx.drawImage(image, x.as_num(), y.as_num(), width.as_num(), height.as_num());
+  },
+
+  drawimage: function(imageName, x, y) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+    if (!phaserGame) {
+      return;
+    }
+
+    const image = this.$imagelist[imageName.as_string()];
+    if (!image) {
+      return;
+    }
+
+    const ctx = phaserGame.context;
+    ctx.drawImage(image, x.as_num(), y.as_num());
+  },
+
+  setpixel: function(x, y, color) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+    if (!phaserGame) {
+      return;
+    }
+
+    const ctx = phaserGame.context;
+
+    const rgb = color.as_num();
+    const red = (rgb >> 16) & 0xFF;
+    const green = (rgb >> 8) & 0xFF;
+    const blue = (rgb) & 0xFF;
+
+    const xPos = x.as_num();
+    const yPos = y.as_num();
+
+    const pixelInfo = ctx.getImageData(xPos, yPos, 1, 1);
+    const pixelData = pixelInfo.data;
+    pixelData[0] = red;
+    pixelData[1] = green;
+    pixelData[2] = blue;
+    ctx.putImageData(pixelInfo, xPos, yPos);
+  },
+
+  getpixel: function(x, y) {
+    const phaserGame = this.$graphicswindow.phaserGame;
+    if (!phaserGame) {
+      return;
+    }
+
+    const xPos = x.as_num();
+    const yPos = y.as_num();
+
+    const ctx = phaserGame.context;
+
+    const pixelData = ctx.getImageData(xPos, yPos, 1, 1).data;
+
+    const red = pixelData[0] << 16;
+    const green = pixelData[1] << 8;
+    const blue = pixelData[2];
+    const rgb = red | green | blue;
+    return new DataUnit(rgb, DATATYPES.DT_NUMBER);
+  },
+
+  getrandomcolor: function() {
+    const propIndex = Math.floor(Math.random() * internalColorNames.length) + 1;
+    const color = stringToColorTable[internalColorNames[propIndex]];
+    return new DataUnit(color, DATATYPES.DT_NUMBER);
+  },
 };
 
 // properties
-// GraphicsWindow.CanResize
-// GraphicsWindow.FontBold
-// GraphicsWindow.Left
-// GraphicsWindow.Top
 // GraphicsWindow.LastText
-// GraphicsWindow.MouseX
-// GraphicsWindow.MouseY
 
 // events
-// GraphicsWindow.KeyUp
-// GraphicsWindow.MouseDown
-// GraphicsWindow.MouseUp
-// GraphicsWindow.MouseMove
 // GraphicsWindow.TextInput
 
-// fns
-// GraphicsWindow.Hide()
-// GraphicsWindow.DrawEllipse(x, y, width, height)
-// GraphicsWindow.FillEllipse(x, y, width, height)
-// GraphicsWindow.DrawTriangle(x1, y1, x2, y2, x3, y3)
-// GraphicsWindow.FillTriangle(x1, y1, x2, y2, x3, y3)
-// GraphicsWindow.DrawBoundText(x, y, width, text)
-// GraphicsWindow.DrawResizedImage(imageName, x, y, width, height)
-// GraphicsWindow.DrawImage(imageName, x, y)
-// GraphicsWindow.SetPixel(x, y, color)
-// GraphicsWindow.GetPixel(x, y)
-// GraphicsWindow.GetRandomColor()
-// GraphicsWindow.ShowMessage(text, title)
-
-
 function api(env) {
-  // TODO: need like an init callback
   let keydown = new DataUnit();
+  let keyup = new DataUnit();
+  let mousemove = new DataUnit();
+  let mousedown = new DataUnit();
+  let mouseup = new DataUnit();
+
   let backgroundcolor = new DataUnit(0xffffff, DATATYPES.DT_NUMBER);
   let height = new DataUnit(800, DATATYPES.DT_NUMBER);
   let width = new DataUnit(600, DATATYPES.DT_NUMBER);
@@ -331,6 +518,7 @@ function api(env) {
   let pencolor = new DataUnit(0x000000, DATATYPES.DT_NUMBER);
   let brushcolor = new DataUnit(0x000000, DATATYPES.DT_NUMBER);
   let fontitalic = new DataUnit('false', DATATYPES.DT_STRING);
+  let fontbold = new DataUnit('false', DATATYPES.DT_STRING);
   let fontname = new DataUnit("Comic Sans MS", DATATYPES.DT_STRING);
   let fontsize = new DataUnit(16, DATATYPES.DT_NUMBER);
 
@@ -355,15 +543,34 @@ function api(env) {
     height: height,
     width: width,
 
+    // TODO: in a browser, I believe these can only be read-only
+    get canresize() {
+        return new DataUnit();
+    },
+
+    get left() {
+        return new DataUnit();
+    },
+
+    get top() {
+        return new DataUnit();
+    },
+
     penwidth: penwidth,
     pencolor: pencolor,
     brushcolor: brushcolor,
 
     fontitalic: fontitalic,
+    fontbold: fontbold,
     fontname: fontname,
     fontsize: fontsize,
 
     keydown: keydown,
+    keyup: keyup,
+    mousemove: mousemove,
+    mousedown: mousedown,
+    mouseup: mouseup,
+
     get lastkey() {
       const phaserGame = env.$graphicswindow.phaserGame;
       if (!phaserGame) {
@@ -397,14 +604,43 @@ function api(env) {
       return new DataUnit(keyChar, DATATYPES.DT_STRING);
     },
 
+    get mousex() {
+      const phaserGame = env.$graphicswindow.phaserGame;
+      if (!phaserGame) {
+        return new DataUnit();
+      }
+
+      return new DataUnit(phaserGame.input.x, DATATYPES.DT_NUMBER);
+    },
+
+    get mousey() {
+      const phaserGame = env.$graphicswindow.phaserGame;
+      if (!phaserGame) {
+        return new DataUnit();
+      }
+
+      return new DataUnit(phaserGame.input.y, DATATYPES.DT_NUMBER);
+    },
+
     get getcolorfromrgb() { return new DataUnit('graphicswindow.getcolorfromrgb', DATATYPES.DT_FN); },
     get clear() { return new DataUnit('graphicswindow.clear', DATATYPES.DT_FN); },
     get show() { return new DataUnit('graphicswindow.show', DATATYPES.DT_FN); },
+    get hide() { return new DataUnit('graphicswindow.hide', DATATYPES.DT_FN); },
     get showmessage() { return new DataUnit('graphicswindow.showmessage', DATATYPES.DT_FN); },
     get fillrectangle() { return new DataUnit('graphicswindow.fillrectangle', DATATYPES.DT_FN); },
     get drawrectangle() { return new DataUnit('graphicswindow.drawrectangle', DATATYPES.DT_FN); },
     get drawline() { return new DataUnit('graphicswindow.drawline', DATATYPES.DT_FN); },
-    get drawtext() { return new DataUnit('graphicswindow.drawtext', DATATYPES.DT_FN); }
+    get drawtext() { return new DataUnit('graphicswindow.drawtext', DATATYPES.DT_FN); },
+    get drawboundtext() { return new DataUnit('graphicswindow.drawboundtext', DATATYPES.DT_FN); },
+    get drawellipse() { return new DataUnit('graphicswindow.drawellipse', DATATYPES.DT_FN); },
+    get fillellipse() { return new DataUnit('graphicswindow.fillellipse', DATATYPES.DT_FN); },
+    get drawtriangle() { return new DataUnit('graphicswindow.drawtriangle', DATATYPES.DT_FN); },
+    get filltriangle() { return new DataUnit('graphicswindow.filltriangle', DATATYPES.DT_FN); },
+    get getrandomcolor() { return new DataUnit('graphicswindow.getrandomcolor', DATATYPES.DT_FN); },
+    get drawresizedimage() { return new DataUnit('graphicswindow.drawresizedimage', DATATYPES.DT_FN); },
+    get drawimage() { return new DataUnit('graphicswindow.drawimage', DATATYPES.DT_FN); },
+    get setpixel() { return new DataUnit('graphicswindow.setpixel', DATATYPES.DT_FN); },
+    get getpixel() { return new DataUnit('graphicswindow.getpixel', DATATYPES.DT_FN); }
   };
 }
 
@@ -412,14 +648,24 @@ function phaserCreateFactory(resolver) {
   return function phaserCreate() {
     const phaserGame = this.$graphicswindow.phaserGame;
     phaserGame.input.keyboard.onDownCallback = phaserKeydown.bind(this);
+    phaserGame.input.keyboard.onUpCallback = phaserKeyup.bind(this);
+
+    phaserGame.input.mouse.enabled = true;
+    phaserGame.input.mouse.mouseDownCallback = phaserMousedown.bind(this);
+    phaserGame.input.mouse.mouseUpCallback = phaserMouseup.bind(this);
+
+    phaserGame.input.addMoveCallback(phaserMousemove, this);
 
     const phaserGraphics = phaserGame.add.graphics(0, 0);
     phaserGraphics.boundsPadding = 0;
 
+    const width = this.graphicswindow.width.as_num();
+    const height = this.graphicswindow.height.as_num();
+
     // pre-fill the BG
     const fillColor = this.graphicswindow.backgroundcolor.as_num();
     phaserGraphics.beginFill(fillColor);
-    phaserGraphics.drawRect(0, 0, this.graphicswindow.width.as_num(), this.graphicswindow.height.as_num());
+    phaserGraphics.drawRect(0, 0, width, height);
     phaserGraphics.endFill();
 
     this.$graphicswindow.phaserGraphics = phaserGraphics;
@@ -431,6 +677,30 @@ function phaserCreateFactory(resolver) {
 function phaserKeydown() {
   if (this.graphicswindow.keydown.type === DATATYPES.DT_FN) {
     interrupt(this.graphicswindow.keydown.value);
+  }
+}
+
+function phaserKeyup() {
+  if (this.graphicswindow.keyup.type === DATATYPES.DT_FN) {
+    interrupt(this.graphicswindow.keyup.value);
+  }
+}
+
+function phaserMousemove() {
+  if (this.graphicswindow.mousemove.type === DATATYPES.DT_FN) {
+    interrupt(this.graphicswindow.mousemove.value);
+  }
+}
+
+function phaserMousedown() {
+  if (this.graphicswindow.mousedown.type === DATATYPES.DT_FN) {
+    interrupt(this.graphicswindow.mousedown.value);
+  }
+}
+
+function phaserMouseup() {
+  if (this.graphicswindow.mouseup.type === DATATYPES.DT_FN) {
+    interrupt(this.graphicswindow.mouseup.value);
   }
 }
 

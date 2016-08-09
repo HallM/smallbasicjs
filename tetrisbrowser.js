@@ -63,15 +63,15 @@ _y1: new DataUnit()
 var graphicswindow = stdlibApi.graphicswindow;
 var implgraphicswindow = window.stdlib.impl.graphicswindow;
 env.graphicswindow = graphicswindow;
-var program = stdlibApi.program;
-var implprogram = window.stdlib.impl.program;
-env.program = program;
 var text = stdlibApi.text;
 var impltext = window.stdlib.impl.text;
 env.text = text;
 var math = stdlibApi.math;
 var implmath = window.stdlib.impl.math;
 env.math = math;
+var program = stdlibApi.program;
+var implprogram = window.stdlib.impl.program;
+env.program = program;
 var array = stdlibApi.array;
 var implarray = window.stdlib.impl.array;
 env.array = array;
@@ -138,18 +138,6 @@ val = undefined;
 next = fn.pop()[0];
 break;
 
-case "program.end":
-retval = implprogram.end.apply(env, fn[fn.length - 1][1]);
-if (retval && retval.then) {
-retval.next = "program.end$0";
-return retval;
-}
-case "program.end$0":
-retval = val || retval;
-val = undefined;
-next = fn.pop()[0];
-break;
-
 case "text.append":
 retval = impltext.append.apply(env, fn[fn.length - 1][1]);
 if (retval && retval.then) {
@@ -181,6 +169,18 @@ retval.next = "program.delay$0";
 return retval;
 }
 case "program.delay$0":
+retval = val || retval;
+val = undefined;
+next = fn.pop()[0];
+break;
+
+case "program.end":
+retval = implprogram.end.apply(env, fn[fn.length - 1][1]);
+if (retval && retval.then) {
+retval.next = "program.end$0";
+return retval;
+}
+case "program.end$0":
 retval = val || retval;
 val = undefined;
 next = fn.pop()[0];
@@ -470,509 +470,501 @@ break;
 case "$L9":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP12
-tmp.push(retval);//PUSHPOP14
-fn.push(["$L10", []]);
-scratch = program.end;
-next = scratch.as_string();
-break;
-case "$L10":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP14
 next = "$L1";
 break;
 case "$L3":
-next = "$L11";
+next = "$L10";
 break;
 case "_mainloop":
 tmp.push(env._template);
-tmp.push(params);//PUSHPOP19
+tmp.push(params);//PUSHPOP17
 params = [];
 params.push(new DataUnit("template", DATATYPES.DT_STRING));
-scratch = tmp.push(retval);//PUSHPOP16
-fn.push(["$L12", [new DataUnit(7, DATATYPES.DT_NUMBER)]]);
+scratch = tmp.push(retval);//PUSHPOP14
+fn.push(["$L11", [new DataUnit(7, DATATYPES.DT_NUMBER)]]);
 scratch = math.getrandomnumber;
+next = scratch.as_string();
+break;
+case "$L11":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP14
+params.push(scratch);
+fn.push(["$L12", params]);
+scratch = text.append;
 next = scratch.as_string();
 break;
 case "$L12":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP16
-params.push(scratch);
-fn.push(["$L13", params]);
-scratch = text.append;
+params = tmp.pop();//PUSHPOP17
+scratch = tmp.pop().op_assign(retval);
+tmp.push(retval);//PUSHPOP18
+fn.push(["$L13", []]);
+scratch = env._createpiece;
 next = scratch.as_string();
 break;
 case "$L13":
-params = tmp.pop();//PUSHPOP19
-scratch = tmp.pop().op_assign(retval);
-tmp.push(retval);//PUSHPOP20
-fn.push(["$L14", []]);
-scratch = env._createpiece;
-next = scratch.as_string();
-break;
-case "$L14":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP20
+retval = tmp.pop();//PUSHPOP18
 env._nextpiece.op_assign(env._h);
 env._end.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
 scratch = env._sessiondelay.op_assign(env._startdelay);
-case "$L15":
+case "$L14":
 scratch = env._end.op_eq(new DataUnit(0, DATATYPES.DT_NUMBER));
 if (scratch.as_bool()) {
-next = "$L16";
+next = "$L15";
 } else {
-next = "$L17";
+next = "$L16";
 }
 break;
-case "$L16":
+case "$L15":
 scratch = env._sessiondelay.op_gt(env._enddelay);
 if (scratch.as_bool()) {
-next = "$L18";
+next = "$L17";
 } else {
-next = "$L19";
+next = "$L18";
 }
 break;
-case "$L18":
+case "$L17":
 tmp.push(env._sessiondelay);
 retval = env._sessiondelay.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_assign(retval);
-next = "$L19";
+next = "$L18";
 break;
-case "$L19":
+case "$L18":
 env._delay.op_assign(env._sessiondelay);
 scratch = env._thispiece.op_assign(env._nextpiece);
 tmp.push(env._template);
-tmp.push(params);//PUSHPOP25
+tmp.push(params);//PUSHPOP23
 params = [];
 params.push(new DataUnit("template", DATATYPES.DT_STRING));
-scratch = tmp.push(retval);//PUSHPOP22
-fn.push(["$L20", [new DataUnit(7, DATATYPES.DT_NUMBER)]]);
+scratch = tmp.push(retval);//PUSHPOP20
+fn.push(["$L19", [new DataUnit(7, DATATYPES.DT_NUMBER)]]);
 scratch = math.getrandomnumber;
 next = scratch.as_string();
 break;
-case "$L20":
+case "$L19":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP22
+retval = tmp.pop();//PUSHPOP20
 params.push(scratch);
-fn.push(["$L21", params]);
+fn.push(["$L20", params]);
 scratch = text.append;
 next = scratch.as_string();
 break;
-case "$L21":
-params = tmp.pop();//PUSHPOP25
+case "$L20":
+params = tmp.pop();//PUSHPOP23
 scratch = tmp.pop().op_assign(retval);
+tmp.push(retval);//PUSHPOP24
+fn.push(["$L21", []]);
+scratch = env._createpiece;
+next = scratch.as_string();
+break;
+case "$L21":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP24
+scratch = env._nextpiece.op_assign(env._h);
 tmp.push(retval);//PUSHPOP26
 fn.push(["$L22", []]);
-scratch = env._createpiece;
+scratch = env._drawpreviewpiece;
 next = scratch.as_string();
 break;
 case "$L22":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP26
-scratch = env._nextpiece.op_assign(env._h);
+env._h.op_assign(env._thispiece);
+env._ypos.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
+env._done.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
+scratch = env._xpos.op_assign(new DataUnit(3, DATATYPES.DT_NUMBER));
 tmp.push(retval);//PUSHPOP28
 fn.push(["$L23", []]);
-scratch = env._drawpreviewpiece;
+scratch = env._checkstop;
 next = scratch.as_string();
 break;
 case "$L23":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP28
-env._h.op_assign(env._thispiece);
-env._ypos.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-env._done.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-scratch = env._xpos.op_assign(new DataUnit(3, DATATYPES.DT_NUMBER));
-tmp.push(retval);//PUSHPOP30
-fn.push(["$L24", []]);
-scratch = env._checkstop;
-next = scratch.as_string();
-break;
-case "$L24":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP30
 scratch = env._done.op_eq(new DataUnit(1, DATATYPES.DT_NUMBER));
 if (scratch.as_bool()) {
-next = "$L25";
+next = "$L24";
 } else {
-next = "$L26";
+next = "$L25";
 }
 break;
-case "$L25":
+case "$L24":
 tmp.push(env._ypos);
 retval = env._ypos.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_assign(retval);
-tmp.push(retval);//PUSHPOP32
-fn.push(["$L27", []]);
+tmp.push(retval);//PUSHPOP30
+fn.push(["$L26", []]);
 scratch = env._movepiece;
 next = scratch.as_string();
 break;
-case "$L27":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP32
-scratch = env._end.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER));
-next = "$L26";
-break;
 case "$L26":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP30
+scratch = env._end.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER));
+next = "$L25";
+break;
+case "$L25":
 scratch = env._yposdelta.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-case "$L28":
+case "$L27":
 tmp.push(env._done.op_eq(new DataUnit(0, DATATYPES.DT_NUMBER)));
 retval = env._yposdelta.op_gt(new DataUnit(0, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_cmpor(retval);
 if (scratch.as_bool()) {
-next = "$L29";
+next = "$L28";
 } else {
-next = "$L30";
+next = "$L29";
 }
 break;
-case "$L29":
-tmp.push(retval);//PUSHPOP34
-fn.push(["$L31", []]);
+case "$L28":
+tmp.push(retval);//PUSHPOP32
+fn.push(["$L30", []]);
 scratch = env._movepiece;
 next = scratch.as_string();
 break;
-case "$L31":
+case "$L30":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP34
+retval = tmp.pop();//PUSHPOP32
 scratch = env._delayindex.op_assign(env._delay);
-case "$L32":
+case "$L31":
 tmp.push(env._delayindex.op_gt(new DataUnit(0, DATATYPES.DT_NUMBER)));
 retval = env._delay.op_gt(new DataUnit(0, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_cmpand(retval);
 if (scratch.as_bool()) {
-next = "$L33";
+next = "$L32";
 } else {
-next = "$L34";
+next = "$L33";
 }
 break;
-case "$L33":
-tmp.push(retval);//PUSHPOP36
-fn.push(["$L35", [new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+case "$L32":
+tmp.push(retval);//PUSHPOP34
+fn.push(["$L34", [new DataUnit(10, DATATYPES.DT_NUMBER)]]);
 scratch = program.delay;
 next = scratch.as_string();
 break;
-case "$L35":
+case "$L34":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP36
+retval = tmp.pop();//PUSHPOP34
 tmp.push(env._delayindex);
 retval = env._delayindex.op_sub(new DataUnit(10, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_assign(retval);
-next = "$L32";
+next = "$L31";
 break;
-case "$L34":
+case "$L33":
 scratch = env._yposdelta.op_gt(new DataUnit(0, DATATYPES.DT_NUMBER));
 if (scratch.as_bool()) {
-next = "$L36";
+next = "$L35";
 } else {
-next = "$L38";
+next = "$L37";
 }
 break;
-case "$L36":
+case "$L35":
 tmp.push(env._yposdelta);
 retval = env._yposdelta.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_assign(retval);
-next = "$L37";
+next = "$L36";
 break;
-case "$L38":
+case "$L37":
 tmp.push(env._ypos);
 retval = env._ypos.op_add(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_assign(retval);
-next = "$L37";
+next = "$L36";
 break;
-case "$L37":
-tmp.push(retval);//PUSHPOP38
-fn.push(["$L39", []]);
+case "$L36":
+tmp.push(retval);//PUSHPOP36
+fn.push(["$L38", []]);
 scratch = env._checkstop;
 next = scratch.as_string();
 break;
-case "$L39":
+case "$L38":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP38
-next = "$L28";
+retval = tmp.pop();//PUSHPOP36
+next = "$L27";
 break;
-case "$L30":
-next = "$L15";
+case "$L29":
+next = "$L14";
 break;
-case "$L17":
+case "$L16":
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L11":
-next = "$L40";
+case "$L10":
+next = "$L39";
 break;
 case "_handlekey":
 scratch = graphicswindow.lastkey.op_eq(new DataUnit("Escape", DATATYPES.DT_STRING));
 if (scratch.as_bool()) {
-next = "$L41";
+next = "$L40";
 } else {
-next = "$L42";
+next = "$L41";
 }
 break;
-case "$L41":
-tmp.push(retval);//PUSHPOP40
-fn.push(["$L43", []]);
+case "$L40":
+tmp.push(retval);//PUSHPOP38
+fn.push(["$L42", []]);
 scratch = program.end;
 next = scratch.as_string();
 break;
-case "$L43":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP40
-next = "$L42";
-break;
 case "$L42":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP38
+next = "$L41";
+break;
+case "$L41":
 scratch = graphicswindow.lastkey.op_eq(new DataUnit("Left", DATATYPES.DT_STRING));
 if (scratch.as_bool()) {
-next = "$L44";
+next = "$L43";
 } else {
-next = "$L45";
+next = "$L44";
 }
 break;
-case "$L44":
+case "$L43":
 scratch = env._movedirection.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER).op_neg());
-tmp.push(retval);//PUSHPOP42
-fn.push(["$L46", []]);
+tmp.push(retval);//PUSHPOP40
+fn.push(["$L45", []]);
 scratch = env._validatemove;
 next = scratch.as_string();
-break;
-case "$L46":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP42
-scratch = env._invalidmove.op_eq(new DataUnit(0, DATATYPES.DT_NUMBER));
-if (scratch.as_bool()) {
-next = "$L47";
-} else {
-next = "$L48";
-}
-break;
-case "$L47":
-tmp.push(env._xpos);
-retval = env._xpos.op_add(env._movedirection);
-scratch = tmp.pop().op_assign(retval);
-next = "$L48";
-break;
-case "$L48":
-tmp.push(retval);//PUSHPOP44
-fn.push(["$L49", []]);
-scratch = env._movepiece;
-next = scratch.as_string();
-break;
-case "$L49":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP44
-next = "$L45";
 break;
 case "$L45":
-scratch = graphicswindow.lastkey.op_eq(new DataUnit("Right", DATATYPES.DT_STRING));
-if (scratch.as_bool()) {
-next = "$L50";
-} else {
-next = "$L51";
-}
-break;
-case "$L50":
-scratch = env._movedirection.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER));
-tmp.push(retval);//PUSHPOP46
-fn.push(["$L52", []]);
-scratch = env._validatemove;
-next = scratch.as_string();
-break;
-case "$L52":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP46
+retval = tmp.pop();//PUSHPOP40
 scratch = env._invalidmove.op_eq(new DataUnit(0, DATATYPES.DT_NUMBER));
 if (scratch.as_bool()) {
-next = "$L53";
+next = "$L46";
 } else {
-next = "$L54";
+next = "$L47";
 }
 break;
-case "$L53":
+case "$L46":
 tmp.push(env._xpos);
 retval = env._xpos.op_add(env._movedirection);
 scratch = tmp.pop().op_assign(retval);
-next = "$L54";
+next = "$L47";
 break;
-case "$L54":
-tmp.push(retval);//PUSHPOP48
-fn.push(["$L55", []]);
+case "$L47":
+tmp.push(retval);//PUSHPOP42
+fn.push(["$L48", []]);
 scratch = env._movepiece;
 next = scratch.as_string();
 break;
-case "$L55":
+case "$L48":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP48
-next = "$L51";
+retval = tmp.pop();//PUSHPOP42
+next = "$L44";
+break;
+case "$L44":
+scratch = graphicswindow.lastkey.op_eq(new DataUnit("Right", DATATYPES.DT_STRING));
+if (scratch.as_bool()) {
+next = "$L49";
+} else {
+next = "$L50";
+}
+break;
+case "$L49":
+scratch = env._movedirection.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER));
+tmp.push(retval);//PUSHPOP44
+fn.push(["$L51", []]);
+scratch = env._validatemove;
+next = scratch.as_string();
 break;
 case "$L51":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP44
+scratch = env._invalidmove.op_eq(new DataUnit(0, DATATYPES.DT_NUMBER));
+if (scratch.as_bool()) {
+next = "$L52";
+} else {
+next = "$L53";
+}
+break;
+case "$L52":
+tmp.push(env._xpos);
+retval = env._xpos.op_add(env._movedirection);
+scratch = tmp.pop().op_assign(retval);
+next = "$L53";
+break;
+case "$L53":
+tmp.push(retval);//PUSHPOP46
+fn.push(["$L54", []]);
+scratch = env._movepiece;
+next = scratch.as_string();
+break;
+case "$L54":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP46
+next = "$L50";
+break;
+case "$L50":
 tmp.push(graphicswindow.lastkey.op_eq(new DataUnit("Down", DATATYPES.DT_STRING)));
 retval = graphicswindow.lastkey.op_eq(new DataUnit("Space", DATATYPES.DT_STRING));
 scratch = tmp.pop().op_cmpor(retval);
 if (scratch.as_bool()) {
-next = "$L56";
+next = "$L55";
 } else {
-next = "$L57";
+next = "$L56";
 }
+break;
+case "$L55":
+scratch = env._delay.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
+next = "$L56";
 break;
 case "$L56":
-scratch = env._delay.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-next = "$L57";
-break;
-case "$L57":
 scratch = graphicswindow.lastkey.op_eq(new DataUnit("Up", DATATYPES.DT_STRING));
 if (scratch.as_bool()) {
-next = "$L58";
+next = "$L57";
 } else {
-next = "$L59";
+next = "$L58";
 }
 break;
-case "$L58":
+case "$L57":
 tmp.push(env._basetemplate);
-fn.push(["$L60", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+fn.push(["$L59", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L60":
+case "$L59":
 tmp.pop().op_assign(retval);
 env._template.op_assign(new DataUnit("temptemplate", DATATYPES.DT_STRING));
 scratch = env._rotation.op_assign(new DataUnit("CW", DATATYPES.DT_STRING));
-tmp.push(retval);//PUSHPOP52
-fn.push(["$L61", []]);
+tmp.push(retval);//PUSHPOP50
+fn.push(["$L60", []]);
 scratch = env._copypiece;
+next = scratch.as_string();
+break;
+case "$L60":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP50
+tmp.push(retval);//PUSHPOP52
+fn.push(["$L61", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg(), env._template]]);
+scratch = array.setvalue;
 next = scratch.as_string();
 break;
 case "$L61":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP52
+scratch = env._movedirection.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
 tmp.push(retval);//PUSHPOP54
-fn.push(["$L62", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg(), env._template]]);
-scratch = array.setvalue;
+fn.push(["$L62", []]);
+scratch = env._validatemove;
 next = scratch.as_string();
 break;
 case "$L62":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP54
-scratch = env._movedirection.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-tmp.push(retval);//PUSHPOP56
-fn.push(["$L63", []]);
-scratch = env._validatemove;
-next = scratch.as_string();
-break;
-case "$L63":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP56
 env._xposbk.op_assign(env._xpos);
 scratch = env._yposdelta.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-case "$L64":
+case "$L63":
 tmp.push(env._yposdelta.op_eq(new DataUnit(0, DATATYPES.DT_NUMBER)));
-fn.push(["$L67", [env._xposbk.op_sub(env._xpos)]]);
+fn.push(["$L66", [env._xposbk.op_sub(env._xpos)]]);
 scratch = math.abs;
 next = scratch.as_string();
 break;
-case "$L67":
+case "$L66":
 retval = retval.op_lt(new DataUnit(3, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_cmpand(retval);
 if (scratch.as_bool()) {
-next = "$L65";
+next = "$L64";
 } else {
-next = "$L66";
+next = "$L65";
 }
 break;
-case "$L65":
+case "$L64":
 scratch = env._invalidmove.op_eq(new DataUnit(0, DATATYPES.DT_NUMBER));
 if (scratch.as_bool()) {
-next = "$L68";
+next = "$L67";
 } else {
-next = "$L70";
+next = "$L69";
 }
 break;
-case "$L68":
+case "$L67":
 env._basetemplate.op_assign(env._template);
 scratch = env._template.op_assign(new DataUnit("rotatedtemplate", DATATYPES.DT_STRING));
-tmp.push(retval);//PUSHPOP60
-fn.push(["$L71", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg(), env._template]]);
+tmp.push(retval);//PUSHPOP58
+fn.push(["$L70", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg(), env._template]]);
 scratch = array.setvalue;
+next = scratch.as_string();
+break;
+case "$L70":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP58
+scratch = env._rotation.op_assign(new DataUnit("COPY", DATATYPES.DT_STRING));
+tmp.push(retval);//PUSHPOP60
+fn.push(["$L71", []]);
+scratch = env._copypiece;
 next = scratch.as_string();
 break;
 case "$L71":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP60
-scratch = env._rotation.op_assign(new DataUnit("COPY", DATATYPES.DT_STRING));
+scratch = env._yposdelta.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER));
 tmp.push(retval);//PUSHPOP62
 fn.push(["$L72", []]);
-scratch = env._copypiece;
+scratch = env._movepiece;
 next = scratch.as_string();
 break;
 case "$L72":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP62
-scratch = env._yposdelta.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER));
-tmp.push(retval);//PUSHPOP64
-fn.push(["$L73", []]);
-scratch = env._movepiece;
-next = scratch.as_string();
+next = "$L68";
 break;
-case "$L73":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP64
-next = "$L69";
-break;
-case "$L70":
+case "$L69":
 scratch = env._invalidmove.op_eq(new DataUnit(2, DATATYPES.DT_NUMBER));
 if (scratch.as_bool()) {
-next = "$L74";
+next = "$L73";
 } else {
-next = "$L75";
+next = "$L74";
 }
 break;
-case "$L74":
+case "$L73":
 scratch = env._xpos.op_assign(new DataUnit(99, DATATYPES.DT_NUMBER));
-next = "$L69";
+next = "$L68";
 break;
-case "$L75":
+case "$L74":
 tmp.push(env._xpos);
 retval = env._xpos.op_sub(env._invalidmove);
 scratch = tmp.pop().op_assign(retval);
-tmp.push(retval);//PUSHPOP66
-fn.push(["$L76", []]);
+tmp.push(retval);//PUSHPOP64
+fn.push(["$L75", []]);
 scratch = env._validatemove;
 next = scratch.as_string();
 break;
-case "$L76":
+case "$L75":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP66
-next = "$L69";
+retval = tmp.pop();//PUSHPOP64
+next = "$L68";
 break;
-case "$L69":
-next = "$L64";
+case "$L68":
+next = "$L63";
 break;
-case "$L66":
+case "$L65":
 scratch = env._invalidmove.op_neq(new DataUnit(0, DATATYPES.DT_NUMBER));
 if (scratch.as_bool()) {
-next = "$L77";
+next = "$L76";
 } else {
-next = "$L78";
+next = "$L77";
 }
 break;
-case "$L77":
+case "$L76":
 scratch = env._xpos.op_assign(env._xposbk);
-tmp.push(retval);//PUSHPOP68
-fn.push(["$L79", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg(), env._basetemplate]]);
+tmp.push(retval);//PUSHPOP66
+fn.push(["$L78", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg(), env._basetemplate]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
-case "$L79":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP68
-scratch = env._template.op_assign(new DataUnit("", DATATYPES.DT_STRING));
-next = "$L78";
-break;
 case "$L78":
-next = "$L59";
+scratch = retval;
+retval = tmp.pop();//PUSHPOP66
+scratch = env._template.op_assign(new DataUnit("", DATATYPES.DT_STRING));
+next = "$L77";
 break;
-case "$L59":
+case "$L77":
+next = "$L58";
+break;
+case "$L58":
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L40":
-next = "$L80";
+case "$L39":
+next = "$L79";
 break;
 case "_drawpreviewpiece":
 env._xpos.op_assign(env._preview_xpos);
@@ -982,488 +974,488 @@ env._xoffsetbk.op_assign(env._xoffset);
 scratch = env._yoffsetbk.op_assign(env._yoffset);
 tmp.push(env._xoffset);
 tmp.push(env._xoffset);
-tmp.push(params);//PUSHPOP73
+tmp.push(params);//PUSHPOP71
 params = [];
-scratch = tmp.push(retval);//PUSHPOP70
-fn.push(["$L81", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+scratch = tmp.push(retval);//PUSHPOP68
+fn.push(["$L80", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+scratch = array.getvalue;
+next = scratch.as_string();
+break;
+case "$L80":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP68
+params.push(scratch);
+params.push(new DataUnit("pviewx", DATATYPES.DT_STRING));
+fn.push(["$L81", params]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
 case "$L81":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP70
-params.push(scratch);
-params.push(new DataUnit("pviewx", DATATYPES.DT_STRING));
-fn.push(["$L82", params]);
+params = tmp.pop();//PUSHPOP71
+retval = tmp.pop().op_add(retval);
+scratch = tmp.pop().op_assign(retval);
+tmp.push(env._yoffset);
+tmp.push(env._yoffset);
+tmp.push(params);//PUSHPOP75
+params = [];
+scratch = tmp.push(retval);//PUSHPOP72
+fn.push(["$L82", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
 case "$L82":
-params = tmp.pop();//PUSHPOP73
-retval = tmp.pop().op_add(retval);
-scratch = tmp.pop().op_assign(retval);
-tmp.push(env._yoffset);
-tmp.push(env._yoffset);
-tmp.push(params);//PUSHPOP77
-params = [];
-scratch = tmp.push(retval);//PUSHPOP74
-fn.push(["$L83", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+scratch = retval;
+retval = tmp.pop();//PUSHPOP72
+params.push(scratch);
+params.push(new DataUnit("pviewy", DATATYPES.DT_STRING));
+fn.push(["$L83", params]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
 case "$L83":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP74
-params.push(scratch);
-params.push(new DataUnit("pviewy", DATATYPES.DT_STRING));
-fn.push(["$L84", params]);
-scratch = array.getvalue;
-next = scratch.as_string();
-break;
-case "$L84":
-params = tmp.pop();//PUSHPOP77
+params = tmp.pop();//PUSHPOP75
 retval = tmp.pop().op_add(retval);
 scratch = tmp.pop().op_assign(retval);
-tmp.push(retval);//PUSHPOP78
-fn.push(["$L85", []]);
+tmp.push(retval);//PUSHPOP76
+fn.push(["$L84", []]);
 scratch = env._movepiece;
 next = scratch.as_string();
 break;
-case "$L85":
+case "$L84":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP78
+retval = tmp.pop();//PUSHPOP76
 env._xoffset.op_assign(env._xoffsetbk);
 scratch = env._yoffset.op_assign(env._yoffsetbk);
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L80":
-next = "$L86";
+case "$L79":
+next = "$L85";
 break;
 case "_copypiece":
 tmp.push(env._l);
-fn.push(["$L87", [env._basetemplate, new DataUnit("dim", DATATYPES.DT_STRING)]]);
+fn.push(["$L86", [env._basetemplate, new DataUnit("dim", DATATYPES.DT_STRING)]]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L87":
+case "$L86":
 tmp.pop().op_assign(retval);
 scratch = env._rotation.op_eq(new DataUnit("CW", DATATYPES.DT_STRING));
 if (scratch.as_bool()) {
-next = "$L88";
+next = "$L87";
 } else {
-next = "$L90";
+next = "$L89";
 }
 break;
-case "$L88":
+case "$L87":
 retval = new DataUnit(0, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(retval);
-case "$L91":
+case "$L90":
 tmp.push(env._i);
 retval = env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L92";
+next = "$L91";
 } else {
-next = "$L93";
+next = "$L92";
 }
 break;
-case "$L92":
+case "$L91":
 tmp.push(env._v);
-fn.push(["$L94", [env._basetemplate, env._i]]);
+fn.push(["$L93", [env._basetemplate, env._i]]);
 scratch = array.getvalue;
+next = scratch.as_string();
+break;
+case "$L93":
+scratch = tmp.pop().op_assign(retval);
+tmp.push(env._x);
+fn.push(["$L94", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+scratch = math.remainder;
 next = scratch.as_string();
 break;
 case "$L94":
 scratch = tmp.pop().op_assign(retval);
-tmp.push(env._x);
-fn.push(["$L95", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
-scratch = math.remainder;
+tmp.push(env._y);
+tmp.push(env._l.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)));
+fn.push(["$L95", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
+scratch = math.floor;
 next = scratch.as_string();
 break;
 case "$L95":
+retval = tmp.pop().op_sub(retval);
 scratch = tmp.pop().op_assign(retval);
-tmp.push(env._y);
-tmp.push(env._l.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)));
-fn.push(["$L96", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
-scratch = math.floor;
+fn.push(["$L96", [env._template, env._i, env._x.op_mul(new DataUnit(10, DATATYPES.DT_NUMBER)).op_add(env._y)]]);
+scratch = array.setvalue;
 next = scratch.as_string();
 break;
 case "$L96":
-retval = tmp.pop().op_sub(retval);
-scratch = tmp.pop().op_assign(retval);
-fn.push(["$L97", [env._template, env._i, env._x.op_mul(new DataUnit(10, DATATYPES.DT_NUMBER)).op_add(env._y)]]);
-scratch = array.setvalue;
-next = scratch.as_string();
-break;
-case "$L97":
 scratch = retval;
 retval = new DataUnit(1, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(scratch.op_add(retval));
-next = "$L91";
+next = "$L90";
 break;
-case "$L93":
-next = "$L89";
+case "$L92":
+next = "$L88";
 break;
-case "$L90":
+case "$L89":
 scratch = env._rotation.op_eq(new DataUnit("CCW", DATATYPES.DT_STRING));
 if (scratch.as_bool()) {
-next = "$L98";
+next = "$L97";
 } else {
-next = "$L99";
+next = "$L98";
 }
 break;
-case "$L98":
+case "$L97":
 retval = new DataUnit(0, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(retval);
-case "$L100":
+case "$L99":
 tmp.push(env._i);
 retval = env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L101";
+next = "$L100";
 } else {
-next = "$L102";
+next = "$L101";
 }
 break;
-case "$L101":
+case "$L100":
 tmp.push(env._v);
-fn.push(["$L103", [env._basetemplate, env._i]]);
+fn.push(["$L102", [env._basetemplate, env._i]]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L103":
+case "$L102":
 scratch = tmp.pop().op_assign(retval);
 tmp.push(env._x);
 tmp.push(env._l.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)));
-fn.push(["$L104", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L103", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
 scratch = math.remainder;
 next = scratch.as_string();
 break;
-case "$L104":
+case "$L103":
 retval = tmp.pop().op_sub(retval);
 scratch = tmp.pop().op_assign(retval);
 tmp.push(env._y);
-fn.push(["$L105", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
+fn.push(["$L104", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
 scratch = math.floor;
 next = scratch.as_string();
 break;
-case "$L105":
+case "$L104":
 scratch = tmp.pop().op_assign(retval);
-fn.push(["$L106", [env._template, env._i, env._x.op_mul(new DataUnit(10, DATATYPES.DT_NUMBER)).op_add(env._y)]]);
+fn.push(["$L105", [env._template, env._i, env._x.op_mul(new DataUnit(10, DATATYPES.DT_NUMBER)).op_add(env._y)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
-case "$L106":
+case "$L105":
 scratch = retval;
 retval = new DataUnit(1, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(scratch.op_add(retval));
-next = "$L100";
+next = "$L99";
 break;
-case "$L102":
-next = "$L89";
+case "$L101":
+next = "$L88";
 break;
-case "$L99":
+case "$L98":
 scratch = env._rotation.op_eq(new DataUnit("COPY", DATATYPES.DT_STRING));
 if (scratch.as_bool()) {
-next = "$L107";
+next = "$L106";
 } else {
-next = "$L108";
+next = "$L107";
 }
 break;
-case "$L107":
+case "$L106":
 retval = new DataUnit(0, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(retval);
-case "$L109":
+case "$L108":
 tmp.push(env._i);
 retval = env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L110";
+next = "$L109";
 } else {
-next = "$L111";
+next = "$L110";
 }
 break;
-case "$L110":
-tmp.push(params);//PUSHPOP101
+case "$L109":
+tmp.push(params);//PUSHPOP99
 params = [];
 params.push(env._template);
 params.push(env._i);
-scratch = tmp.push(retval);//PUSHPOP98
-fn.push(["$L112", [env._basetemplate, env._i]]);
+scratch = tmp.push(retval);//PUSHPOP96
+fn.push(["$L111", [env._basetemplate, env._i]]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L112":
+case "$L111":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP98
+retval = tmp.pop();//PUSHPOP96
 params.push(scratch);
-fn.push(["$L113", params]);
+fn.push(["$L112", params]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
-case "$L113":
-params = tmp.pop();//PUSHPOP101
+case "$L112":
+params = tmp.pop();//PUSHPOP99
 scratch = retval;
 retval = new DataUnit(1, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(scratch.op_add(retval));
-next = "$L109";
+next = "$L108";
 break;
-case "$L111":
-next = "$L89";
+case "$L110":
+next = "$L88";
 break;
-case "$L108":
-tmp.push(retval);//PUSHPOP102
-fn.push(["$L114", [new DataUnit("invalid parameter", DATATYPES.DT_STRING), new DataUnit("Error", DATATYPES.DT_STRING)]]);
+case "$L107":
+tmp.push(retval);//PUSHPOP100
+fn.push(["$L113", [new DataUnit("invalid parameter", DATATYPES.DT_STRING), new DataUnit("Error", DATATYPES.DT_STRING)]]);
 scratch = graphicswindow.showmessage;
+next = scratch.as_string();
+break;
+case "$L113":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP100
+tmp.push(retval);//PUSHPOP102
+fn.push(["$L114", []]);
+scratch = program.end;
 next = scratch.as_string();
 break;
 case "$L114":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP102
-tmp.push(retval);//PUSHPOP104
-fn.push(["$L115", []]);
-scratch = program.end;
+next = "$L88";
+break;
+case "$L88":
+tmp.push(retval);//PUSHPOP106
+tmp.push(params);//PUSHPOP107
+params = [];
+params.push(env._template);
+params.push(new DataUnit("color", DATATYPES.DT_STRING));
+scratch = tmp.push(retval);//PUSHPOP104
+fn.push(["$L115", [env._basetemplate, new DataUnit("color", DATATYPES.DT_STRING)]]);
+scratch = array.getvalue;
 next = scratch.as_string();
 break;
 case "$L115":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP104
-next = "$L89";
-break;
-case "$L89":
-tmp.push(retval);//PUSHPOP108
-tmp.push(params);//PUSHPOP109
-params = [];
-params.push(env._template);
-params.push(new DataUnit("color", DATATYPES.DT_STRING));
-scratch = tmp.push(retval);//PUSHPOP106
-fn.push(["$L116", [env._basetemplate, new DataUnit("color", DATATYPES.DT_STRING)]]);
-scratch = array.getvalue;
+params.push(scratch);
+fn.push(["$L116", params]);
+scratch = array.setvalue;
 next = scratch.as_string();
 break;
 case "$L116":
+params = tmp.pop();//PUSHPOP107
 scratch = retval;
 retval = tmp.pop();//PUSHPOP106
-params.push(scratch);
-fn.push(["$L117", params]);
-scratch = array.setvalue;
-next = scratch.as_string();
-break;
-case "$L117":
-params = tmp.pop();//PUSHPOP109
-scratch = retval;
-retval = tmp.pop();//PUSHPOP108
-tmp.push(retval);//PUSHPOP112
-tmp.push(params);//PUSHPOP113
+tmp.push(retval);//PUSHPOP110
+tmp.push(params);//PUSHPOP111
 params = [];
 params.push(env._template);
 params.push(new DataUnit("dim", DATATYPES.DT_STRING));
-scratch = tmp.push(retval);//PUSHPOP110
-fn.push(["$L118", [env._basetemplate, new DataUnit("dim", DATATYPES.DT_STRING)]]);
+scratch = tmp.push(retval);//PUSHPOP108
+fn.push(["$L117", [env._basetemplate, new DataUnit("dim", DATATYPES.DT_STRING)]]);
 scratch = array.getvalue;
+next = scratch.as_string();
+break;
+case "$L117":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP108
+params.push(scratch);
+fn.push(["$L118", params]);
+scratch = array.setvalue;
 next = scratch.as_string();
 break;
 case "$L118":
+params = tmp.pop();//PUSHPOP111
 scratch = retval;
 retval = tmp.pop();//PUSHPOP110
-params.push(scratch);
-fn.push(["$L119", params]);
-scratch = array.setvalue;
-next = scratch.as_string();
-break;
-case "$L119":
-params = tmp.pop();//PUSHPOP113
-scratch = retval;
-retval = tmp.pop();//PUSHPOP112
-tmp.push(retval);//PUSHPOP116
-tmp.push(params);//PUSHPOP117
+tmp.push(retval);//PUSHPOP114
+tmp.push(params);//PUSHPOP115
 params = [];
 params.push(env._template);
 params.push(new DataUnit("pviewx", DATATYPES.DT_STRING));
-scratch = tmp.push(retval);//PUSHPOP114
-fn.push(["$L120", [env._basetemplate, new DataUnit("pviewx", DATATYPES.DT_STRING)]]);
+scratch = tmp.push(retval);//PUSHPOP112
+fn.push(["$L119", [env._basetemplate, new DataUnit("pviewx", DATATYPES.DT_STRING)]]);
 scratch = array.getvalue;
+next = scratch.as_string();
+break;
+case "$L119":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP112
+params.push(scratch);
+fn.push(["$L120", params]);
+scratch = array.setvalue;
 next = scratch.as_string();
 break;
 case "$L120":
+params = tmp.pop();//PUSHPOP115
 scratch = retval;
 retval = tmp.pop();//PUSHPOP114
-params.push(scratch);
-fn.push(["$L121", params]);
-scratch = array.setvalue;
-next = scratch.as_string();
-break;
-case "$L121":
-params = tmp.pop();//PUSHPOP117
-scratch = retval;
-retval = tmp.pop();//PUSHPOP116
-tmp.push(params);//PUSHPOP121
+tmp.push(params);//PUSHPOP119
 params = [];
 params.push(env._template);
 params.push(new DataUnit("pviewy", DATATYPES.DT_STRING));
-scratch = tmp.push(retval);//PUSHPOP118
-fn.push(["$L122", [env._basetemplate, new DataUnit("pviewy", DATATYPES.DT_STRING)]]);
+scratch = tmp.push(retval);//PUSHPOP116
+fn.push(["$L121", [env._basetemplate, new DataUnit("pviewy", DATATYPES.DT_STRING)]]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L122":
+case "$L121":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP118
+retval = tmp.pop();//PUSHPOP116
 params.push(scratch);
-fn.push(["$L123", params]);
+fn.push(["$L122", params]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
-case "$L123":
-params = tmp.pop();//PUSHPOP121
+case "$L122":
+params = tmp.pop();//PUSHPOP119
 scratch = retval;
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L86":
-next = "$L124";
+case "$L85":
+next = "$L123";
 break;
 case "_createpiece":
 tmp.push(env._hcount);
 retval = env._hcount.op_add(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_assign(retval);
 tmp.push(env._h);
-fn.push(["$L125", [new DataUnit("piece", DATATYPES.DT_STRING), env._hcount]]);
+fn.push(["$L124", [new DataUnit("piece", DATATYPES.DT_STRING), env._hcount]]);
 scratch = text.append;
 next = scratch.as_string();
 break;
-case "$L125":
+case "$L124":
 scratch = tmp.pop().op_assign(retval);
-tmp.push(retval);//PUSHPOP124
-fn.push(["$L126", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg(), env._template]]);
+tmp.push(retval);//PUSHPOP122
+fn.push(["$L125", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg(), env._template]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
-case "$L126":
+case "$L125":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP124
+retval = tmp.pop();//PUSHPOP122
 graphicswindow.penwidth.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = graphicswindow.pencolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
 tmp.push(graphicswindow.brushcolor);
-fn.push(["$L127", [env._template, new DataUnit("color", DATATYPES.DT_STRING)]]);
+fn.push(["$L126", [env._template, new DataUnit("color", DATATYPES.DT_STRING)]]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L127":
+case "$L126":
 scratch = tmp.pop().op_assign(retval);
 retval = new DataUnit(0, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(retval);
-case "$L128":
+case "$L127":
 tmp.push(env._i);
 retval = env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L129";
+next = "$L128";
 } else {
-next = "$L130";
+next = "$L129";
 }
 break;
-case "$L129":
+case "$L128":
 tmp.push(env._s);
-fn.push(["$L131", [env._bwidth, env._bwidth]]);
+fn.push(["$L130", [env._bwidth, env._bwidth]]);
 scratch = shapes.addrectangle;
 next = scratch.as_string();
 break;
-case "$L131":
+case "$L130":
 scratch = tmp.pop().op_assign(retval);
-tmp.push(retval);//PUSHPOP130
-fn.push(["$L132", [env._s, env._bwidth.op_neg(), env._bwidth.op_neg()]]);
+tmp.push(retval);//PUSHPOP128
+fn.push(["$L131", [env._s, env._bwidth.op_neg(), env._bwidth.op_neg()]]);
 scratch = shapes.move;
+next = scratch.as_string();
+break;
+case "$L131":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP128
+fn.push(["$L132", [env._h, env._i, env._s]]);
+scratch = array.setvalue;
 next = scratch.as_string();
 break;
 case "$L132":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP130
-fn.push(["$L133", [env._h, env._i, env._s]]);
-scratch = array.setvalue;
-next = scratch.as_string();
-break;
-case "$L133":
-scratch = retval;
 retval = new DataUnit(1, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(scratch.op_add(retval));
-next = "$L128";
+next = "$L127";
 break;
-case "$L130":
+case "$L129":
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L124":
-next = "$L134";
+case "$L123":
+next = "$L133";
 break;
 case "_movepiece":
 retval = new DataUnit(0, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(retval);
-case "$L135":
+case "$L134":
 tmp.push(env._i);
 retval = env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L136";
+next = "$L135";
 } else {
-next = "$L137";
+next = "$L136";
 }
 break;
-case "$L136":
+case "$L135":
 tmp.push(env._v);
-tmp.push(params);//PUSHPOP137
+tmp.push(params);//PUSHPOP135
 params = [];
-scratch = tmp.push(retval);//PUSHPOP134
-fn.push(["$L138", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+scratch = tmp.push(retval);//PUSHPOP132
+fn.push(["$L137", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+scratch = array.getvalue;
+next = scratch.as_string();
+break;
+case "$L137":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP132
+params.push(scratch);
+params.push(env._i);
+fn.push(["$L138", params]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
 case "$L138":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP134
-params.push(scratch);
-params.push(env._i);
-fn.push(["$L139", params]);
-scratch = array.getvalue;
+params = tmp.pop();//PUSHPOP135
+scratch = tmp.pop().op_assign(retval);
+tmp.push(env._x);
+fn.push(["$L139", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
+scratch = math.floor;
 next = scratch.as_string();
 break;
 case "$L139":
-params = tmp.pop();//PUSHPOP137
 scratch = tmp.pop().op_assign(retval);
-tmp.push(env._x);
-fn.push(["$L140", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
-scratch = math.floor;
+tmp.push(env._y);
+fn.push(["$L140", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+scratch = math.remainder;
 next = scratch.as_string();
 break;
 case "$L140":
 scratch = tmp.pop().op_assign(retval);
-tmp.push(env._y);
-fn.push(["$L141", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
-scratch = math.remainder;
-next = scratch.as_string();
-break;
-case "$L141":
-scratch = tmp.pop().op_assign(retval);
-tmp.push(params);//PUSHPOP145
+tmp.push(params);//PUSHPOP143
 params = [];
-scratch = tmp.push(retval);//PUSHPOP142
-fn.push(["$L142", [env._h, env._i]]);
+scratch = tmp.push(retval);//PUSHPOP140
+fn.push(["$L141", [env._h, env._i]]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L142":
+case "$L141":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP142
+retval = tmp.pop();//PUSHPOP140
 params.push(scratch);
 tmp.push(env._xoffset);
 tmp.push(tmp.pop().op_add(env._xpos.op_mul(env._bwidth)));
@@ -1472,659 +1464,659 @@ tmp.push(env._yoffset);
 tmp.push(tmp.pop().op_add(env._ypos.op_mul(env._bwidth)));
 retval = env._y.op_mul(env._bwidth);
 params.push(tmp.pop().op_add(retval));
-fn.push(["$L143", params]);
+fn.push(["$L142", params]);
 scratch = shapes.move;
 next = scratch.as_string();
 break;
-case "$L143":
-params = tmp.pop();//PUSHPOP145
+case "$L142":
+params = tmp.pop();//PUSHPOP143
 scratch = retval;
 retval = new DataUnit(1, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(scratch.op_add(retval));
-next = "$L135";
+next = "$L134";
 break;
-case "$L137":
+case "$L136":
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L134":
-next = "$L144";
+case "$L133":
+next = "$L143";
 break;
 case "_validatemove":
 env._i.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
 scratch = env._invalidmove.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-case "$L145":
+case "$L144":
 scratch = env._i.op_lt(env._boxes);
 if (scratch.as_bool()) {
-next = "$L146";
+next = "$L145";
 } else {
-next = "$L147";
+next = "$L146";
 }
 break;
-case "$L146":
+case "$L145":
 tmp.push(env._v);
-tmp.push(params);//PUSHPOP149
+tmp.push(params);//PUSHPOP147
 params = [];
-scratch = tmp.push(retval);//PUSHPOP146
-fn.push(["$L148", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+scratch = tmp.push(retval);//PUSHPOP144
+fn.push(["$L147", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+scratch = array.getvalue;
+next = scratch.as_string();
+break;
+case "$L147":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP144
+params.push(scratch);
+params.push(env._i);
+fn.push(["$L148", params]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
 case "$L148":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP146
-params.push(scratch);
-params.push(env._i);
-fn.push(["$L149", params]);
-scratch = array.getvalue;
-next = scratch.as_string();
-break;
-case "$L149":
-params = tmp.pop();//PUSHPOP149
+params = tmp.pop();//PUSHPOP147
 scratch = tmp.pop().op_assign(retval);
 tmp.push(env._x);
-fn.push(["$L150", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
+fn.push(["$L149", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
 scratch = math.floor;
 next = scratch.as_string();
 break;
-case "$L150":
+case "$L149":
 scratch = tmp.pop().op_assign(retval);
 tmp.push(env._y);
-fn.push(["$L151", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L150", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
 scratch = math.remainder;
 next = scratch.as_string();
 break;
-case "$L151":
+case "$L150":
 tmp.pop().op_assign(retval);
 scratch = env._x.op_add(env._xpos).op_add(env._movedirection).op_lt(new DataUnit(0, DATATYPES.DT_NUMBER));
 if (scratch.as_bool()) {
-next = "$L152";
+next = "$L151";
 } else {
-next = "$L153";
+next = "$L152";
 }
 break;
-case "$L152":
+case "$L151":
 env._invalidmove.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER).op_neg());
 scratch = env._i.op_assign(env._boxes);
-next = "$L153";
+next = "$L152";
 break;
-case "$L153":
+case "$L152":
 scratch = env._x.op_add(env._xpos).op_add(env._movedirection).op_gte(env._cwidth);
 if (scratch.as_bool()) {
-next = "$L154";
+next = "$L153";
 } else {
-next = "$L155";
+next = "$L154";
 }
 break;
-case "$L154":
+case "$L153":
 env._invalidmove.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = env._i.op_assign(env._boxes);
-next = "$L155";
+next = "$L154";
 break;
-case "$L155":
-scratch = tmp.push(retval);//PUSHPOP154
-tmp.push(params);//PUSHPOP155
+case "$L154":
+scratch = tmp.push(retval);//PUSHPOP152
+tmp.push(params);//PUSHPOP153
 params = [];
 params.push(new DataUnit("c", DATATYPES.DT_STRING));
 tmp.push(env._x.op_add(env._xpos).op_add(env._movedirection));
 retval = env._y.op_add(env._ypos).op_mul(env._cwidth);
 params.push(tmp.pop().op_add(retval));
-fn.push(["$L156", params]);
+fn.push(["$L155", params]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L156":
-params = tmp.pop();//PUSHPOP155
+case "$L155":
+params = tmp.pop();//PUSHPOP153
 scratch = retval;
-retval = tmp.pop();//PUSHPOP154
+retval = tmp.pop();//PUSHPOP152
 scratch = scratch.op_neq(new DataUnit(".", DATATYPES.DT_STRING));
 if (scratch.as_bool()) {
-next = "$L157";
+next = "$L156";
 } else {
-next = "$L158";
+next = "$L157";
 }
 break;
-case "$L157":
+case "$L156":
 env._invalidmove.op_assign(new DataUnit(2, DATATYPES.DT_NUMBER));
 scratch = env._i.op_assign(env._boxes);
-next = "$L158";
+next = "$L157";
 break;
-case "$L158":
+case "$L157":
 tmp.push(env._i);
 retval = env._i.op_add(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_assign(retval);
-next = "$L145";
+next = "$L144";
 break;
-case "$L147":
+case "$L146":
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L144":
-next = "$L159";
+case "$L143":
+next = "$L158";
 break;
 case "_checkstop":
 env._done.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
 scratch = env._i.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-case "$L160":
+case "$L159":
 scratch = env._i.op_lt(env._boxes);
 if (scratch.as_bool()) {
-next = "$L161";
+next = "$L160";
 } else {
-next = "$L162";
+next = "$L161";
 }
 break;
-case "$L161":
+case "$L160":
 tmp.push(env._v);
-tmp.push(params);//PUSHPOP159
+tmp.push(params);//PUSHPOP157
 params = [];
-scratch = tmp.push(retval);//PUSHPOP156
-fn.push(["$L163", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+scratch = tmp.push(retval);//PUSHPOP154
+fn.push(["$L162", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+scratch = array.getvalue;
+next = scratch.as_string();
+break;
+case "$L162":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP154
+params.push(scratch);
+params.push(env._i);
+fn.push(["$L163", params]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
 case "$L163":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP156
-params.push(scratch);
-params.push(env._i);
-fn.push(["$L164", params]);
-scratch = array.getvalue;
-next = scratch.as_string();
-break;
-case "$L164":
-params = tmp.pop();//PUSHPOP159
+params = tmp.pop();//PUSHPOP157
 scratch = tmp.pop().op_assign(retval);
 tmp.push(env._x);
-fn.push(["$L165", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
+fn.push(["$L164", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
 scratch = math.floor;
 next = scratch.as_string();
 break;
-case "$L165":
+case "$L164":
 scratch = tmp.pop().op_assign(retval);
 tmp.push(env._y);
-fn.push(["$L166", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L165", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
 scratch = math.remainder;
 next = scratch.as_string();
 break;
-case "$L166":
+case "$L165":
 tmp.pop().op_assign(retval);
 tmp.push(env._y.op_add(env._ypos).op_gt(env._cheight));
-tmp.push(params);//PUSHPOP165
+tmp.push(params);//PUSHPOP163
 params = [];
 params.push(new DataUnit("c", DATATYPES.DT_STRING));
 tmp.push(env._x.op_add(env._xpos));
 retval = env._y.op_add(env._ypos).op_mul(env._cwidth);
 params.push(tmp.pop().op_add(retval));
-fn.push(["$L167", params]);
+fn.push(["$L166", params]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L167":
-params = tmp.pop();//PUSHPOP165
+case "$L166":
+params = tmp.pop();//PUSHPOP163
 retval = retval.op_neq(new DataUnit(".", DATATYPES.DT_STRING));
 scratch = tmp.pop().op_cmpor(retval);
 if (scratch.as_bool()) {
-next = "$L168";
+next = "$L167";
 } else {
-next = "$L169";
+next = "$L168";
 }
 break;
-case "$L168":
+case "$L167":
 env._done.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = env._i.op_assign(env._boxes);
-next = "$L169";
+next = "$L168";
 break;
-case "$L169":
+case "$L168":
 tmp.push(env._i);
 retval = env._i.op_add(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_assign(retval);
-next = "$L160";
+next = "$L159";
 break;
-case "$L162":
+case "$L161":
 scratch = env._done.op_eq(new DataUnit(1, DATATYPES.DT_NUMBER));
 if (scratch.as_bool()) {
-next = "$L170";
+next = "$L169";
 } else {
-next = "$L171";
+next = "$L170";
 }
 break;
-case "$L170":
+case "$L169":
 retval = new DataUnit(0, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(retval);
-case "$L172":
+case "$L171":
 tmp.push(env._i);
 retval = env._boxes.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L173";
+next = "$L172";
 } else {
-next = "$L174";
+next = "$L173";
 }
 break;
-case "$L173":
+case "$L172":
 tmp.push(env._v);
-tmp.push(params);//PUSHPOP169
+tmp.push(params);//PUSHPOP167
 params = [];
-scratch = tmp.push(retval);//PUSHPOP166
-fn.push(["$L175", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+scratch = tmp.push(retval);//PUSHPOP164
+fn.push(["$L174", [env._h, new DataUnit(1, DATATYPES.DT_NUMBER).op_neg()]]);
+scratch = array.getvalue;
+next = scratch.as_string();
+break;
+case "$L174":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP164
+params.push(scratch);
+params.push(env._i);
+fn.push(["$L175", params]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
 case "$L175":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP166
-params.push(scratch);
-params.push(env._i);
-fn.push(["$L176", params]);
-scratch = array.getvalue;
-next = scratch.as_string();
-break;
-case "$L176":
-params = tmp.pop();//PUSHPOP169
+params = tmp.pop();//PUSHPOP167
 scratch = tmp.pop().op_assign(retval);
-tmp.push(params);//PUSHPOP177
+tmp.push(params);//PUSHPOP175
 params = [];
 params.push(new DataUnit("c", DATATYPES.DT_STRING));
-scratch = tmp.push(retval);//PUSHPOP170
-fn.push(["$L177", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
+scratch = tmp.push(retval);//PUSHPOP168
+fn.push(["$L176", [env._v.op_div(new DataUnit(10, DATATYPES.DT_NUMBER))]]);
 scratch = math.floor;
 next = scratch.as_string();
 break;
-case "$L177":
+case "$L176":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP170
+retval = tmp.pop();//PUSHPOP168
 tmp.push(scratch.op_add(env._xpos));
-fn.push(["$L178", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L177", [env._v, new DataUnit(10, DATATYPES.DT_NUMBER)]]);
 scratch = math.remainder;
 next = scratch.as_string();
 break;
-case "$L178":
+case "$L177":
 retval = retval.op_add(env._ypos).op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)).op_mul(env._cwidth);
 params.push(tmp.pop().op_add(retval));
-scratch = tmp.push(retval);//PUSHPOP174
-fn.push(["$L179", [env._h, env._i]]);
+scratch = tmp.push(retval);//PUSHPOP172
+fn.push(["$L178", [env._h, env._i]]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L179":
+case "$L178":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP174
+retval = tmp.pop();//PUSHPOP172
 params.push(scratch);
-fn.push(["$L180", params]);
+fn.push(["$L179", params]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
-case "$L180":
-params = tmp.pop();//PUSHPOP177
+case "$L179":
+params = tmp.pop();//PUSHPOP175
 scratch = retval;
 retval = new DataUnit(1, DATATYPES.DT_NUMBER);
 scratch = env._i;
 scratch.op_assign(scratch.op_add(retval));
-next = "$L172";
+next = "$L171";
 break;
-case "$L174":
+case "$L173":
 tmp.push(env._score);
 retval = env._score.op_add(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_assign(retval);
+tmp.push(retval);//PUSHPOP176
+fn.push(["$L180", []]);
+scratch = env._printscore;
+next = scratch.as_string();
+break;
+case "$L180":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP176
 tmp.push(retval);//PUSHPOP178
 fn.push(["$L181", []]);
-scratch = env._printscore;
+scratch = env._deletelines;
 next = scratch.as_string();
 break;
 case "$L181":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP178
-tmp.push(retval);//PUSHPOP180
-fn.push(["$L182", []]);
-scratch = env._deletelines;
-next = scratch.as_string();
+next = "$L170";
 break;
-case "$L182":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP180
-next = "$L171";
-break;
-case "$L171":
+case "$L170":
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L159":
-next = "$L183";
+case "$L158":
+next = "$L182";
 break;
 case "_deletelines":
 env._linescleared.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
 retval = env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = env._y;
 scratch.op_assign(retval);
-case "$L184":
+case "$L183":
 tmp.push(env._y);
 retval = new DataUnit(0, DATATYPES.DT_NUMBER);
 scratch = env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L185";
+next = "$L184";
 } else {
-next = "$L186";
+next = "$L185";
 }
 break;
-case "$L185":
+case "$L184":
 scratch = env._x.op_assign(env._cwidth);
-case "$L187":
+case "$L186":
 scratch = env._x.op_eq(env._cwidth);
 if (scratch.as_bool()) {
-next = "$L188";
+next = "$L187";
 } else {
-next = "$L189";
+next = "$L188";
 }
 break;
-case "$L188":
+case "$L187":
 scratch = env._x.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-case "$L190":
+case "$L189":
 scratch = env._x.op_lt(env._cwidth);
 if (scratch.as_bool()) {
-next = "$L191";
+next = "$L190";
 } else {
-next = "$L192";
+next = "$L191";
 }
 break;
-case "$L191":
+case "$L190":
 tmp.push(env._piece);
-tmp.push(params);//PUSHPOP183
+tmp.push(params);//PUSHPOP181
 params = [];
 params.push(new DataUnit("c", DATATYPES.DT_STRING));
 tmp.push(env._x);
 retval = env._y.op_mul(env._cwidth);
 params.push(tmp.pop().op_add(retval));
-fn.push(["$L193", params]);
+fn.push(["$L192", params]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L193":
-params = tmp.pop();//PUSHPOP183
+case "$L192":
+params = tmp.pop();//PUSHPOP181
 tmp.pop().op_assign(retval);
 scratch = env._piece.op_eq(new DataUnit(".", DATATYPES.DT_STRING));
 if (scratch.as_bool()) {
-next = "$L194";
+next = "$L193";
 } else {
-next = "$L195";
+next = "$L194";
 }
 break;
-case "$L194":
+case "$L193":
 scratch = env._x.op_assign(env._cwidth);
-next = "$L195";
+next = "$L194";
 break;
-case "$L195":
+case "$L194":
 tmp.push(env._x);
 retval = env._x.op_add(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = tmp.pop().op_assign(retval);
-next = "$L190";
+next = "$L189";
 break;
-case "$L192":
+case "$L191":
 scratch = env._x.op_eq(env._cwidth);
 if (scratch.as_bool()) {
-next = "$L196";
+next = "$L195";
 } else {
-next = "$L197";
+next = "$L196";
 }
 break;
-case "$L196":
+case "$L195":
 retval = new DataUnit(0, DATATYPES.DT_NUMBER);
 scratch = env._x1;
 scratch.op_assign(retval);
-case "$L198":
+case "$L197":
 tmp.push(env._x1);
 retval = env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L199";
+next = "$L198";
 } else {
-next = "$L200";
+next = "$L199";
 }
 break;
-case "$L199":
-tmp.push(params);//PUSHPOP187
-params = [];
-scratch = tmp.push(retval);//PUSHPOP184
+case "$L198":
 tmp.push(params);//PUSHPOP185
+params = [];
+scratch = tmp.push(retval);//PUSHPOP182
+tmp.push(params);//PUSHPOP183
 params = [];
 params.push(new DataUnit("c", DATATYPES.DT_STRING));
 tmp.push(env._x1);
 retval = env._y.op_mul(env._cwidth);
 params.push(tmp.pop().op_add(retval));
-fn.push(["$L201", params]);
+fn.push(["$L200", params]);
 scratch = array.getvalue;
+next = scratch.as_string();
+break;
+case "$L200":
+params = tmp.pop();//PUSHPOP183
+scratch = retval;
+retval = tmp.pop();//PUSHPOP182
+params.push(scratch);
+fn.push(["$L201", params]);
+scratch = shapes.remove;
 next = scratch.as_string();
 break;
 case "$L201":
 params = tmp.pop();//PUSHPOP185
 scratch = retval;
-retval = tmp.pop();//PUSHPOP184
-params.push(scratch);
-fn.push(["$L202", params]);
-scratch = shapes.remove;
-next = scratch.as_string();
-break;
-case "$L202":
-params = tmp.pop();//PUSHPOP187
-scratch = retval;
 retval = new DataUnit(1, DATATYPES.DT_NUMBER);
 scratch = env._x1;
 scratch.op_assign(scratch.op_add(retval));
-next = "$L198";
+next = "$L197";
 break;
-case "$L200":
+case "$L199":
 tmp.push(env._linescleared);
 scratch = tmp.pop().op_assign(env._linescleared.op_add(new DataUnit(1, DATATYPES.DT_NUMBER)));
 retval = env._y;
 scratch = env._y1;
 scratch.op_assign(retval);
-case "$L203":
+case "$L202":
 tmp.push(env._y1);
 retval = new DataUnit(1, DATATYPES.DT_NUMBER);
 scratch = env._y;
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L204";
+next = "$L203";
 } else {
-next = "$L205";
+next = "$L204";
 }
 break;
-case "$L204":
+case "$L203":
 retval = new DataUnit(0, DATATYPES.DT_NUMBER);
 scratch = env._x1;
 scratch.op_assign(retval);
-case "$L206":
+case "$L205":
 tmp.push(env._x1);
 retval = env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L207";
+next = "$L206";
 } else {
-next = "$L208";
+next = "$L207";
 }
 break;
-case "$L207":
+case "$L206":
 tmp.push(env._piece);
-tmp.push(params);//PUSHPOP189
+tmp.push(params);//PUSHPOP187
 params = [];
 params.push(new DataUnit("c", DATATYPES.DT_STRING));
 tmp.push(env._x1);
 retval = env._y1.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER)).op_mul(env._cwidth);
 params.push(tmp.pop().op_add(retval));
-fn.push(["$L209", params]);
+fn.push(["$L208", params]);
 scratch = array.getvalue;
 next = scratch.as_string();
 break;
-case "$L209":
-params = tmp.pop();//PUSHPOP189
+case "$L208":
+params = tmp.pop();//PUSHPOP187
 scratch = tmp.pop().op_assign(retval);
-tmp.push(retval);//PUSHPOP190
-tmp.push(params);//PUSHPOP191
+tmp.push(retval);//PUSHPOP188
+tmp.push(params);//PUSHPOP189
 params = [];
 params.push(new DataUnit("c", DATATYPES.DT_STRING));
 tmp.push(env._x1);
 retval = env._y1.op_mul(env._cwidth);
 params.push(tmp.pop().op_add(retval));
 params.push(env._piece);
-fn.push(["$L210", params]);
+fn.push(["$L209", params]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
-case "$L210":
-params = tmp.pop();//PUSHPOP191
+case "$L209":
+params = tmp.pop();//PUSHPOP189
 scratch = retval;
-retval = tmp.pop();//PUSHPOP190
-tmp.push(params);//PUSHPOP197
+retval = tmp.pop();//PUSHPOP188
+tmp.push(params);//PUSHPOP195
 params = [];
 params.push(env._piece);
+scratch = tmp.push(retval);//PUSHPOP190
+fn.push(["$L210", [env._piece]]);
+scratch = shapes.getleft;
+next = scratch.as_string();
+break;
+case "$L210":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP190
+params.push(scratch);
 scratch = tmp.push(retval);//PUSHPOP192
 fn.push(["$L211", [env._piece]]);
-scratch = shapes.getleft;
+scratch = shapes.gettop;
 next = scratch.as_string();
 break;
 case "$L211":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP192
-params.push(scratch);
-scratch = tmp.push(retval);//PUSHPOP194
-fn.push(["$L212", [env._piece]]);
-scratch = shapes.gettop;
-next = scratch.as_string();
-break;
-case "$L212":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP194
 params.push(scratch.op_add(env._bwidth));
-fn.push(["$L213", params]);
+fn.push(["$L212", params]);
 scratch = shapes.move;
 next = scratch.as_string();
 break;
-case "$L213":
-params = tmp.pop();//PUSHPOP197
+case "$L212":
+params = tmp.pop();//PUSHPOP195
 scratch = retval;
 retval = new DataUnit(1, DATATYPES.DT_NUMBER);
 scratch = env._x1;
 scratch.op_assign(scratch.op_add(retval));
-next = "$L206";
+next = "$L205";
 break;
-case "$L208":
+case "$L207":
 retval = new DataUnit(1, DATATYPES.DT_NUMBER).op_neg();
 scratch = env._y1;
 scratch.op_assign(scratch.op_add(retval));
-next = "$L203";
+next = "$L202";
 break;
-case "$L205":
-next = "$L197";
+case "$L204":
+next = "$L196";
 break;
-case "$L197":
-next = "$L187";
+case "$L196":
+next = "$L186";
 break;
-case "$L189":
+case "$L188":
 retval = new DataUnit(1, DATATYPES.DT_NUMBER).op_neg();
 scratch = env._y;
 scratch.op_assign(scratch.op_add(retval));
-next = "$L184";
+next = "$L183";
 break;
-case "$L186":
+case "$L185":
 scratch = env._linescleared.op_gt(new DataUnit(0, DATATYPES.DT_NUMBER));
 if (scratch.as_bool()) {
-next = "$L214";
+next = "$L213";
 } else {
-next = "$L215";
+next = "$L214";
 }
 break;
-case "$L214":
+case "$L213":
 tmp.push(env._score);
 tmp.push(env._score);
 tmp.push(new DataUnit(100, DATATYPES.DT_NUMBER));
-fn.push(["$L216", [env._linescleared.op_mul(new DataUnit(2.15, DATATYPES.DT_NUMBER)).op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))]]);
+fn.push(["$L215", [env._linescleared.op_mul(new DataUnit(2.15, DATATYPES.DT_NUMBER)).op_sub(new DataUnit(1, DATATYPES.DT_NUMBER))]]);
 scratch = math.round;
 next = scratch.as_string();
 break;
-case "$L216":
+case "$L215":
 retval = tmp.pop().op_add(tmp.pop().op_mul(retval));
 scratch = tmp.pop().op_assign(retval);
-tmp.push(retval);//PUSHPOP200
-fn.push(["$L217", []]);
+tmp.push(retval);//PUSHPOP198
+fn.push(["$L216", []]);
 scratch = env._printscore;
 next = scratch.as_string();
 break;
-case "$L217":
+case "$L216":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP200
-next = "$L215";
+retval = tmp.pop();//PUSHPOP198
+next = "$L214";
 break;
-case "$L215":
+case "$L214":
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L183":
-next = "$L218";
+case "$L182":
+next = "$L217";
 break;
 case "_setupcanvas":
 scratch = graphicswindow.brushcolor.op_assign(graphicswindow.backgroundcolor);
-tmp.push(retval);//PUSHPOP202
-fn.push(["$L219", [env._xoffset, env._yoffset, env._cwidth.op_mul(env._bwidth), env._cheight.op_mul(env._bwidth)]]);
+tmp.push(retval);//PUSHPOP200
+fn.push(["$L218", [env._xoffset, env._yoffset, env._cwidth.op_mul(env._bwidth), env._cheight.op_mul(env._bwidth)]]);
 scratch = graphicswindow.fillrectangle;
+next = scratch.as_string();
+break;
+case "$L218":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP200
+tmp.push(retval);//PUSHPOP202
+fn.push(["$L219", [new DataUnit(200, DATATYPES.DT_NUMBER)]]);
+scratch = program.delay;
 next = scratch.as_string();
 break;
 case "$L219":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP202
-tmp.push(retval);//PUSHPOP204
-fn.push(["$L220", [new DataUnit(200, DATATYPES.DT_NUMBER)]]);
-scratch = program.delay;
-next = scratch.as_string();
-break;
-case "$L220":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP204
 graphicswindow.penwidth.op_assign(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = graphicswindow.pencolor.op_assign(new DataUnit("Pink", DATATYPES.DT_STRING));
 retval = new DataUnit(0, DATATYPES.DT_NUMBER);
 scratch = env._x;
 scratch.op_assign(retval);
-case "$L221":
+case "$L220":
 tmp.push(env._x);
 retval = env._cwidth.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L222";
+next = "$L221";
 } else {
-next = "$L223";
+next = "$L222";
 }
 break;
-case "$L222":
+case "$L221":
 retval = new DataUnit(0, DATATYPES.DT_NUMBER);
 scratch = env._y;
 scratch.op_assign(retval);
-case "$L224":
+case "$L223":
 tmp.push(env._y);
 retval = env._cheight.op_sub(new DataUnit(1, DATATYPES.DT_NUMBER));
 scratch = new DataUnit(0, DATATYPES.DT_NUMBER);
 if (scratch.op_lt(retval).as_bool() ? ((scratch = tmp.pop()).op_lte(retval).as_bool()) : ((scratch = tmp.pop()).op_gte(retval).as_bool()) ) {
-next = "$L225";
+next = "$L224";
 } else {
-next = "$L226";
+next = "$L225";
 }
 break;
-case "$L225":
-tmp.push(retval);//PUSHPOP206
-tmp.push(params);//PUSHPOP207
+case "$L224":
+tmp.push(retval);//PUSHPOP204
+tmp.push(params);//PUSHPOP205
 params = [];
 params.push(new DataUnit("c", DATATYPES.DT_STRING));
 tmp.push(env._x);
 retval = env._y.op_mul(env._cwidth);
 params.push(tmp.pop().op_add(retval));
 params.push(new DataUnit(".", DATATYPES.DT_STRING));
-fn.push(["$L227", params]);
+fn.push(["$L226", params]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
-case "$L227":
-params = tmp.pop();//PUSHPOP207
+case "$L226":
+params = tmp.pop();//PUSHPOP205
 scratch = retval;
-tmp.push(params);//PUSHPOP209
+tmp.push(params);//PUSHPOP207
 params = [];
 tmp.push(env._xoffset);
 params.push(tmp.pop().op_add(env._x.op_mul(env._bwidth)));
@@ -2133,33 +2125,51 @@ retval = env._y.op_mul(env._bwidth);
 params.push(tmp.pop().op_add(retval));
 params.push(env._bwidth);
 params.push(env._bwidth);
-fn.push(["$L228", params]);
+fn.push(["$L227", params]);
 scratch = graphicswindow.drawrectangle;
+next = scratch.as_string();
+break;
+case "$L227":
+params = tmp.pop();//PUSHPOP207
+scratch = retval;
+retval = new DataUnit(1, DATATYPES.DT_NUMBER);
+scratch = env._y;
+scratch.op_assign(scratch.op_add(retval));
+next = "$L223";
+break;
+case "$L225":
+retval = new DataUnit(1, DATATYPES.DT_NUMBER);
+scratch = env._x;
+scratch.op_assign(scratch.op_add(retval));
+next = "$L220";
+break;
+case "$L222":
+graphicswindow.penwidth.op_assign(new DataUnit(4, DATATYPES.DT_NUMBER));
+scratch = graphicswindow.pencolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
+tmp.push(retval);//PUSHPOP208
+tmp.push(params);//PUSHPOP209
+params = [];
+params.push(env._xoffset);
+params.push(env._yoffset);
+params.push(env._xoffset);
+tmp.push(env._yoffset);
+retval = env._cheight.op_mul(env._bwidth);
+params.push(tmp.pop().op_add(retval));
+fn.push(["$L228", params]);
+scratch = graphicswindow.drawline;
 next = scratch.as_string();
 break;
 case "$L228":
 params = tmp.pop();//PUSHPOP209
 scratch = retval;
-retval = new DataUnit(1, DATATYPES.DT_NUMBER);
-scratch = env._y;
-scratch.op_assign(scratch.op_add(retval));
-next = "$L224";
-break;
-case "$L226":
-retval = new DataUnit(1, DATATYPES.DT_NUMBER);
-scratch = env._x;
-scratch.op_assign(scratch.op_add(retval));
-next = "$L221";
-break;
-case "$L223":
-graphicswindow.penwidth.op_assign(new DataUnit(4, DATATYPES.DT_NUMBER));
-scratch = graphicswindow.pencolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
-tmp.push(retval);//PUSHPOP210
+tmp.push(tmp.pop());//PUSHPOP210
 tmp.push(params);//PUSHPOP211
 params = [];
-params.push(env._xoffset);
+tmp.push(env._xoffset);
+params.push(tmp.pop().op_add(env._cwidth.op_mul(env._bwidth)));
 params.push(env._yoffset);
-params.push(env._xoffset);
+tmp.push(env._xoffset);
+params.push(tmp.pop().op_add(env._cwidth.op_mul(env._bwidth)));
 tmp.push(env._yoffset);
 retval = env._cheight.op_mul(env._bwidth);
 params.push(tmp.pop().op_add(retval));
@@ -2173,9 +2183,9 @@ scratch = retval;
 tmp.push(tmp.pop());//PUSHPOP212
 tmp.push(params);//PUSHPOP213
 params = [];
-tmp.push(env._xoffset);
-params.push(tmp.pop().op_add(env._cwidth.op_mul(env._bwidth)));
-params.push(env._yoffset);
+params.push(env._xoffset);
+tmp.push(env._yoffset);
+params.push(tmp.pop().op_add(env._cheight.op_mul(env._bwidth)));
 tmp.push(env._xoffset);
 params.push(tmp.pop().op_add(env._cwidth.op_mul(env._bwidth)));
 tmp.push(env._yoffset);
@@ -2188,17 +2198,17 @@ break;
 case "$L230":
 params = tmp.pop();//PUSHPOP213
 scratch = retval;
-tmp.push(tmp.pop());//PUSHPOP214
+retval = tmp.pop();//PUSHPOP212
+scratch = graphicswindow.pencolor.op_assign(new DataUnit("Lime", DATATYPES.DT_STRING));
+tmp.push(retval);//PUSHPOP214
 tmp.push(params);//PUSHPOP215
 params = [];
-params.push(env._xoffset);
-tmp.push(env._yoffset);
-params.push(tmp.pop().op_add(env._cheight.op_mul(env._bwidth)));
-tmp.push(env._xoffset);
-params.push(tmp.pop().op_add(env._cwidth.op_mul(env._bwidth)));
+params.push(env._xoffset.op_sub(new DataUnit(4, DATATYPES.DT_NUMBER)));
+params.push(env._yoffset);
+params.push(env._xoffset.op_sub(new DataUnit(4, DATATYPES.DT_NUMBER)));
 tmp.push(env._yoffset);
 retval = env._cheight.op_mul(env._bwidth);
-params.push(tmp.pop().op_add(retval));
+params.push(tmp.pop().op_add(retval).op_add(new DataUnit(6, DATATYPES.DT_NUMBER)));
 fn.push(["$L231", params]);
 scratch = graphicswindow.drawline;
 next = scratch.as_string();
@@ -2206,14 +2216,14 @@ break;
 case "$L231":
 params = tmp.pop();//PUSHPOP215
 scratch = retval;
-retval = tmp.pop();//PUSHPOP214
-scratch = graphicswindow.pencolor.op_assign(new DataUnit("Lime", DATATYPES.DT_STRING));
-tmp.push(retval);//PUSHPOP216
+tmp.push(tmp.pop());//PUSHPOP216
 tmp.push(params);//PUSHPOP217
 params = [];
-params.push(env._xoffset.op_sub(new DataUnit(4, DATATYPES.DT_NUMBER)));
+tmp.push(env._xoffset);
+params.push(tmp.pop().op_add(env._cwidth.op_mul(env._bwidth)).op_add(new DataUnit(4, DATATYPES.DT_NUMBER)));
 params.push(env._yoffset);
-params.push(env._xoffset.op_sub(new DataUnit(4, DATATYPES.DT_NUMBER)));
+tmp.push(env._xoffset);
+params.push(tmp.pop().op_add(env._cwidth.op_mul(env._bwidth)).op_add(new DataUnit(4, DATATYPES.DT_NUMBER)));
 tmp.push(env._yoffset);
 retval = env._cheight.op_mul(env._bwidth);
 params.push(tmp.pop().op_add(retval).op_add(new DataUnit(6, DATATYPES.DT_NUMBER)));
@@ -2227,24 +2237,6 @@ scratch = retval;
 tmp.push(tmp.pop());//PUSHPOP218
 tmp.push(params);//PUSHPOP219
 params = [];
-tmp.push(env._xoffset);
-params.push(tmp.pop().op_add(env._cwidth.op_mul(env._bwidth)).op_add(new DataUnit(4, DATATYPES.DT_NUMBER)));
-params.push(env._yoffset);
-tmp.push(env._xoffset);
-params.push(tmp.pop().op_add(env._cwidth.op_mul(env._bwidth)).op_add(new DataUnit(4, DATATYPES.DT_NUMBER)));
-tmp.push(env._yoffset);
-retval = env._cheight.op_mul(env._bwidth);
-params.push(tmp.pop().op_add(retval).op_add(new DataUnit(6, DATATYPES.DT_NUMBER)));
-fn.push(["$L233", params]);
-scratch = graphicswindow.drawline;
-next = scratch.as_string();
-break;
-case "$L233":
-params = tmp.pop();//PUSHPOP219
-scratch = retval;
-tmp.push(tmp.pop());//PUSHPOP220
-tmp.push(params);//PUSHPOP221
-params = [];
 params.push(env._xoffset.op_sub(new DataUnit(4, DATATYPES.DT_NUMBER)));
 tmp.push(env._yoffset);
 params.push(tmp.pop().op_add(env._cheight.op_mul(env._bwidth)).op_add(new DataUnit(4, DATATYPES.DT_NUMBER)));
@@ -2253,14 +2245,14 @@ params.push(tmp.pop().op_add(env._cwidth.op_mul(env._bwidth)).op_add(new DataUni
 tmp.push(env._yoffset);
 retval = env._cheight.op_mul(env._bwidth);
 params.push(tmp.pop().op_add(retval).op_add(new DataUnit(4, DATATYPES.DT_NUMBER)));
-fn.push(["$L234", params]);
+fn.push(["$L233", params]);
 scratch = graphicswindow.drawline;
 next = scratch.as_string();
 break;
-case "$L234":
-params = tmp.pop();//PUSHPOP221
+case "$L233":
+params = tmp.pop();//PUSHPOP219
 scratch = retval;
-retval = tmp.pop();//PUSHPOP220
+retval = tmp.pop();//PUSHPOP218
 graphicswindow.pencolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
 scratch = graphicswindow.brushcolor.op_assign(new DataUnit("Pink", DATATYPES.DT_STRING));
 tmp.push(env._x);
@@ -2271,17 +2263,25 @@ tmp.push(env._y);
 tmp.push(env._yoffset);
 retval = tmp.pop().op_add(env._preview_ypos.op_mul(env._bwidth)).op_sub(env._bwidth);
 scratch = tmp.pop().op_assign(retval);
+tmp.push(retval);//PUSHPOP220
+fn.push(["$L234", [env._x, env._y, env._bwidth.op_mul(new DataUnit(5, DATATYPES.DT_NUMBER)), env._bwidth.op_mul(new DataUnit(6, DATATYPES.DT_NUMBER))]]);
+scratch = graphicswindow.fillrectangle;
+next = scratch.as_string();
+break;
+case "$L234":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP220
 tmp.push(retval);//PUSHPOP222
 fn.push(["$L235", [env._x, env._y, env._bwidth.op_mul(new DataUnit(5, DATATYPES.DT_NUMBER)), env._bwidth.op_mul(new DataUnit(6, DATATYPES.DT_NUMBER))]]);
-scratch = graphicswindow.fillrectangle;
+scratch = graphicswindow.drawrectangle;
 next = scratch.as_string();
 break;
 case "$L235":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP222
 tmp.push(retval);//PUSHPOP224
-fn.push(["$L236", [env._x, env._y, env._bwidth.op_mul(new DataUnit(5, DATATYPES.DT_NUMBER)), env._bwidth.op_mul(new DataUnit(6, DATATYPES.DT_NUMBER))]]);
-scratch = graphicswindow.drawrectangle;
+fn.push(["$L236", [env._x.op_sub(new DataUnit(20, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(190, DATATYPES.DT_NUMBER)), new DataUnit(310, DATATYPES.DT_NUMBER), new DataUnit(170, DATATYPES.DT_NUMBER)]]);
+scratch = graphicswindow.fillrectangle;
 next = scratch.as_string();
 break;
 case "$L236":
@@ -2289,26 +2289,26 @@ scratch = retval;
 retval = tmp.pop();//PUSHPOP224
 tmp.push(retval);//PUSHPOP226
 fn.push(["$L237", [env._x.op_sub(new DataUnit(20, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(190, DATATYPES.DT_NUMBER)), new DataUnit(310, DATATYPES.DT_NUMBER), new DataUnit(170, DATATYPES.DT_NUMBER)]]);
-scratch = graphicswindow.fillrectangle;
+scratch = graphicswindow.drawrectangle;
 next = scratch.as_string();
 break;
 case "$L237":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP226
+graphicswindow.brushcolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
+graphicswindow.fontitalic.op_assign(new DataUnit("False", DATATYPES.DT_STRING));
+graphicswindow.fontname.op_assign(new DataUnit("Comic Sans MS", DATATYPES.DT_STRING));
+scratch = graphicswindow.fontsize.op_assign(new DataUnit(16, DATATYPES.DT_NUMBER));
 tmp.push(retval);//PUSHPOP228
-fn.push(["$L238", [env._x.op_sub(new DataUnit(20, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(190, DATATYPES.DT_NUMBER)), new DataUnit(310, DATATYPES.DT_NUMBER), new DataUnit(170, DATATYPES.DT_NUMBER)]]);
-scratch = graphicswindow.drawrectangle;
+fn.push(["$L238", [env._x, env._y.op_add(new DataUnit(200, DATATYPES.DT_NUMBER)), new DataUnit("Game control keys:", DATATYPES.DT_STRING)]]);
+scratch = graphicswindow.drawtext;
 next = scratch.as_string();
 break;
 case "$L238":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP228
-graphicswindow.brushcolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
-graphicswindow.fontitalic.op_assign(new DataUnit("False", DATATYPES.DT_STRING));
-graphicswindow.fontname.op_assign(new DataUnit("Comic Sans MS", DATATYPES.DT_STRING));
-scratch = graphicswindow.fontsize.op_assign(new DataUnit(16, DATATYPES.DT_NUMBER));
 tmp.push(retval);//PUSHPOP230
-fn.push(["$L239", [env._x, env._y.op_add(new DataUnit(200, DATATYPES.DT_NUMBER)), new DataUnit("Game control keys:", DATATYPES.DT_STRING)]]);
+fn.push(["$L239", [env._x.op_add(new DataUnit(25, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(220, DATATYPES.DT_NUMBER)), new DataUnit("Left Arrow = Move piece left", DATATYPES.DT_STRING)]]);
 scratch = graphicswindow.drawtext;
 next = scratch.as_string();
 break;
@@ -2316,7 +2316,7 @@ case "$L239":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP230
 tmp.push(retval);//PUSHPOP232
-fn.push(["$L240", [env._x.op_add(new DataUnit(25, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(220, DATATYPES.DT_NUMBER)), new DataUnit("Left Arrow = Move piece left", DATATYPES.DT_STRING)]]);
+fn.push(["$L240", [env._x.op_add(new DataUnit(25, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(240, DATATYPES.DT_NUMBER)), new DataUnit("Right Arrow = Move piece right", DATATYPES.DT_STRING)]]);
 scratch = graphicswindow.drawtext;
 next = scratch.as_string();
 break;
@@ -2324,7 +2324,7 @@ case "$L240":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP232
 tmp.push(retval);//PUSHPOP234
-fn.push(["$L241", [env._x.op_add(new DataUnit(25, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(240, DATATYPES.DT_NUMBER)), new DataUnit("Right Arrow = Move piece right", DATATYPES.DT_STRING)]]);
+fn.push(["$L241", [env._x.op_add(new DataUnit(25, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(260, DATATYPES.DT_NUMBER)), new DataUnit("Up Arrow = Rotate piece", DATATYPES.DT_STRING)]]);
 scratch = graphicswindow.drawtext;
 next = scratch.as_string();
 break;
@@ -2332,7 +2332,7 @@ case "$L241":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP234
 tmp.push(retval);//PUSHPOP236
-fn.push(["$L242", [env._x.op_add(new DataUnit(25, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(260, DATATYPES.DT_NUMBER)), new DataUnit("Up Arrow = Rotate piece", DATATYPES.DT_STRING)]]);
+fn.push(["$L242", [env._x.op_add(new DataUnit(25, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(280, DATATYPES.DT_NUMBER)), new DataUnit("Down Arrow = Drop piece", DATATYPES.DT_STRING)]]);
 scratch = graphicswindow.drawtext;
 next = scratch.as_string();
 break;
@@ -2340,7 +2340,7 @@ case "$L242":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP236
 tmp.push(retval);//PUSHPOP238
-fn.push(["$L243", [env._x.op_add(new DataUnit(25, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(280, DATATYPES.DT_NUMBER)), new DataUnit("Down Arrow = Drop piece", DATATYPES.DT_STRING)]]);
+fn.push(["$L243", [env._x, env._y.op_add(new DataUnit(320, DATATYPES.DT_NUMBER)), new DataUnit("Press to stop game", DATATYPES.DT_STRING)]]);
 scratch = graphicswindow.drawtext;
 next = scratch.as_string();
 break;
@@ -2348,116 +2348,118 @@ case "$L243":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP238
 tmp.push(retval);//PUSHPOP240
-fn.push(["$L244", [env._x, env._y.op_add(new DataUnit(320, DATATYPES.DT_NUMBER)), new DataUnit("Press to stop game", DATATYPES.DT_STRING)]]);
-scratch = graphicswindow.drawtext;
+fn.push(["$L244", [new DataUnit(200, DATATYPES.DT_NUMBER)]]);
+scratch = program.delay;
 next = scratch.as_string();
 break;
 case "$L244":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP240
+graphicswindow.brushcolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
+graphicswindow.fontname.op_assign(new DataUnit("Georgia", DATATYPES.DT_STRING));
+graphicswindow.fontitalic.op_assign(new DataUnit("True", DATATYPES.DT_STRING));
+scratch = graphicswindow.fontsize.op_assign(new DataUnit(36, DATATYPES.DT_NUMBER));
 tmp.push(retval);//PUSHPOP242
-fn.push(["$L245", [new DataUnit(200, DATATYPES.DT_NUMBER)]]);
-scratch = program.delay;
+fn.push(["$L245", [env._x.op_sub(new DataUnit(20, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(400, DATATYPES.DT_NUMBER)), new DataUnit("Small Basic Tetris", DATATYPES.DT_STRING)]]);
+scratch = graphicswindow.drawtext;
 next = scratch.as_string();
 break;
 case "$L245":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP242
-graphicswindow.brushcolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
-graphicswindow.fontname.op_assign(new DataUnit("Georgia", DATATYPES.DT_STRING));
-graphicswindow.fontitalic.op_assign(new DataUnit("True", DATATYPES.DT_STRING));
-scratch = graphicswindow.fontsize.op_assign(new DataUnit(36, DATATYPES.DT_NUMBER));
 tmp.push(retval);//PUSHPOP244
-fn.push(["$L246", [env._x.op_sub(new DataUnit(20, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(400, DATATYPES.DT_NUMBER)), new DataUnit("Small Basic Tetris", DATATYPES.DT_STRING)]]);
-scratch = graphicswindow.drawtext;
+fn.push(["$L246", [new DataUnit(200, DATATYPES.DT_NUMBER)]]);
+scratch = program.delay;
 next = scratch.as_string();
 break;
 case "$L246":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP244
+scratch = graphicswindow.fontsize.op_assign(new DataUnit(16, DATATYPES.DT_NUMBER));
 tmp.push(retval);//PUSHPOP246
-fn.push(["$L247", [new DataUnit(200, DATATYPES.DT_NUMBER)]]);
-scratch = program.delay;
+fn.push(["$L247", [env._x.op_sub(new DataUnit(20, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(440, DATATYPES.DT_NUMBER)), new DataUnit("ver.0.1", DATATYPES.DT_STRING)]]);
+scratch = graphicswindow.drawtext;
 next = scratch.as_string();
 break;
 case "$L247":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP246
-scratch = graphicswindow.fontsize.op_assign(new DataUnit(16, DATATYPES.DT_NUMBER));
 tmp.push(retval);//PUSHPOP248
-fn.push(["$L248", [env._x.op_sub(new DataUnit(20, DATATYPES.DT_NUMBER)), env._y.op_add(new DataUnit(440, DATATYPES.DT_NUMBER)), new DataUnit("ver.0.1", DATATYPES.DT_STRING)]]);
-scratch = graphicswindow.drawtext;
+fn.push(["$L248", [new DataUnit(200, DATATYPES.DT_NUMBER)]]);
+scratch = program.delay;
 next = scratch.as_string();
 break;
 case "$L248":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP248
-tmp.push(retval);//PUSHPOP250
-fn.push(["$L249", [new DataUnit(200, DATATYPES.DT_NUMBER)]]);
-scratch = program.delay;
+scratch = env._score.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
+fn.push(["$L249", []]);
+scratch = env._printscore;
 next = scratch.as_string();
 break;
 case "$L249":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP250
-scratch = env._score.op_assign(new DataUnit(0, DATATYPES.DT_NUMBER));
-fn.push(["$L250", []]);
-scratch = env._printscore;
-next = scratch.as_string();
-break;
-case "$L250":
-scratch = retval;
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L218":
-next = "$L251";
+case "$L217":
+next = "$L250";
 break;
 case "_printscore":
 graphicswindow.penwidth.op_assign(new DataUnit(4, DATATYPES.DT_NUMBER));
 scratch = graphicswindow.brushcolor.op_assign(new DataUnit("Pink", DATATYPES.DT_STRING));
+tmp.push(retval);//PUSHPOP252
+fn.push(["$L251", [new DataUnit(500, DATATYPES.DT_NUMBER), new DataUnit(65, DATATYPES.DT_NUMBER), new DataUnit(153, DATATYPES.DT_NUMBER), new DataUnit(50, DATATYPES.DT_NUMBER)]]);
+scratch = graphicswindow.fillrectangle;
+next = scratch.as_string();
+break;
+case "$L251":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP252
+scratch = graphicswindow.brushcolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
 tmp.push(retval);//PUSHPOP254
 fn.push(["$L252", [new DataUnit(500, DATATYPES.DT_NUMBER), new DataUnit(65, DATATYPES.DT_NUMBER), new DataUnit(153, DATATYPES.DT_NUMBER), new DataUnit(50, DATATYPES.DT_NUMBER)]]);
-scratch = graphicswindow.fillrectangle;
+scratch = graphicswindow.drawrectangle;
 next = scratch.as_string();
 break;
 case "$L252":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP254
-scratch = graphicswindow.brushcolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
-tmp.push(retval);//PUSHPOP256
-fn.push(["$L253", [new DataUnit(500, DATATYPES.DT_NUMBER), new DataUnit(65, DATATYPES.DT_NUMBER), new DataUnit(153, DATATYPES.DT_NUMBER), new DataUnit(50, DATATYPES.DT_NUMBER)]]);
-scratch = graphicswindow.drawrectangle;
-next = scratch.as_string();
-break;
-case "$L253":
-scratch = retval;
-retval = tmp.pop();//PUSHPOP256
 graphicswindow.fontitalic.op_assign(new DataUnit("False", DATATYPES.DT_STRING));
 graphicswindow.fontsize.op_assign(new DataUnit(32, DATATYPES.DT_NUMBER));
 graphicswindow.fontname.op_assign(new DataUnit("Impact", DATATYPES.DT_STRING));
 scratch = graphicswindow.brushcolor.op_assign(new DataUnit("Black", DATATYPES.DT_STRING));
-tmp.push(params);//PUSHPOP265
+tmp.push(params);//PUSHPOP263
 params = [];
 params.push(new DataUnit(505, DATATYPES.DT_NUMBER));
 params.push(new DataUnit(70, DATATYPES.DT_NUMBER));
-scratch = tmp.push(retval);//PUSHPOP262
-tmp.push(params);//PUSHPOP263
-params = [];
 scratch = tmp.push(retval);//PUSHPOP260
 tmp.push(params);//PUSHPOP261
+params = [];
+scratch = tmp.push(retval);//PUSHPOP258
+tmp.push(params);//PUSHPOP259
 params = [];
 params.push(new DataUnit("00000000", DATATYPES.DT_STRING));
 params.push(new DataUnit(0, DATATYPES.DT_NUMBER));
 tmp.push(new DataUnit(8, DATATYPES.DT_NUMBER));
-fn.push(["$L254", [env._score]]);
+fn.push(["$L253", [env._score]]);
 scratch = text.getlength;
 next = scratch.as_string();
 break;
-case "$L254":
+case "$L253":
 params.push(tmp.pop().op_sub(retval));
-fn.push(["$L255", params]);
+fn.push(["$L254", params]);
 scratch = text.getsubtext;
+next = scratch.as_string();
+break;
+case "$L254":
+params = tmp.pop();//PUSHPOP259
+scratch = retval;
+retval = tmp.pop();//PUSHPOP258
+params.push(scratch);
+params.push(env._score);
+fn.push(["$L255", params]);
+scratch = text.append;
 next = scratch.as_string();
 break;
 case "$L255":
@@ -2465,32 +2467,30 @@ params = tmp.pop();//PUSHPOP261
 scratch = retval;
 retval = tmp.pop();//PUSHPOP260
 params.push(scratch);
-params.push(env._score);
 fn.push(["$L256", params]);
-scratch = text.append;
+scratch = graphicswindow.drawtext;
 next = scratch.as_string();
 break;
 case "$L256":
 params = tmp.pop();//PUSHPOP263
 scratch = retval;
-retval = tmp.pop();//PUSHPOP262
-params.push(scratch);
-fn.push(["$L257", params]);
-scratch = graphicswindow.drawtext;
-next = scratch.as_string();
-break;
-case "$L257":
-params = tmp.pop();//PUSHPOP265
-scratch = retval;
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L251":
-next = "$L258";
+case "$L250":
+next = "$L257";
 break;
 case "_setuptemplates":
+tmp.push(retval);//PUSHPOP264
+fn.push(["$L258", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+scratch = array.setvalue;
+next = scratch.as_string();
+break;
+case "$L258":
+scratch = retval;
+retval = tmp.pop();//PUSHPOP264
 tmp.push(retval);//PUSHPOP266
-fn.push(["$L259", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L259", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2498,7 +2498,7 @@ case "$L259":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP266
 tmp.push(retval);//PUSHPOP268
-fn.push(["$L260", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L260", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2506,7 +2506,7 @@ case "$L260":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP268
 tmp.push(retval);//PUSHPOP270
-fn.push(["$L261", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L261", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(22, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2514,7 +2514,7 @@ case "$L261":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP270
 tmp.push(retval);//PUSHPOP272
-fn.push(["$L262", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(22, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L262", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Yellow", DATATYPES.DT_STRING)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2522,7 +2522,7 @@ case "$L262":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP272
 tmp.push(retval);//PUSHPOP274
-fn.push(["$L263", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Yellow", DATATYPES.DT_STRING)]]);
+fn.push(["$L263", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2530,7 +2530,7 @@ case "$L263":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP274
 tmp.push(retval);//PUSHPOP276
-fn.push(["$L264", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L264", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(12, DATATYPES.DT_NUMBER).op_neg()]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2538,7 +2538,7 @@ case "$L264":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP276
 tmp.push(retval);//PUSHPOP278
-fn.push(["$L265", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(12, DATATYPES.DT_NUMBER).op_neg()]]);
+fn.push(["$L265", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2546,7 +2546,7 @@ case "$L265":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP278
 tmp.push(retval);//PUSHPOP280
-fn.push(["$L266", [new DataUnit("template1", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L266", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2554,7 +2554,7 @@ case "$L266":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP280
 tmp.push(retval);//PUSHPOP282
-fn.push(["$L267", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L267", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2562,7 +2562,7 @@ case "$L267":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP282
 tmp.push(retval);//PUSHPOP284
-fn.push(["$L268", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L268", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2570,7 +2570,7 @@ case "$L268":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP284
 tmp.push(retval);//PUSHPOP286
-fn.push(["$L269", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L269", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(2, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2578,7 +2578,7 @@ case "$L269":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP286
 tmp.push(retval);//PUSHPOP288
-fn.push(["$L270", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(2, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L270", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Magenta", DATATYPES.DT_STRING)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2586,7 +2586,7 @@ case "$L270":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP288
 tmp.push(retval);//PUSHPOP290
-fn.push(["$L271", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Magenta", DATATYPES.DT_STRING)]]);
+fn.push(["$L271", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2594,7 +2594,7 @@ case "$L271":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP290
 tmp.push(retval);//PUSHPOP292
-fn.push(["$L272", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L272", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2602,7 +2602,7 @@ case "$L272":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP292
 tmp.push(retval);//PUSHPOP294
-fn.push(["$L273", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L273", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2610,7 +2610,7 @@ case "$L273":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP294
 tmp.push(retval);//PUSHPOP296
-fn.push(["$L274", [new DataUnit("template2", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L274", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2618,7 +2618,7 @@ case "$L274":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP296
 tmp.push(retval);//PUSHPOP298
-fn.push(["$L275", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L275", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(1, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2626,7 +2626,7 @@ case "$L275":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP298
 tmp.push(retval);//PUSHPOP300
-fn.push(["$L276", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(1, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L276", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2634,7 +2634,7 @@ case "$L276":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP300
 tmp.push(retval);//PUSHPOP302
-fn.push(["$L277", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L277", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(21, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2642,7 +2642,7 @@ case "$L277":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP302
 tmp.push(retval);//PUSHPOP304
-fn.push(["$L278", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(21, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L278", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Gray", DATATYPES.DT_STRING)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2650,7 +2650,7 @@ case "$L278":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP304
 tmp.push(retval);//PUSHPOP306
-fn.push(["$L279", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Gray", DATATYPES.DT_STRING)]]);
+fn.push(["$L279", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2658,7 +2658,7 @@ case "$L279":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP306
 tmp.push(retval);//PUSHPOP308
-fn.push(["$L280", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L280", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2666,7 +2666,7 @@ case "$L280":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP308
 tmp.push(retval);//PUSHPOP310
-fn.push(["$L281", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L281", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(25, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2674,7 +2674,7 @@ case "$L281":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP310
 tmp.push(retval);//PUSHPOP312
-fn.push(["$L282", [new DataUnit("template3", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(25, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L282", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2682,7 +2682,7 @@ case "$L282":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP312
 tmp.push(retval);//PUSHPOP314
-fn.push(["$L283", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L283", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2690,7 +2690,7 @@ case "$L283":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP314
 tmp.push(retval);//PUSHPOP316
-fn.push(["$L284", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L284", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(1, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2698,7 +2698,7 @@ case "$L284":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP316
 tmp.push(retval);//PUSHPOP318
-fn.push(["$L285", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(1, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L285", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2706,7 +2706,7 @@ case "$L285":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP318
 tmp.push(retval);//PUSHPOP320
-fn.push(["$L286", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L286", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Cyan", DATATYPES.DT_STRING)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2714,7 +2714,7 @@ case "$L286":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP320
 tmp.push(retval);//PUSHPOP322
-fn.push(["$L287", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Cyan", DATATYPES.DT_STRING)]]);
+fn.push(["$L287", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2722,7 +2722,7 @@ case "$L287":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP322
 tmp.push(retval);//PUSHPOP324
-fn.push(["$L288", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L288", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2730,7 +2730,7 @@ case "$L288":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP324
 tmp.push(retval);//PUSHPOP326
-fn.push(["$L289", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L289", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(25, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2738,7 +2738,7 @@ case "$L289":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP326
 tmp.push(retval);//PUSHPOP328
-fn.push(["$L290", [new DataUnit("template4", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(25, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L290", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2746,7 +2746,7 @@ case "$L290":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP328
 tmp.push(retval);//PUSHPOP330
-fn.push(["$L291", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L291", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2754,7 +2754,7 @@ case "$L291":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP330
 tmp.push(retval);//PUSHPOP332
-fn.push(["$L292", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L292", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2762,7 +2762,7 @@ case "$L292":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP332
 tmp.push(retval);//PUSHPOP334
-fn.push(["$L293", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L293", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(21, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2770,7 +2770,7 @@ case "$L293":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP334
 tmp.push(retval);//PUSHPOP336
-fn.push(["$L294", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(21, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L294", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Green", DATATYPES.DT_STRING)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2778,7 +2778,7 @@ case "$L294":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP336
 tmp.push(retval);//PUSHPOP338
-fn.push(["$L295", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Green", DATATYPES.DT_STRING)]]);
+fn.push(["$L295", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2786,7 +2786,7 @@ case "$L295":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP338
 tmp.push(retval);//PUSHPOP340
-fn.push(["$L296", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L296", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2794,7 +2794,7 @@ case "$L296":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP340
 tmp.push(retval);//PUSHPOP342
-fn.push(["$L297", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L297", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(25, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2802,7 +2802,7 @@ case "$L297":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP342
 tmp.push(retval);//PUSHPOP344
-fn.push(["$L298", [new DataUnit("template5", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(25, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L298", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2810,7 +2810,7 @@ case "$L298":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP344
 tmp.push(retval);//PUSHPOP346
-fn.push(["$L299", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L299", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(20, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2818,7 +2818,7 @@ case "$L299":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP346
 tmp.push(retval);//PUSHPOP348
-fn.push(["$L300", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(20, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L300", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(1, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2826,7 +2826,7 @@ case "$L300":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP348
 tmp.push(retval);//PUSHPOP350
-fn.push(["$L301", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(1, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L301", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2834,7 +2834,7 @@ case "$L301":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP350
 tmp.push(retval);//PUSHPOP352
-fn.push(["$L302", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L302", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Blue", DATATYPES.DT_STRING)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2842,7 +2842,7 @@ case "$L302":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP352
 tmp.push(retval);//PUSHPOP354
-fn.push(["$L303", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Blue", DATATYPES.DT_STRING)]]);
+fn.push(["$L303", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2850,7 +2850,7 @@ case "$L303":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP354
 tmp.push(retval);//PUSHPOP356
-fn.push(["$L304", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L304", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2858,7 +2858,7 @@ case "$L304":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP356
 tmp.push(retval);//PUSHPOP358
-fn.push(["$L305", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L305", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(25, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2866,7 +2866,7 @@ case "$L305":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP358
 tmp.push(retval);//PUSHPOP360
-fn.push(["$L306", [new DataUnit("template6", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(25, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L306", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2874,7 +2874,7 @@ case "$L306":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP360
 tmp.push(retval);//PUSHPOP362
-fn.push(["$L307", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L307", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2882,7 +2882,7 @@ case "$L307":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP362
 tmp.push(retval);//PUSHPOP364
-fn.push(["$L308", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit(1, DATATYPES.DT_NUMBER), new DataUnit(11, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L308", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2890,7 +2890,7 @@ case "$L308":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP364
 tmp.push(retval);//PUSHPOP366
-fn.push(["$L309", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit(2, DATATYPES.DT_NUMBER), new DataUnit(12, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L309", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(13, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2898,7 +2898,7 @@ case "$L309":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP366
 tmp.push(retval);//PUSHPOP368
-fn.push(["$L310", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit(3, DATATYPES.DT_NUMBER), new DataUnit(13, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L310", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Red", DATATYPES.DT_STRING)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2906,7 +2906,7 @@ case "$L310":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP368
 tmp.push(retval);//PUSHPOP370
-fn.push(["$L311", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit("color", DATATYPES.DT_STRING), new DataUnit("Red", DATATYPES.DT_STRING)]]);
+fn.push(["$L311", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(4, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
@@ -2914,31 +2914,23 @@ case "$L311":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP370
 tmp.push(retval);//PUSHPOP372
-fn.push(["$L312", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit("dim", DATATYPES.DT_STRING), new DataUnit(4, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L312", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
 case "$L312":
 scratch = retval;
 retval = tmp.pop();//PUSHPOP372
-tmp.push(retval);//PUSHPOP374
-fn.push(["$L313", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit("pviewx", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
+fn.push(["$L313", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
 scratch = array.setvalue;
 next = scratch.as_string();
 break;
 case "$L313":
 scratch = retval;
-retval = tmp.pop();//PUSHPOP374
-fn.push(["$L314", [new DataUnit("template7", DATATYPES.DT_STRING), new DataUnit("pviewy", DATATYPES.DT_STRING), new DataUnit(0, DATATYPES.DT_NUMBER)]]);
-scratch = array.setvalue;
-next = scratch.as_string();
-break;
-case "$L314":
-scratch = retval;
 retval = new DataUnit();
 next = fn.pop()[0];
 break;
-case "$L258":
+case "$L257":
           default:
             return null;
         }

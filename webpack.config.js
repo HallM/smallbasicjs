@@ -17,12 +17,14 @@ module.exports = {
     loaders: [
       {
         test: /\.js$/,
+        exclude: /node_modules/,
         include: path.join(__dirname, 'runtime'),
         loader: 'babel-loader',
         query: {
           presets: ['es2015']
         }
       },
+      { test: /\.css$/, loader: "style-loader!css-loader" }
     ]
   }
 };
