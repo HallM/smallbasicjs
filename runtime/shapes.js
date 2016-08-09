@@ -10,15 +10,15 @@ const impl = {
     const width = w.as_num();
     const height = h.as_num();
 
-    const brushcolor = '#' + this.graphicswindow.brushcolor.value.toString(16);
-    const penwidth = this.graphicswindow.penwidth.as_num();
-    const pencolor = '#' + this.graphicswindow.pencolor.value.toString(16);
+    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
+    const penwidth = '#' + ('000000' + this.graphicswindow.penwidth.as_num()).slice(-6);
+    const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
 
     let bmd = phaserGame.add.bitmapData(width, height);
     bmd.ctx.beginPath();
     bmd.ctx.fillStyle = brushcolor;
     bmd.ctx.strokeStyle = pencolor;
-    bmd.ctx.lineWidth = penwidth.as_num();
+    bmd.ctx.lineWidth = penwidth;
     bmd.ctx.moveTo(0, 0);
     bmd.ctx.lineTo(width, 0);
     bmd.ctx.lineTo(width, height);
@@ -38,9 +38,9 @@ const impl = {
 
     const graphics = phaserGame.add.graphics(0, 0);
 
-    const brushcolor = '#' + this.graphicswindow.brushcolor.as_num();
-    const penwidth = this.graphicswindow.penwidth.as_num();
-    const pencolor = '#' + this.graphicswindow.pencolor.as_num();
+    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
+    const penwidth = '#' + ('000000' + this.graphicswindow.penwidth.as_num()).slice(-6);
+    const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
 
     graphics.beginFill(brushcolor);
     graphics.lineStyle(penwidth, pencolor, 1);
@@ -58,15 +58,15 @@ const impl = {
   addtriangle: function(x1, y1, x2, y2, x3, y3) {
     const phaserGame = this.$graphicswindow.phaserGame;
 
-    const brushcolor = '#' + this.graphicswindow.brushcolor.value.toString(16);
-    const penwidth = this.graphicswindow.penwidth.as_num();
-    const pencolor = '#' + this.graphicswindow.pencolor.value.toString(16);
+    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
+    const penwidth = '#' + ('000000' + this.graphicswindow.penwidth.as_num()).slice(-6);
+    const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
 
     let bmd = phaserGame.add.bitmapData(width, height);
     bmd.ctx.beginPath();
     bmd.ctx.fillStyle = brushcolor;
     bmd.ctx.strokeStyle = pencolor;
-    bmd.ctx.lineWidth = penwidth.as_num();
+    bmd.ctx.lineWidth = penwidth;
     bmd.ctx.moveTo(x1.as_num(), y1.as_num());
     bmd.ctx.lineTo(x2.as_num(), y2.as_num());
     bmd.ctx.lineTo(x3.as_num(), y3.as_num());
@@ -80,13 +80,13 @@ const impl = {
   addline: function(x1, y1, x2, y2) {
     const phaserGame = this.$graphicswindow.phaserGame;
 
-    const penwidth = this.graphicswindow.penwidth.as_num();
-    const pencolor = '#' + this.graphicswindow.pencolor.value.toString(16);
+    const penwidth = '#' + ('000000' + this.graphicswindow.penwidth.as_num()).slice(-6);
+    const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
 
     let bmd = phaserGame.add.bitmapData(width, height);
     bmd.ctx.beginPath();
     bmd.ctx.strokeStyle = pencolor;
-    bmd.ctx.lineWidth = penwidth.as_num();
+    bmd.ctx.lineWidth = penwidth;
     bmd.ctx.moveTo(x1.as_num(), y1.as_num());
     bmd.ctx.lineTo(x2.as_num(), y2.as_num());
     bmd.ctx.stroke();
@@ -101,10 +101,12 @@ const impl = {
     const xPos = x.as_num();
     const yPos = y.as_num();
 
+    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
+
     let txtOptions = {
       font: this.graphicswindow.fontname.as_string(),
       fontSize: this.graphicswindow.fontsize.as_num() + 'px',
-      fill: '#' + this.graphicswindow.brushcolor.as_num().toString(16),
+      fill: '#' + brushcolor,
     };
 
     if (this.graphicswindow.fontitalic.as_bool()) {

@@ -157,13 +157,16 @@ const stringToColorTable = {
 function colorToRgb(color) {
   if (color.type === DATATYPES.DT_NUMBER) {
     // don't change numbers
+    console.log('dont change');
     return;
   }
 
   // translate anything into a number
   if (color.type !== DATATYPES.DT_STRING) {
+    console.log(color.type);
     color.value = 0x000000;
   } else {
+    console.log(color.as_string(), stringToColorTable[color.as_string().toLowerCase()]);
     color.value = stringToColorTable[color.as_string().toLowerCase()] || 0x000000;
   }
 
@@ -270,10 +273,12 @@ const impl = {
       return;
     }
 
+    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
+
     let txtOptions = {
       font: this.graphicswindow.fontname.as_string(),
       fontSize: this.graphicswindow.fontsize.as_num() + 'px',
-      fill: '#' + this.graphicswindow.brushcolor.as_num().toString(16),
+      fill: '#' + brushcolor,
     };
 
     if (this.graphicswindow.fontitalic.as_bool()) {
