@@ -547,7 +547,6 @@ ${stdlibVars}
   }
 
   process_call(node) {
-    // TODO: this should not mess up scratch, right?
     const identifier = this.process_lhs(node[0], true);
 
     const params = node[1] ? node[1].map((pnode) => {
@@ -641,7 +640,6 @@ ${stdlibVars}
     const name = this.process_identifier(node[0], true);
     this.add_callable(name);
 
-    // TODO: fns need to be changed, so that the we have the label
     // internal subroutines are just a label to jump to
     // the external ones have a label as well (their own name)
     // so the internal fn could just be a string (the name)
