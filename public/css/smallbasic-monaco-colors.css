@@ -1,0 +1,24 @@
+.monaco-editor.vs .token.predefined.smallbasic {
+  color: #802020 !important;
+}
+.monaco-editor.vs .token.keyword.smallbasic {
+  color: #77f !important;
+}
+.monaco-editor.vs .token.constant.smallbasic {
+  color: #006060 !important;
+}
+.monaco-editor.vs .token.identifier.smallbasic {
+  color: #000 !important;
+}
+.monaco-editor.vs .token.operator.smallbasic {
+  color: #000 !important;
+}
+.monaco-editor.vs .token.number.smallbasic {
+  color: #d63 !important;
+}
+.monaco-editor.vs .token.string.smallbasic {
+  color: #d63 !important;
+}
+.monaco-editor.vs .token.comment.smallbasic {
+  color: #008020 !important;
+}
