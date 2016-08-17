@@ -8,19 +8,59 @@
 
     <link type="text/css" rel="stylesheet" href="/lib/sweetalert/sweetalert2.min.css" />
     <link type="text/css" rel="stylesheet" href="/public/css/smallbasic-monaco-colors.css" />
+
+    <link type="text/css" rel="stylesheet" href="/lib/mui/mui.min.css" />
+    <link type="text/css" rel="stylesheet" href="/public/css/sbpen.css" />
   </head>
   <body>
 
-    <div id="container" style="width:800px;height:600px;border:1px solid grey"></div>
-    <button id="runcodebtn">Run Code</button>
-    <div id="smallbasicjs-graphicswindow"></div>
+    <header class="mui-appbar">
+      <table width="100%">
+        <tr class="mui--appbar-height">
+          <td class="mui--text-title">SmallBasic JS</td>
+          <td align="right">
+            <ul class="mui-list--inline mui--text-body2">
+              <li><a href="#">Settings</a></li>
+              <li><button id="runcodebtn" class="mui-btn mui-btn--fab">></button></li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </header>
+
+    <div id="page-container" class="">
+
+      <div id="code-container">
+        <div id="codeinput"></div>
+      </div>
+
+      <div id="output-container">
+
+          <div id="graphicswindow-container" class="output-window-container">
+            <div id="graphicswindow-title" class="output-window-title">Graphics Window</div>
+            <div id="graphicswindow" class="output-window-content" tabindex="1">
+              <canvas id="gw-background-layer"></canvas>
+              <canvas id="gw-sprites-layer"></canvas>
+              <div id="gw-controls-layer"></div>
+            </div>
+          </div>
+
+          <div id="textwindow-container" class="output-window-container">
+            <div id="textwindow-title" class="output-window-title">Text Window</div>
+            <div id="textwindow" class="output-window-content">
+            </div>
+          </div>
+
+      </div>
+
+    </div>
 
     <script src="/lib/bluebird/bluebird.min.js"></script>
     <script src="//cdn.polyfill.io/v2/polyfill.min.js"></script>
 
     <script src="/lib/axios/axios.min.js"></script>
     <script src="/lib/sweetalert/sweetalert2.min.js"></script>
-    <script src="//cdn.jsdelivr.net/phaser/2.6.1/phaser.js"></script>
+    <script src="/lib/mui/mui.min.js"></script>
 
     <script src="/lib/monaco-editor/min/vs/loader.js"></script>
     <script>
@@ -42,7 +82,7 @@
         monaco.languages.setMonarchTokensProvider('smallbasic', sbLanguage.tokenProvider);
         monaco.languages.registerCompletionItemProvider('smallbasic', sbLanguage.completionProvider);
 
-        var editor = monaco.editor.create(document.getElementById('container'), {
+        var editor = monaco.editor.create(document.getElementById('codeinput'), {
           value: '',
           language: 'smallbasic'
         });
@@ -53,8 +93,16 @@
 
           // TODO: teardown code
           var runnable = new Function(jssrc);
+          var pg = document.getElementById('page-container');
+          if (pg.classList) {
+            pg.classList.add('running');
+          } else {
+            pg.className += ' running';
+          }
+          document.getElementById('graphicswindow').focus();
+
           runnable();
-        });
+        }, false);
 
       });
     </script>

@@ -1,66 +1,77 @@
 'use strict';
 
 import {DataUnit, DATATYPES} from './data-unit';
-declare var Phaser: any;
+import {Canvs, Sprite, Tween} from './canvs';
+import {colorFromNumber, makeEllipsePath} from './utils';
+
+import * as GraphicsWindow from './graphicswindow';
 
 const impl = {
   addrectangle: function(w, h) {
-    const phaserGame = this.$graphicswindow.phaserGame;
+    GraphicsWindow.impl.show.apply(this);
+
+    const canvs: Canvs = this.$graphicswindow.canvs;
 
     const width = w.as_num();
     const height = h.as_num();
 
-    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
+    const brushcolor = colorFromNumber(this.graphicswindow.brushcolor.as_num());
     const penwidth = this.graphicswindow.penwidth.as_num();
-    const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
+    const pencolor = colorFromNumber(this.graphicswindow.pencolor.as_num());
 
-    let bmd = phaserGame.add.bitmapData(width, height);
-    bmd.ctx.beginPath();
-    bmd.ctx.fillStyle = brushcolor;
-    bmd.ctx.strokeStyle = pencolor;
-    bmd.ctx.lineWidth = penwidth;
-    bmd.ctx.moveTo(0, 0);
-    bmd.ctx.lineTo(width, 0);
-    bmd.ctx.lineTo(width, height);
-    bmd.ctx.lineTo(0, height);
-    bmd.ctx.fill();
-    bmd.ctx.stroke();
+    const sprite = new Sprite(width, height, (ctx: CanvasRenderingContext2D) => {
+      ctx.beginPath();
+      ctx.fillStyle = brushcolor;
+      ctx.strokeStyle = pencolor;
+      ctx.lineWidth = penwidth;
+      ctx.moveTo(0, 0);
+      ctx.lineTo(width, 0);
+      ctx.lineTo(width, height);
+      ctx.lineTo(0, height);
+      ctx.fill();
+      ctx.stroke();
+    });
 
-    const sprite = phaserGame.add.sprite(0, 0, bmd);
+    canvs.spritelayer.addSprite(sprite);
+
     return new DataUnit(sprite, DATATYPES.DT_SHAPE);
   },
 
   addellipse: function(w, h) {
-    const phaserGame = this.$graphicswindow.phaserGame;
+    GraphicsWindow.impl.show.apply(this);
+
+    const canvs: Canvs = this.$graphicswindow.canvs;
 
     const width = w.as_num();
     const height = h.as_num();
 
-    const graphics = phaserGame.add.graphics(0, 0);
-
-    const brushcolor = this.graphicswindow.brushcolor.as_num();
+    const brushcolor = colorFromNumber(this.graphicswindow.brushcolor.as_num());
     const penwidth = this.graphicswindow.penwidth.as_num();
-    const pencolor = this.graphicswindow.pencolor.as_num();
+    const pencolor = colorFromNumber(this.graphicswindow.pencolor.as_num());
 
-    graphics.beginFill(brushcolor);
-    graphics.lineStyle(penwidth, pencolor, 1);
+    const sprite = new Sprite(width, height, (ctx: CanvasRenderingContext2D) => {
+      ctx.beginPath();
+      ctx.fillStyle = brushcolor;
+      ctx.strokeStyle = pencolor;
+      ctx.lineWidth = penwidth;
+      makeEllipsePath(ctx, 0, 0, width, height);
+      ctx.fill();
+      ctx.stroke();
+    });
 
-    graphics.drawEllipse(0, 0, width, height);
-
-    graphics.endFill();
-
-    const sprite = phaserGame.add.sprite(w, h, graphics.generateTexture());
-    graphics.destroy();
+    canvs.spritelayer.addSprite(sprite);
 
     return new DataUnit(sprite, DATATYPES.DT_SHAPE);
   },
 
   addtriangle: function(x1, y1, x2, y2, x3, y3) {
-    const phaserGame = this.$graphicswindow.phaserGame;
+    GraphicsWindow.impl.show.apply(this);
 
-    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
+    const canvs: Canvs = this.$graphicswindow.canvs;
+
+    const brushcolor = colorFromNumber(this.graphicswindow.brushcolor.as_num());
     const penwidth = this.graphicswindow.penwidth.as_num();
-    const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
+    const pencolor = colorFromNumber(this.graphicswindow.pencolor.as_num());
 
     const x1v = x1.as_num();
     const x2v = x2.as_num();
@@ -77,26 +88,30 @@ const impl = {
     const width = xmax - xmin;
     const height = ymax - ymin;
 
-    let bmd = phaserGame.add.bitmapData(width, height);
-    bmd.ctx.beginPath();
-    bmd.ctx.fillStyle = brushcolor;
-    bmd.ctx.strokeStyle = pencolor;
-    bmd.ctx.lineWidth = penwidth;
-    bmd.ctx.moveTo(x1v, y1v);
-    bmd.ctx.lineTo(x2v, y2v);
-    bmd.ctx.lineTo(x3v, y3v);
-    bmd.ctx.fill();
-    bmd.ctx.stroke();
+    const sprite = new Sprite(width, height, (ctx: CanvasRenderingContext2D) => {
+      ctx.beginPath();
+      ctx.fillStyle = brushcolor;
+      ctx.strokeStyle = pencolor;
+      ctx.lineWidth = penwidth;
+      ctx.moveTo(x1v, y1v);
+      ctx.lineTo(x2v, y2v);
+      ctx.lineTo(x3v, y3v);
+      ctx.fill();
+      ctx.stroke();
+    });
 
-    const sprite = phaserGame.add.sprite(0, 0, bmd);
+    canvs.spritelayer.addSprite(sprite);
+
     return new DataUnit(sprite, DATATYPES.DT_SHAPE);
   },
 
   addline: function(x1, y1, x2, y2) {
-    const phaserGame = this.$graphicswindow.phaserGame;
+    GraphicsWindow.impl.show.apply(this);
+
+    const canvs: Canvs = this.$graphicswindow.canvs;
 
     const penwidth = this.graphicswindow.penwidth.as_num();
-    const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
+    const pencolor = colorFromNumber(this.graphicswindow.pencolor.as_num());
 
     const x1v = x1.as_num();
     const x2v = x2.as_num();
@@ -111,52 +126,81 @@ const impl = {
     const width = xmax - xmin;
     const height = ymax - ymin;
 
-    let bmd = phaserGame.add.bitmapData(width, height);
-    bmd.ctx.beginPath();
-    bmd.ctx.strokeStyle = pencolor;
-    bmd.ctx.lineWidth = penwidth;
-    bmd.ctx.moveTo(x1v, y1v);
-    bmd.ctx.lineTo(x2v, y2v);
-    bmd.ctx.stroke();
+    const sprite = new Sprite(width, height, (ctx: CanvasRenderingContext2D) => {
+      ctx.beginPath();
+      ctx.strokeStyle = pencolor;
+      ctx.lineWidth = penwidth;
+      ctx.moveTo(x1v, y1v);
+      ctx.lineTo(x2v, y2v);
+      ctx.fill();
+      ctx.stroke();
+    });
 
-    const sprite = phaserGame.add.sprite(0, 0, bmd);
+    canvs.spritelayer.addSprite(sprite);
+
     return new DataUnit(sprite, DATATYPES.DT_SHAPE);
   },
 
   addtext: function(t) {
-    const phaserGame = this.$graphicswindow.phaserGame;
+    GraphicsWindow.impl.show.apply(this);
 
-    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
+    const canvs: Canvs = this.$graphicswindow.canvs;
 
-    let txtOptions: any = {
-      font: this.graphicswindow.fontname.as_string(),
-      fontSize: this.graphicswindow.fontsize.as_num() + 'px',
-      fill: '#' + brushcolor,
-    };
-
+    const fontSize = this.graphicswindow.fontsize.as_num();
+    let fontString = fontSize + 'px ' + this.graphicswindow.fontname.as_string();
+    if (this.graphicswindow.fontbold.as_bool()) {
+      fontString = 'bold ' + fontString;
+    }
     if (this.graphicswindow.fontitalic.as_bool()) {
-      txtOptions.fontStyle = 'italic';
+      fontString = 'italic ' + fontString;
     }
 
-    const phaserText = phaserGame.add.text(0, 0, t.as_string(), txtOptions);
-    return new DataUnit(phaserText, DATATYPES.DT_SHAPE);
+    const brushcolor = colorFromNumber(this.graphicswindow.brushcolor.as_num());
+
+    const text = t.as_string();
+
+    canvs.bglayer.ctx.font = fontString;
+    const width = canvs.bglayer.ctx.measureText(text).width;
+    const height = fontSize + 4;
+
+    const sprite = new Sprite(width, height, (ctx: CanvasRenderingContext2D) => {
+      ctx.font = fontString;
+      ctx.fillStyle = brushcolor;
+      ctx.fillText(text, 0, 0);
+    });
+
+    canvs.spritelayer.addSprite(sprite);
+
+    return new DataUnit(sprite, DATATYPES.DT_SHAPE);
   },
 
-  addimage: function(imageName) {
-    const internalName = this.$imagelist.images[imageName.as_string()];
-    if (!internalName) {
+  addimage: function(image) {
+    GraphicsWindow.impl.show.apply(this);
+
+    if (image.type !== DATATYPES.DT_IMAGE) {
       return new DataUnit();
     }
 
-    const phaserGame = this.$graphicswindow.phaserGame;
+    const canvs: Canvs = this.$graphicswindow.canvs;
 
-    const image = phaserGame.add.sprite(0, 0, internalName.value);
-    return new DataUnit(image, DATATYPES.DT_SHAPE);
+    const width = image.value.width;
+    const height = image.value.height;
+
+    const sprite = new Sprite(width, height, (ctx: CanvasRenderingContext2D) => {
+      ctx.drawImage(image.value, 0, 0);
+    });
+
+    canvs.spritelayer.addSprite(sprite);
+
+    return new DataUnit(sprite, DATATYPES.DT_SHAPE);
   },
 
   settext: function(s, t) {
     if (s.type === DATATYPES.DT_SHAPE) {
-      s.value.text = t.as_string();
+      // TODO: what about font changes?
+      const newSprite = impl.addtext(t);
+      s.value.destroy();
+      s.value = newSprite;
     }
   },
 
@@ -212,12 +256,10 @@ const impl = {
       return;
     }
 
-    const phaserGame = this.$graphicswindow.phaserGame;
-
-    var tween = phaserGame.add.tween(s.value);
-    tween.to({x: x.as_num(), y: y.as_num()}, duration.as_num(), Phaser.Easing.Linear.None, true);
-    // tween.onComplete.addOnce(() => {
-    // }, this);
+    const tween = new Tween(s.value, x.as_num(), y.as_num(), duration.as_num());
+    if (s.value.layer) {
+      s.value.layer.addTween(tween);
+    }
   },
 
   getopacity: function(s) {

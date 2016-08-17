@@ -1,9 +1,11 @@
 'use strict';
 
 import {DataUnit, DATATYPES} from './data-unit';
+import {Canvs} from './canvs';
+import {colorFromNumber, makeEllipsePath} from './utils';
+
 declare var Promise: any;
 declare var swal: any;
-declare var Phaser: any;
 
 const stringToColorTable = {
   indianred: 0xcd5c5c,
@@ -184,53 +186,55 @@ const impl = {
   },
 
   clear: function() {
-    const phaserGraphics = this.$graphicswindow.phaserGraphics;
-    if (phaserGraphics) {
-      phaserGraphics.clear();
+    impl.show.apply(this);
 
-      // TODO: do we clear out the shapes too?
-      const textSpawns = this.$graphicswindow.textSpawns;
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
 
-      for (var prop in textSpawns) {
-        textSpawns[prop].destroy();
-      }
-      this.$graphicswindow.textSpawns = {};
+    const width = canvs.width;
+    const height = canvs.height;
 
-      const width = this.graphicswindow.width.as_num();
-      const height = this.graphicswindow.height.as_num();
+    ctx.fillStyle = colorFromNumber(this.graphicswindow.backgroundcolor.as_num());
+    ctx.fillRect(0, 0, width, height);
 
-      const fillColor = this.graphicswindow.backgroundcolor.as_num();
-      phaserGraphics.beginFill(fillColor);
-      phaserGraphics.drawRect(0, 0, width, height);
-      phaserGraphics.endFill();
-    }
+    // TODO: remove all shapes/sprites too
+    // TODO: what happens when adding shape, clear, then try to access shape?
   },
 
   show: function() {
-    const env = this;
-    const phaserGame = env.$graphicswindow.phaserGame;
-    if (phaserGame) {
-      phaserGame.destroy();
-      env.$graphicswindow.phaserGame = null;
+    if (this.$graphicswindow.canvs) {
+      return;
     }
+
+    const c = new Canvs('gw-background-layer', 'gw-sprites-layer');
 
     const width = this.graphicswindow.width.as_num();
     const height = this.graphicswindow.height.as_num();
 
-    return new Promise((resolve) => {
-      env.$graphicswindow.phaserGame = new Phaser.Game(width, height, Phaser.CANVAS, 'smallbasicjs-graphicswindow', {
-        create: phaserCreateFactory(resolve).bind(env)
-      });
-    });
+    c.width = width;
+    c.height = height;
+    this.$graphicswindow.canvs = c;
+
+    // TODO: input handling
+    // const phaserGame = this.$graphicswindow.phaserGame;
+    // phaserGame.input.keyboard.onDownCallback = phaserKeydown.bind(this);
+    // phaserGame.input.keyboard.onUpCallback = phaserKeyup.bind(this);
+
+    // phaserGame.input.mouse.enabled = true;
+    // phaserGame.input.mouse.mouseDownCallback = phaserMousedown.bind(this);
+    // phaserGame.input.mouse.mouseUpCallback = phaserMouseup.bind(this);
+
+    // phaserGame.input.addMoveCallback(phaserMousemove, this);
+
+    // pre-fill the BG
+    const ctx = c.bglayer.ctx;
+
+    ctx.fillStyle = colorFromNumber(this.graphicswindow.backgroundcolor.as_num());
+    ctx.fillRect(0, 0, width, height);
   },
 
   hide: function() {
-    const env = this;
-    const phaserGame = env.$graphicswindow.phaserGame;
-    if (phaserGame) {
-      phaserGame.destroy();
-      env.$graphicswindow.phaserGame = null;
-    }
+    // TODO:
   },
 
   showmessage: function(text, title) {
@@ -245,216 +249,167 @@ const impl = {
   },
 
   fillrectangle: function(x, y, w, h) {
-    const phaserGraphics = this.$graphicswindow.phaserGraphics;
-    if (!phaserGraphics) {
-      return;
-    }
+    impl.show.apply(this);
 
-    const fillColor = this.graphicswindow.brushcolor.as_num();
-    phaserGraphics.beginFill(fillColor);
-    phaserGraphics.drawRect(x.as_num(), y.as_num(), w.as_num(), h.as_num());
-    phaserGraphics.endFill();
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
+
+    ctx.fillStyle = colorFromNumber(this.graphicswindow.brushcolor.as_num());
+    ctx.fillRect(x.as_num(), y.as_num(), w.as_num(), h.as_num());
   },
 
   drawrectangle: function(x, y, w, h) {
-    const phaserGraphics = this.$graphicswindow.phaserGraphics;
-    if (!phaserGraphics) {
-      return;
-    }
+    impl.show.apply(this);
 
-    const strokeColor = this.graphicswindow.pencolor.as_num();
-    const strokeWidth = this.graphicswindow.penwidth.as_num();
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
 
-    phaserGraphics.lineStyle(strokeWidth, strokeColor, 1);
-    phaserGraphics.drawRect(x.as_num(), y.as_num(), w.as_num(), h.as_num());
+    ctx.strokeStyle = colorFromNumber(this.graphicswindow.pencolor.as_num());
+    ctx.lineWidth = this.graphicswindow.penwidth.as_num();
+
+    ctx.strokeRect(x.as_num(), y.as_num(), w.as_num(), h.as_num());
   },
 
   drawline: function(x1, y1, x2, y2) {
-    const phaserGraphics = this.$graphicswindow.phaserGraphics;
-    if (!phaserGraphics) {
-      return;
-    }
+    impl.show.apply(this);
 
-    const strokeColor = this.graphicswindow.pencolor.as_num();
-    const strokeWidth = this.graphicswindow.penwidth.as_num();
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
 
-    phaserGraphics.lineStyle(strokeWidth, strokeColor, 1);
-    phaserGraphics.moveTo(x1.as_num(), y1.as_num());
-    phaserGraphics.lineTo(x2.as_num(), y2.as_num());
+    ctx.strokeStyle = colorFromNumber(this.graphicswindow.pencolor.as_num());
+    ctx.lineWidth = this.graphicswindow.penwidth.as_num();
+
+    ctx.beginPath();
+    ctx.moveTo(x1.as_num(), y1.as_num());
+    ctx.lineTo(x2.as_num(), y2.as_num());
+    ctx.stroke();
   },
 
   drawtext: function(x, y, t) {
-    const phaserGame = this.$graphicswindow.phaserGame;
-    const textSpawns = this.$graphicswindow.textSpawns;
+    impl.show.apply(this);
 
-    if (!phaserGame) {
-      return;
-    }
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
 
-    const xPos = x.as_num();
-    const yPos = y.as_num();
-    const spawnLoc = xPos + ':' + yPos;
-
-    if (textSpawns[spawnLoc]) {
-      textSpawns[spawnLoc].text = t.as_string();
-      textSpawns[spawnLoc].wordWrap = false;
-      return;
-    }
-
-    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
-
-    let txtOptions: any = {
-      font: this.graphicswindow.fontname.as_string(),
-      fontSize: this.graphicswindow.fontsize.as_num() + 'px',
-      fill: '#' + brushcolor,
-    };
-
-    if (this.graphicswindow.fontitalic.as_bool()) {
-      txtOptions.fontStyle = 'italic';
-    }
+    let fontString = this.graphicswindow.fontsize.as_num() + 'px ' + this.graphicswindow.fontname.as_string();
     if (this.graphicswindow.fontbold.as_bool()) {
-      txtOptions.fontWeight = 'bold';
+      fontString = 'bold ' + fontString;
+    }
+    if (this.graphicswindow.fontitalic.as_bool()) {
+      fontString = 'italic ' + fontString;
     }
 
-    const phaserText = phaserGame.add.text(xPos, yPos, t.as_string(), txtOptions);
-    textSpawns[spawnLoc] = phaserText;
+    ctx.fillStyle = colorFromNumber(this.graphicswindow.brushcolor.as_num());
+    ctx.font = fontString;
+    ctx.fillText(t.as_string(), x.as_num(), y.as_num());
   },
 
   drawboundtext: function(x, y, w, t) {
-    const phaserGame = this.$graphicswindow.phaserGame;
-    const textSpawns = this.$graphicswindow.textSpawns;
+    impl.show.apply(this);
 
-    if (!phaserGame) {
-      return;
-    }
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
 
-    const xPos = x.as_num();
-    const yPos = y.as_num();
-    const spawnLoc = xPos + ':' + yPos;
-
-    const width = w.as_num();
-
-    if (textSpawns[spawnLoc]) {
-      textSpawns[spawnLoc].text = t.as_string();
-      textSpawns[spawnLoc].wordWrap = true;
-      textSpawns[spawnLoc].wordWrapWidth = width;
-      return;
-    }
-
-    const brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
-
-    let txtOptions: any = {
-      font: this.graphicswindow.fontname.as_string(),
-      fontSize: this.graphicswindow.fontsize.as_num() + 'px',
-      fill: '#' + brushcolor,
-    };
-
-    if (this.graphicswindow.fontitalic.as_bool()) {
-      txtOptions.fontStyle = 'italic';
-    }
+    let fontString = this.graphicswindow.fontsize.as_num() + 'px ' + this.graphicswindow.fontname.as_string();
     if (this.graphicswindow.fontbold.as_bool()) {
-      txtOptions.fontWeight = 'bold';
+      fontString = 'bold ' + fontString;
+    }
+    if (this.graphicswindow.fontitalic.as_bool()) {
+      fontString = 'italic ' + fontString;
     }
 
-    const phaserText = phaserGame.add.text(xPos, yPos, t.as_string(), txtOptions);
-    phaserText.wordWrap = true;
-    phaserText.wordWrapWidth = width;
-    textSpawns[spawnLoc] = phaserText;
+    ctx.fillStyle = colorFromNumber(this.graphicswindow.brushcolor.as_num());
+    ctx.font = fontString;
+    ctx.fillText(t.as_string(), x.as_num(), y.as_num(), w.as_num());
   },
 
   drawellipse: function(x, y, w, h) {
-    const phaserGraphics = this.$graphicswindow.phaserGraphics;
-    if (!phaserGraphics) {
-      return;
-    }
+    impl.show.apply(this);
 
-    const penwidth = this.graphicswindow.penwidth.as_num();
-    const pencolor = this.graphicswindow.pencolor.as_num();
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
 
-    phaserGraphics.lineStyle(penwidth, pencolor, 1);
-    phaserGraphics.drawEllipse(x.as_num(), y.as_num(), w.as_num(), h.as_num());
+    ctx.strokeStyle = colorFromNumber(this.graphicswindow.pencolor.as_num());
+    ctx.lineWidth = this.graphicswindow.penwidth.as_num();
+
+    makeEllipsePath(ctx, x.as_num(), y.as_num(), w.as_num(), h.as_num());
+    ctx.stroke();
   },
 
   fillellipse: function(x, y, w, h) {
-    const phaserGraphics = this.$graphicswindow.phaserGraphics;
-    if (!phaserGraphics) {
-      return;
-    }
+    impl.show.apply(this);
 
-    const brushcolor = this.graphicswindow.brushcolor.value.as_num();
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
 
-    phaserGraphics.beginFill(brushcolor);
-    phaserGraphics.drawEllipse(x.as_num(), y.as_num(), w.as_num(), h.as_num());
-    phaserGraphics.endFill();
+    ctx.fillStyle = colorFromNumber(this.graphicswindow.brushcolor.as_num());
+
+    makeEllipsePath(ctx, x.as_num(), y.as_num(), w.as_num(), h.as_num());
+    ctx.fill();
   },
 
   drawtriangle: function(x1, y1, x2, y2, x3, y3) {
-    const phaserGraphics = this.$graphicswindow.phaserGraphics;
-    if (!phaserGraphics) {
-      return;
-    }
+    impl.show.apply(this);
 
-    const penwidth = this.graphicswindow.penwidth.as_num();
-    const pencolor = this.graphicswindow.pencolor.as_num();
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
 
-    phaserGraphics.lineStyle(penwidth, pencolor, 1);
-    phaserGraphics.moveTo(x1.as_num(), y1.as_num());
-    phaserGraphics.lineTo(x2.as_num(), y2.as_num());
-    phaserGraphics.lineTo(x3.as_num(), y3.as_num());
+    ctx.strokeStyle = colorFromNumber(this.graphicswindow.pencolor.as_num());
+    ctx.lineWidth = this.graphicswindow.penwidth.as_num();
+
+    ctx.beginPath();
+    ctx.moveTo(x1.as_num(), y1.as_num());
+    ctx.lineTo(x2.as_num(), y2.as_num());
+    ctx.lineTo(x3.as_num(), y3.as_num());
+    ctx.stroke();
   },
 
   filltriangle: function(x1, y1, x2, y2, x3, y3) {
-    const phaserGraphics = this.$graphicswindow.phaserGraphics;
-    if (!phaserGraphics) {
-      return;
-    }
+    impl.show.apply(this);
 
-    const brushcolor = this.graphicswindow.brushcolor.value.as_num();
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
 
-    phaserGraphics.beginFill(brushcolor);
-    phaserGraphics.moveTo(x1.as_num(), y1.as_num());
-    phaserGraphics.lineTo(x2.as_num(), y2.as_num());
-    phaserGraphics.lineTo(x3.as_num(), y3.as_num());
-    phaserGraphics.endFill();
+    ctx.fillStyle = colorFromNumber(this.graphicswindow.brushcolor.as_num());
+
+    ctx.beginPath();
+    ctx.moveTo(x1.as_num(), y1.as_num());
+    ctx.lineTo(x2.as_num(), y2.as_num());
+    ctx.lineTo(x3.as_num(), y3.as_num());
+    ctx.fill();
   },
 
-  drawresizedimage: function(imageName, x, y, width, height) {
-    const phaserGame = this.$graphicswindow.phaserGame;
-    if (!phaserGame) {
+  drawresizedimage: function(image, x, y, width, height) {
+    impl.show.apply(this);
+
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
+
+    if (image.type !== DATATYPES.DT_IMAGE) {
       return;
     }
 
-    const image = this.$imagelist[imageName.as_string()];
-    if (!image) {
-      return;
-    }
-
-    const ctx = phaserGame.context;
-    ctx.drawImage(image, x.as_num(), y.as_num(), width.as_num(), height.as_num());
+    ctx.drawImage(image.value, x.as_num(), y.as_num(), width.as_num(), height.as_num());
   },
 
-  drawimage: function(imageName, x, y) {
-    const phaserGame = this.$graphicswindow.phaserGame;
-    if (!phaserGame) {
+  drawimage: function(image, x, y) {
+    impl.show.apply(this);
+
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
+
+    if (image.type !== DATATYPES.DT_IMAGE) {
       return;
     }
 
-    const image = this.$imagelist[imageName.as_string()];
-    if (!image) {
-      return;
-    }
-
-    const ctx = phaserGame.context;
-    ctx.drawImage(image, x.as_num(), y.as_num());
+    ctx.drawImage(image.value, x.as_num(), y.as_num());
   },
 
   setpixel: function(x, y, color) {
-    const phaserGame = this.$graphicswindow.phaserGame;
-    if (!phaserGame) {
-      return;
-    }
+    impl.show.apply(this);
 
-    const ctx = phaserGame.context;
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
 
     const rgb = color.as_num();
     const red = (rgb >> 16) & 0xFF;
@@ -473,15 +428,13 @@ const impl = {
   },
 
   getpixel: function(x, y) {
-    const phaserGame = this.$graphicswindow.phaserGame;
-    if (!phaserGame) {
-      return;
-    }
+    impl.show.apply(this);
+
+    const canvs = this.$graphicswindow.canvs;
+    const ctx = canvs.bglayer.ctx;
 
     const xPos = x.as_num();
     const yPos = y.as_num();
-
-    const ctx = phaserGame.context;
 
     const pixelData = ctx.getImageData(xPos, yPos, 1, 1).data;
 
@@ -528,12 +481,65 @@ function api(env) {
   brushcolor.on_assign(colorToRgb);
 
   env.$graphicswindow = {
-    phaserGame: null,
-    phaserGraphics: null,
-
-    // doing this weird caching because of how phaser does text
-    textSpawns: {},
+    canvs: null,
+    lastKey: new DataUnit('', DATATYPES.DT_STRING)
   }
+
+  // TODO: remove any other event listeners
+  document.getElementById('graphicswindow').addEventListener('keydown', function(e) {
+    switch (e.keyCode) {
+      case 32:
+        env.$graphicswindow.lastKey.value = 'Space';
+        break;
+      case 38:
+        env.$graphicswindow.lastKey.value = 'Up';
+        break;
+      case 40:
+        env.$graphicswindow.lastKey.value = 'Down';
+        break;
+      case 37:
+        env.$graphicswindow.lastKey.value = 'Left';
+        break;
+      case 39:
+        env.$graphicswindow.lastKey.value = 'Right';
+        break;
+      case 27:
+        env.$graphicswindow.lastKey.value = 'Escape';
+        break;
+    }
+
+    if (env.graphicswindow.keydown.type === DATATYPES.DT_FN) {
+      env.$interrupt(env.graphicswindow.keydown.value);
+    }
+
+  }, false);
+
+  document.getElementById('graphicswindow').addEventListener('keyup', function(e) {
+    switch (e.keyCode) {
+      case 32:
+        env.$graphicswindow.lastKey.value = 'Space';
+        break;
+      case 38:
+        env.$graphicswindow.lastKey.value = 'Up';
+        break;
+      case 40:
+        env.$graphicswindow.lastKey.value = 'Down';
+        break;
+      case 37:
+        env.$graphicswindow.lastKey.value = 'Left';
+        break;
+      case 39:
+        env.$graphicswindow.lastKey.value = 'Right';
+        break;
+      case 27:
+        env.$graphicswindow.lastKey.value = 'Escape';
+        break;
+    }
+
+    if (env.graphicswindow.keyup.type === DATATYPES.DT_FN) {
+      env.$interrupt(env.graphicswindow.keyup.value);
+    }
+  }, false);
 
   return {
     backgroundcolor: backgroundcolor,
@@ -573,54 +579,17 @@ function api(env) {
     mouseup: mouseup,
 
     get lastkey() {
-      const phaserGame = env.$graphicswindow.phaserGame;
-      if (!phaserGame) {
-        return new DataUnit();
-      }
-
-      // TODO: expand this
-      let keyChar = phaserGame.input.keyboard.lastKey.event.keyCode;
-
-      switch (keyChar) {
-        case Phaser.KeyCode.SPACEBAR:
-          keyChar = 'Space';
-          break;
-        case Phaser.KeyCode.UP:
-          keyChar = 'Up';
-          break;
-        case Phaser.KeyCode.DOWN:
-          keyChar = 'Down';
-          break;
-        case Phaser.KeyCode.LEFT:
-          keyChar = 'Left';
-          break;
-        case Phaser.KeyCode.RIGHT:
-          keyChar = 'Right';
-          break;
-        case Phaser.KeyCode.ESC:
-          keyChar = 'Escape';
-          break;
-      }
-
-      return new DataUnit(keyChar, DATATYPES.DT_STRING);
+      return env.$graphicswindow.lastKey
     },
 
     get mousex() {
-      const phaserGame = env.$graphicswindow.phaserGame;
-      if (!phaserGame) {
-        return new DataUnit();
-      }
-
-      return new DataUnit(phaserGame.input.x, DATATYPES.DT_NUMBER);
+      // TODO
+      return new DataUnit();
     },
 
     get mousey() {
-      const phaserGame = env.$graphicswindow.phaserGame;
-      if (!phaserGame) {
-        return new DataUnit();
-      }
-
-      return new DataUnit(phaserGame.input.y, DATATYPES.DT_NUMBER);
+      // TODO
+      return new DataUnit();
     },
 
     get getcolorfromrgb() { return new DataUnit('graphicswindow.getcolorfromrgb', DATATYPES.DT_FN); },
@@ -645,64 +614,22 @@ function api(env) {
   };
 }
 
-function phaserCreateFactory(resolver) {
-  return function phaserCreate() {
-    const phaserGame = this.$graphicswindow.phaserGame;
-    phaserGame.input.keyboard.onDownCallback = phaserKeydown.bind(this);
-    phaserGame.input.keyboard.onUpCallback = phaserKeyup.bind(this);
+// function phaserMousemove() {
+//   if (this.graphicswindow.mousemove.type === DATATYPES.DT_FN) {
+//     this.$interrupt(this.graphicswindow.mousemove.value);
+//   }
+// }
 
-    phaserGame.input.mouse.enabled = true;
-    phaserGame.input.mouse.mouseDownCallback = phaserMousedown.bind(this);
-    phaserGame.input.mouse.mouseUpCallback = phaserMouseup.bind(this);
+// function phaserMousedown() {
+//   if (this.graphicswindow.mousedown.type === DATATYPES.DT_FN) {
+//     this.$interrupt(this.graphicswindow.mousedown.value);
+//   }
+// }
 
-    phaserGame.input.addMoveCallback(phaserMousemove, this);
-
-    const phaserGraphics = phaserGame.add.graphics(0, 0);
-    phaserGraphics.boundsPadding = 0;
-
-    const width = this.graphicswindow.width.as_num();
-    const height = this.graphicswindow.height.as_num();
-
-    // pre-fill the BG
-    const fillColor = this.graphicswindow.backgroundcolor.as_num();
-    phaserGraphics.beginFill(fillColor);
-    phaserGraphics.drawRect(0, 0, width, height);
-    phaserGraphics.endFill();
-
-    this.$graphicswindow.phaserGraphics = phaserGraphics;
-
-    resolver(new DataUnit());
-  }
-}
-
-function phaserKeydown() {
-  if (this.graphicswindow.keydown.type === DATATYPES.DT_FN) {
-    this.$interrupt(this.graphicswindow.keydown.value);
-  }
-}
-
-function phaserKeyup() {
-  if (this.graphicswindow.keyup.type === DATATYPES.DT_FN) {
-    this.$interrupt(this.graphicswindow.keyup.value);
-  }
-}
-
-function phaserMousemove() {
-  if (this.graphicswindow.mousemove.type === DATATYPES.DT_FN) {
-    this.$interrupt(this.graphicswindow.mousemove.value);
-  }
-}
-
-function phaserMousedown() {
-  if (this.graphicswindow.mousedown.type === DATATYPES.DT_FN) {
-    this.$interrupt(this.graphicswindow.mousedown.value);
-  }
-}
-
-function phaserMouseup() {
-  if (this.graphicswindow.mouseup.type === DATATYPES.DT_FN) {
-    this.$interrupt(this.graphicswindow.mouseup.value);
-  }
-}
+// function phaserMouseup() {
+//   if (this.graphicswindow.mouseup.type === DATATYPES.DT_FN) {
+//     this.$interrupt(this.graphicswindow.mouseup.value);
+//   }
+// }
 
 export {impl, api};

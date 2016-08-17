@@ -1,36 +1,38 @@
 'use strict';
 
 import {DataUnit, DATATYPES} from './data-unit';
+declare var Promise: any;
 
-// module.exports =
 const impl = {
   loadimage: function(url) {
-    const phaserGame = this.$graphicswindow.phaserGame;
-    const imgNumber = this.$imagelist.imgNumber++;
-    const imgName = 'pic' + imgNumber;
+    return new Promise(resolve => {
+      const image = new Image();
+      image.src = url.as_string();
 
-    phaserGame.load.image(imgName, url.as_string());
-
-    return new DataUnit(imgName, DATATYPES.DT_IMAGE);
+      image.addEventListener('load', function() {
+        resolve(new DataUnit(image, DATATYPES.DT_IMAGE));
+      }, false);
+    });
   },
 
-  getwidthofimage: function(imageName) {
-    const phaserGame = this.$graphicswindow.phaserGame;
-    return phaserGame.cache.getImage(imageName.as_string()).width;
+  getwidthofimage: function(image) {
+    if (image.type !== DATATYPES.DT_IMAGE) {
+      return new DataUnit();
+    }
+
+    return new DataUnit(image.value.width, DATATYPES.DT_NUMBER);
   },
 
-  getheightofimage: function(imageName) {
-    const phaserGame = this.$graphicswindow.phaserGame;
-    return phaserGame.cache.getImage(imageName.as_string()).height;
+  getheightofimage: function(image) {
+    if (image.type !== DATATYPES.DT_IMAGE) {
+      return new DataUnit();
+    }
+
+    return new DataUnit(image.value.height, DATATYPES.DT_NUMBER);
   },
 };
 
 function api(env) {
-  env.$imagelist = {
-    imgNumber: 0,
-    images: []
-  };
-
   return {
     get loadimage() { return new DataUnit('imagelist.loadimage', DATATYPES.DT_FN); },
     get getwidthofimage() { return new DataUnit('imagelist.getwidthofimage', DATATYPES.DT_FN); },

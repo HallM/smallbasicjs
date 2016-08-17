@@ -1,48 +1,55 @@
-define(["require", "exports", './data-unit'], function (require, exports, data_unit_1) {
+define(["require", "exports", './data-unit', './canvs', './utils', './graphicswindow'], function (require, exports, data_unit_1, canvs_1, utils_1, GraphicsWindow) {
     'use strict';
     var impl = {
         addrectangle: function (w, h) {
-            var phaserGame = this.$graphicswindow.phaserGame;
+            GraphicsWindow.impl.show.apply(this);
+            var canvs = this.$graphicswindow.canvs;
             var width = w.as_num();
             var height = h.as_num();
-            var brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
+            var brushcolor = utils_1.colorFromNumber(this.graphicswindow.brushcolor.as_num());
             var penwidth = this.graphicswindow.penwidth.as_num();
-            var pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
-            var bmd = phaserGame.add.bitmapData(width, height);
-            bmd.ctx.beginPath();
-            bmd.ctx.fillStyle = brushcolor;
-            bmd.ctx.strokeStyle = pencolor;
-            bmd.ctx.lineWidth = penwidth;
-            bmd.ctx.moveTo(0, 0);
-            bmd.ctx.lineTo(width, 0);
-            bmd.ctx.lineTo(width, height);
-            bmd.ctx.lineTo(0, height);
-            bmd.ctx.fill();
-            bmd.ctx.stroke();
-            var sprite = phaserGame.add.sprite(0, 0, bmd);
+            var pencolor = utils_1.colorFromNumber(this.graphicswindow.pencolor.as_num());
+            var sprite = new canvs_1.Sprite(width, height, function (ctx) {
+                ctx.beginPath();
+                ctx.fillStyle = brushcolor;
+                ctx.strokeStyle = pencolor;
+                ctx.lineWidth = penwidth;
+                ctx.moveTo(0, 0);
+                ctx.lineTo(width, 0);
+                ctx.lineTo(width, height);
+                ctx.lineTo(0, height);
+                ctx.fill();
+                ctx.stroke();
+            });
+            canvs.spritelayer.addSprite(sprite);
             return new data_unit_1.DataUnit(sprite, data_unit_1.DATATYPES.DT_SHAPE);
         },
         addellipse: function (w, h) {
-            var phaserGame = this.$graphicswindow.phaserGame;
+            GraphicsWindow.impl.show.apply(this);
+            var canvs = this.$graphicswindow.canvs;
             var width = w.as_num();
             var height = h.as_num();
-            var graphics = phaserGame.add.graphics(0, 0);
-            var brushcolor = this.graphicswindow.brushcolor.as_num();
+            var brushcolor = utils_1.colorFromNumber(this.graphicswindow.brushcolor.as_num());
             var penwidth = this.graphicswindow.penwidth.as_num();
-            var pencolor = this.graphicswindow.pencolor.as_num();
-            graphics.beginFill(brushcolor);
-            graphics.lineStyle(penwidth, pencolor, 1);
-            graphics.drawEllipse(0, 0, width, height);
-            graphics.endFill();
-            var sprite = phaserGame.add.sprite(w, h, graphics.generateTexture());
-            graphics.destroy();
+            var pencolor = utils_1.colorFromNumber(this.graphicswindow.pencolor.as_num());
+            var sprite = new canvs_1.Sprite(width, height, function (ctx) {
+                ctx.beginPath();
+                ctx.fillStyle = brushcolor;
+                ctx.strokeStyle = pencolor;
+                ctx.lineWidth = penwidth;
+                utils_1.makeEllipsePath(ctx, 0, 0, width, height);
+                ctx.fill();
+                ctx.stroke();
+            });
+            canvs.spritelayer.addSprite(sprite);
             return new data_unit_1.DataUnit(sprite, data_unit_1.DATATYPES.DT_SHAPE);
         },
         addtriangle: function (x1, y1, x2, y2, x3, y3) {
-            var phaserGame = this.$graphicswindow.phaserGame;
-            var brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
+            GraphicsWindow.impl.show.apply(this);
+            var canvs = this.$graphicswindow.canvs;
+            var brushcolor = utils_1.colorFromNumber(this.graphicswindow.brushcolor.as_num());
             var penwidth = this.graphicswindow.penwidth.as_num();
-            var pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
+            var pencolor = utils_1.colorFromNumber(this.graphicswindow.pencolor.as_num());
             var x1v = x1.as_num();
             var x2v = x2.as_num();
             var x3v = x3.as_num();
@@ -55,23 +62,25 @@ define(["require", "exports", './data-unit'], function (require, exports, data_u
             var ymax = Math.max(y1v, y2v, y3v);
             var width = xmax - xmin;
             var height = ymax - ymin;
-            var bmd = phaserGame.add.bitmapData(width, height);
-            bmd.ctx.beginPath();
-            bmd.ctx.fillStyle = brushcolor;
-            bmd.ctx.strokeStyle = pencolor;
-            bmd.ctx.lineWidth = penwidth;
-            bmd.ctx.moveTo(x1v, y1v);
-            bmd.ctx.lineTo(x2v, y2v);
-            bmd.ctx.lineTo(x3v, y3v);
-            bmd.ctx.fill();
-            bmd.ctx.stroke();
-            var sprite = phaserGame.add.sprite(0, 0, bmd);
+            var sprite = new canvs_1.Sprite(width, height, function (ctx) {
+                ctx.beginPath();
+                ctx.fillStyle = brushcolor;
+                ctx.strokeStyle = pencolor;
+                ctx.lineWidth = penwidth;
+                ctx.moveTo(x1v, y1v);
+                ctx.lineTo(x2v, y2v);
+                ctx.lineTo(x3v, y3v);
+                ctx.fill();
+                ctx.stroke();
+            });
+            canvs.spritelayer.addSprite(sprite);
             return new data_unit_1.DataUnit(sprite, data_unit_1.DATATYPES.DT_SHAPE);
         },
         addline: function (x1, y1, x2, y2) {
-            var phaserGame = this.$graphicswindow.phaserGame;
+            GraphicsWindow.impl.show.apply(this);
+            var canvs = this.$graphicswindow.canvs;
             var penwidth = this.graphicswindow.penwidth.as_num();
-            var pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
+            var pencolor = utils_1.colorFromNumber(this.graphicswindow.pencolor.as_num());
             var x1v = x1.as_num();
             var x2v = x2.as_num();
             var y1v = y1.as_num();
@@ -82,42 +91,62 @@ define(["require", "exports", './data-unit'], function (require, exports, data_u
             var ymax = Math.max(y1v, y2v);
             var width = xmax - xmin;
             var height = ymax - ymin;
-            var bmd = phaserGame.add.bitmapData(width, height);
-            bmd.ctx.beginPath();
-            bmd.ctx.strokeStyle = pencolor;
-            bmd.ctx.lineWidth = penwidth;
-            bmd.ctx.moveTo(x1v, y1v);
-            bmd.ctx.lineTo(x2v, y2v);
-            bmd.ctx.stroke();
-            var sprite = phaserGame.add.sprite(0, 0, bmd);
+            var sprite = new canvs_1.Sprite(width, height, function (ctx) {
+                ctx.beginPath();
+                ctx.strokeStyle = pencolor;
+                ctx.lineWidth = penwidth;
+                ctx.moveTo(x1v, y1v);
+                ctx.lineTo(x2v, y2v);
+                ctx.fill();
+                ctx.stroke();
+            });
+            canvs.spritelayer.addSprite(sprite);
             return new data_unit_1.DataUnit(sprite, data_unit_1.DATATYPES.DT_SHAPE);
         },
         addtext: function (t) {
-            var phaserGame = this.$graphicswindow.phaserGame;
-            var brushcolor = '#' + ('000000' + this.graphicswindow.brushcolor.value.toString(16)).slice(-6);
-            var txtOptions = {
-                font: this.graphicswindow.fontname.as_string(),
-                fontSize: this.graphicswindow.fontsize.as_num() + 'px',
-                fill: '#' + brushcolor,
-            };
-            if (this.graphicswindow.fontitalic.as_bool()) {
-                txtOptions.fontStyle = 'italic';
+            GraphicsWindow.impl.show.apply(this);
+            var canvs = this.$graphicswindow.canvs;
+            var fontSize = this.graphicswindow.fontsize.as_num();
+            var fontString = fontSize + 'px ' + this.graphicswindow.fontname.as_string();
+            if (this.graphicswindow.fontbold.as_bool()) {
+                fontString = 'bold ' + fontString;
             }
-            var phaserText = phaserGame.add.text(0, 0, t.as_string(), txtOptions);
-            return new data_unit_1.DataUnit(phaserText, data_unit_1.DATATYPES.DT_SHAPE);
+            if (this.graphicswindow.fontitalic.as_bool()) {
+                fontString = 'italic ' + fontString;
+            }
+            var brushcolor = utils_1.colorFromNumber(this.graphicswindow.brushcolor.as_num());
+            var text = t.as_string();
+            canvs.bglayer.ctx.font = fontString;
+            var width = canvs.bglayer.ctx.measureText(text).width;
+            var height = fontSize + 4;
+            var sprite = new canvs_1.Sprite(width, height, function (ctx) {
+                ctx.font = fontString;
+                ctx.fillStyle = brushcolor;
+                ctx.fillText(text, 0, 0);
+            });
+            canvs.spritelayer.addSprite(sprite);
+            return new data_unit_1.DataUnit(sprite, data_unit_1.DATATYPES.DT_SHAPE);
         },
-        addimage: function (imageName) {
-            var internalName = this.$imagelist.images[imageName.as_string()];
-            if (!internalName) {
+        addimage: function (image) {
+            GraphicsWindow.impl.show.apply(this);
+            if (image.type !== data_unit_1.DATATYPES.DT_IMAGE) {
                 return new data_unit_1.DataUnit();
             }
-            var phaserGame = this.$graphicswindow.phaserGame;
-            var image = phaserGame.add.sprite(0, 0, internalName.value);
-            return new data_unit_1.DataUnit(image, data_unit_1.DATATYPES.DT_SHAPE);
+            var canvs = this.$graphicswindow.canvs;
+            var width = image.value.width;
+            var height = image.value.height;
+            var sprite = new canvs_1.Sprite(width, height, function (ctx) {
+                ctx.drawImage(image.value, 0, 0);
+            });
+            canvs.spritelayer.addSprite(sprite);
+            return new data_unit_1.DataUnit(sprite, data_unit_1.DATATYPES.DT_SHAPE);
         },
         settext: function (s, t) {
             if (s.type === data_unit_1.DATATYPES.DT_SHAPE) {
-                s.value.text = t.as_string();
+                // TODO: what about font changes?
+                var newSprite = impl.addtext(t);
+                s.value.destroy();
+                s.value = newSprite;
             }
         },
         move: function (s, x, y) {
@@ -161,11 +190,10 @@ define(["require", "exports", './data-unit'], function (require, exports, data_u
             if (s.type !== data_unit_1.DATATYPES.DT_SHAPE) {
                 return;
             }
-            var phaserGame = this.$graphicswindow.phaserGame;
-            var tween = phaserGame.add.tween(s.value);
-            tween.to({ x: x.as_num(), y: y.as_num() }, duration.as_num(), Phaser.Easing.Linear.None, true);
-            // tween.onComplete.addOnce(() => {
-            // }, this);
+            var tween = new canvs_1.Tween(s.value, x.as_num(), y.as_num(), duration.as_num());
+            if (s.value.layer) {
+                s.value.layer.addTween(tween);
+            }
         },
         getopacity: function (s) {
             var opacity = 0;

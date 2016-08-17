@@ -1,0 +1,89 @@
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.mui-appbar {
+  padding: 0 20px;
+}
+
+#page-container {
+  width: 100%;
+  height: calc(100% - 77px);
+}
+
+#page-container #code-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-bottom: 4px solid gray;
+}
+#page-container.running #code-container {
+  height: 50%;
+}
+
+#codeinput {
+  width: 100%;
+  height: 100%;
+}
+
+#page-container #output-container {
+  position: relative;
+  width: 100%;
+  height: 50%;
+  display: none;
+}
+#page-container.running #output-container {
+  display: block;
+}
+
+#output-container:after, #output-container:before {
+  content: " ";
+  display: table;
+}
+
+.output-window-container {
+  float: left;
+  width: 50%;
+  height: 100%;
+  border: 1px solid gray;
+}
+
+.output-window-title {
+  width: 100%;
+  height: 22px;
+  background-color: darkblue;
+  color: white;
+}
+
+.output-window-content {
+  position: relative;
+  width: 100%;
+  height: calc(100% - 22px);
+  padding: 2px;
+}
+
+#gw-background-layer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+#gw-sprites-layer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+#gw-controls-layer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
