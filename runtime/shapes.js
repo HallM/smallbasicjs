@@ -62,14 +62,26 @@ const impl = {
     const penwidth = this.graphicswindow.penwidth.as_num();
     const pencolor = '#' + ('000000' + this.graphicswindow.pencolor.value.toString(16)).slice(-6);
 
-    let bmd = phaserGame.add.bitmapData(width, height);
+    const x1v = x1.as_num();
+    const x2v = x2.as_num();
+    const x3v = x3.as_num();
+    const y1v = y1.as_num();
+    const y2v = y2.as_num();
+    const y3v = y3.as_num();
+
+    let minx = Math.min(x1v, x2v, x3v);
+    let maxx = Math.max(x1v, x2v, x3v);
+    let miny = Math.min(y1v, y2v, y3v);
+    let maxy = Math.max(y1v, y2v, y3v);
+
+    let bmd = phaserGame.add.bitmapData(maxx-minx, maxy-miny);
     bmd.ctx.beginPath();
     bmd.ctx.fillStyle = brushcolor;
     bmd.ctx.strokeStyle = pencolor;
     bmd.ctx.lineWidth = penwidth;
-    bmd.ctx.moveTo(x1.as_num(), y1.as_num());
-    bmd.ctx.lineTo(x2.as_num(), y2.as_num());
-    bmd.ctx.lineTo(x3.as_num(), y3.as_num());
+    bmd.ctx.moveTo(x1v, y1v);
+    bmd.ctx.lineTo(x2v, y2v);
+    bmd.ctx.lineTo(x3v, y3v);
     bmd.ctx.fill();
     bmd.ctx.stroke();
 
@@ -181,11 +193,12 @@ const impl = {
   },
 
   animate: function(s, x, y, duration) {
+    const phaserGame = this.$graphicswindow.phaserGame;
     if (s.type !== DATATYPES.DT_SHAPE) {
       return;
     }
 
-    var tween = game.add.tween(s.value);
+    var tween = phaserGame.add.tween(s.value);
     tween.to({x: x.as_num(), y: y.as_num()}, duration.as_num(), Phaser.Easing.Linear.None, true);
     // tween.onComplete.addOnce(() => {
     // }, this);

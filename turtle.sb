@@ -1,0 +1,6 @@
+' temp, turtle is different
+GraphicsWindow.Show()
+GraphicsWindow.PenColor = "Black"
+Turtle.Show()
+
+Turtle.Move(100)

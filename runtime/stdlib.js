@@ -23,31 +23,6 @@ import * as textwindow from './textwindow';
 import * as timer from './timer';
 import * as turtle from './turtle';
 
-function api(env) {
-  return {
-    array: array.api(env),
-    clock: clock.api(env),
-    controls: controls.api(env),
-    desktop: desktop.api(env),
-    dictionary: dictionary.api(env),
-    file: file.api(env),
-    flickr: flickr.api(env),
-    graphicswindow: graphicswindow.api(env),
-    imagelist: imagelist.api(env),
-    math: math.api(env),
-    mouse: mouse.api(env),
-    network: network.api(env),
-    program: program.api(env),
-    shapes: shapes.api(env),
-    sound: sound.api(env),
-    stack: stack.api(env),
-    text: text.api(env),
-    textwindow: textwindow.api(env),
-    timer: timer.api(env),
-    turtle: turtle.api(env)
-  };
-}
-
 const impl = {
   array: array.impl,
   clock: clock.impl,
@@ -69,6 +44,38 @@ const impl = {
   textwindow: textwindow.impl,
   timer: timer.impl,
   turtle: turtle.impl
+};
+
+function api(env) {
+  var sdk = {
+    array: array.api(env),
+    clock: clock.api(env),
+    controls: controls.api(env),
+    desktop: desktop.api(env),
+    dictionary: dictionary.api(env),
+    file: file.api(env),
+    flickr: flickr.api(env),
+    graphicswindow: graphicswindow.api(env),
+    imagelist: imagelist.api(env),
+    math: math.api(env),
+    mouse: mouse.api(env),
+    network: network.api(env),
+    program: program.api(env),
+    shapes: shapes.api(env),
+    sound: sound.api(env),
+    stack: stack.api(env),
+    text: text.api(env),
+    textwindow: textwindow.api(env),
+    timer: timer.api(env),
+    turtle: turtle.api(env)
+  };
+
+  for (var p in sdk) {
+    env[p] = sdk[p];
+    env['impl_' + p] = impl[p];
+  }
+
+  return sdk;
 }
 
 window.stdlib = {impl, api, DataUnit, DATATYPES};

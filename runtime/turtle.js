@@ -7,14 +7,14 @@ const impl = {
   // TODO: where does the turtle show up?
   show: function() {
     // TODO: load a turtle image sprite instead
-    const sprite = this.shapes.addtriangle(
-      new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(0, DATATYPES.DT_NUMBER),
-      new DataUnit(10, DATATYPES.DT_NUMBER), new DataUnit(5, DATATYPES.DT_NUMBER),
-      new DataUnit(0, DATATYPES.DT_NUMBER), new DataUnit(10, DATATYPES.DT_NUMBER),
-    );
+    const sprite = this.impl_shapes.addtriangle.apply(this, [
+      new DataUnit(-5, DATATYPES.DT_NUMBER), new DataUnit(-5, DATATYPES.DT_NUMBER),
+      new DataUnit(5, DATATYPES.DT_NUMBER), new DataUnit(0, DATATYPES.DT_NUMBER),
+      new DataUnit(-5, DATATYPES.DT_NUMBER), new DataUnit(5, DATATYPES.DT_NUMBER)
+    ]);
 
     this.$turtle.sprite = sprite.value;
-    setTurtlePos.call(this, []);
+    setTurtlePos.apply(this, []);
   },
 
   hide: function() {
@@ -38,11 +38,11 @@ const impl = {
     let x = this.turtle.x.as_num() + (Math.cos(angle) * d);
     let y = this.turtle.y.as_num() + (Math.sin(angle) * d);
 
-    return animateMoveTo(x, y);
+    return animateMoveTo.apply(this, [x, y]);
   },
 
   moveto: function(x, y) {
-    return animateMoveTo(x.as_num(), y.as_num());
+    return animateMoveTo.apply(this, [x.as_num(), y.as_num()]);
   },
 
   turn: function(angle) {
@@ -79,7 +79,7 @@ function animateMoveTo(x, y) {
     // TODO: temp instant draw
     env.turtle.x.op_assign(new DataUnit(x, DATATYPES.DT_NUMBER));
     env.turtle.y.op_assign(new DataUnit(y, DATATYPES.DT_NUMBER));
-    env.graphicswindow.drawLine(startX, startY, env.turtle.x, env.turtle.y);
+    env.impl_graphicswindow.drawline.apply(env, [startX, startY, env.turtle.x, env.turtle.y]);
     resolve();
   });
 }
@@ -97,12 +97,12 @@ function setTurtlePos() {
 function api(env) {
   // TODO: what is speed? px per second? what is default?
   var speed = new DataUnit(1, DATATYPES.DT_NUMBER);
-  var angle = new DataUnit(0, DATATYPES.DT_NUMBER);
-  var x = new DataUnit(0, DATATYPES.DT_NUMBER);
-  var y = new DataUnit(0, DATATYPES.DT_NUMBER);
+  var angle = new DataUnit(270, DATATYPES.DT_NUMBER);
+  var x = new DataUnit(300, DATATYPES.DT_NUMBER);
+  var y = new DataUnit(300, DATATYPES.DT_NUMBER);
 
-  x.on_assign(setTurtlePos);
-  y.on_assign(setTurtlePos);
+  x.on_assign(setTurtlePos.bind(env));
+  y.on_assign(setTurtlePos.bind(env));
 
   env.$turtle = {
     penstate: true, // true for "down"/drawing, false for "up"/not-drawing
@@ -115,15 +115,15 @@ function api(env) {
     x: x,
     y: y,
 
-    get show() { return new DataUnit('shapes.show', DATATYPES.DT_FN); },
-    get hide() { return new DataUnit('shapes.hide', DATATYPES.DT_FN); },
-    get pendown() { return new DataUnit('shapes.pendown', DATATYPES.DT_FN); },
-    get penup() { return new DataUnit('shapes.penup', DATATYPES.DT_FN); },
-    get move() { return new DataUnit('shapes.move', DATATYPES.DT_FN); },
-    get moveto() { return new DataUnit('shapes.moveto', DATATYPES.DT_FN); },
-    get turn() { return new DataUnit('shapes.turn', DATATYPES.DT_FN); },
-    get turnright() { return new DataUnit('shapes.turnright', DATATYPES.DT_FN); },
-    get turnleft() { return new DataUnit('shapes.turnleft', DATATYPES.DT_FN); }
+    get show() { return new DataUnit('turtle.show', DATATYPES.DT_FN); },
+    get hide() { return new DataUnit('turtle.hide', DATATYPES.DT_FN); },
+    get pendown() { return new DataUnit('turtle.pendown', DATATYPES.DT_FN); },
+    get penup() { return new DataUnit('turtle.penup', DATATYPES.DT_FN); },
+    get move() { return new DataUnit('turtle.move', DATATYPES.DT_FN); },
+    get moveto() { return new DataUnit('turtle.moveto', DATATYPES.DT_FN); },
+    get turn() { return new DataUnit('turtle.turn', DATATYPES.DT_FN); },
+    get turnright() { return new DataUnit('turtle.turnright', DATATYPES.DT_FN); },
+    get turnleft() { return new DataUnit('turtle.turnleft', DATATYPES.DT_FN); }
   };
 }
 
