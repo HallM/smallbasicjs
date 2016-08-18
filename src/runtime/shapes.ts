@@ -165,6 +165,7 @@ const impl = {
 
     const sprite = new Sprite(width, height, (ctx: CanvasRenderingContext2D) => {
       ctx.font = fontString;
+      ctx.textBaseline = 'top';
       ctx.fillStyle = brushcolor;
       ctx.fillText(text, 0, 0);
     });

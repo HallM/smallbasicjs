@@ -121,6 +121,7 @@ define(["require", "exports", './data-unit', './canvs', './utils', './graphicswi
             var height = fontSize + 4;
             var sprite = new canvs_1.Sprite(width, height, function (ctx) {
                 ctx.font = fontString;
+                ctx.textBaseline = 'top';
                 ctx.fillStyle = brushcolor;
                 ctx.fillText(text, 0, 0);
             });

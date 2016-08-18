@@ -449,6 +449,7 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
             }
             ctx.fillStyle = utils_1.colorFromNumber(this.graphicswindow.brushcolor.as_num());
             ctx.font = fontString;
+            ctx.textBaseline = 'top';
             ctx.fillText(t.as_string(), x.as_num(), y.as_num());
         },
         drawboundtext: function (x, y, w, t) {
@@ -464,6 +465,7 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
             }
             ctx.fillStyle = utils_1.colorFromNumber(this.graphicswindow.brushcolor.as_num());
             ctx.font = fontString;
+            ctx.textBaseline = 'top';
             ctx.fillText(t.as_string(), x.as_num(), y.as_num(), w.as_num());
         },
         drawellipse: function (x, y, w, h) {

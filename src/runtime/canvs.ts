@@ -30,6 +30,13 @@ class Canvs {
     this.spritelayer.canvas.height = v;
   }
 
+  destroy() {
+    this.rendering = false;
+    this.spritelayer.clear();
+    this.bglayer = null;
+    this.spritelayer = null;
+  }
+
   render(time: number) {
     if (this.rendering) {
       this.spritelayer.update(time);
@@ -77,7 +84,9 @@ class SpriteLayer extends CanvsLayer {
     }
   }
 
-  removeAllSprites() {
+  clear() {
+    this.tweens = [];
+
     for (var i=0; i < this.sprites.length; i++) {
       const sprite = this.sprites[i];
       sprite.layer = null;

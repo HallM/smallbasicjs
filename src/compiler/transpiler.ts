@@ -282,6 +282,9 @@ class CodeGenerator {
           'break;\n';
       }).join('\n');
 
+// TODO: dont consider app "finished" while graphicswindow/textwindow are open
+// TODO: should atexit wait until all threads are finished?
+
     return `require(['runtime/stdlib'], function(stdlib) {
   var DataUnit = stdlib.DataUnit;
   var DATATYPES = stdlib.DATATYPES;

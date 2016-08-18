@@ -299,7 +299,7 @@ const impl = {
   clear: function() {
     impl.show.apply(this);
 
-    const canvs = this.$graphicswindow.canvs;
+    const canvs: Canvs = this.$graphicswindow.canvs;
     const ctx = canvs.bglayer.ctx;
 
     const width = canvs.width;
@@ -308,8 +308,8 @@ const impl = {
     ctx.fillStyle = colorFromNumber(this.graphicswindow.backgroundcolor.as_num());
     ctx.fillRect(0, 0, width, height);
 
-    // TODO: remove all shapes/sprites too
-    // TODO: what happens when adding shape, clear, then try to access shape?
+    // TODO: is this sufficient?
+    canvs.spritelayer.clear();
   },
 
   show: function() {
@@ -344,34 +344,13 @@ const impl = {
     this.$graphicswindow.canvs = canvs;
     this.$graphicswindow.element = el;
 
-    console.log(el);
-
     document.body.appendChild(el);
     el.focus();
 
     // TODO: remove any other event listeners
     const env = this;
     env.$graphicswindow.keydownhandler = function(e) {
-      switch (e.keyCode) {
-        case 32:
-          env.$graphicswindow.lastKey.value = 'Space';
-          break;
-        case 38:
-          env.$graphicswindow.lastKey.value = 'Up';
-          break;
-        case 40:
-          env.$graphicswindow.lastKey.value = 'Down';
-          break;
-        case 37:
-          env.$graphicswindow.lastKey.value = 'Left';
-          break;
-        case 39:
-          env.$graphicswindow.lastKey.value = 'Right';
-          break;
-        case 27:
-          env.$graphicswindow.lastKey.value = 'Escape';
-          break;
-      }
+      env.$graphicswindow.lastKey.value = keycodeToString(e.keyCode);
 
       if (env.graphicswindow.keydown.type === DATATYPES.DT_FN) {
         env.$interrupt(env.graphicswindow.keydown.value);
@@ -379,26 +358,7 @@ const impl = {
     };
 
     env.$graphicswindow.keyuphandler = function(e) {
-      switch (e.keyCode) {
-        case 32:
-          env.$graphicswindow.lastKey.value = 'Space';
-          break;
-        case 38:
-          env.$graphicswindow.lastKey.value = 'Up';
-          break;
-        case 40:
-          env.$graphicswindow.lastKey.value = 'Down';
-          break;
-        case 37:
-          env.$graphicswindow.lastKey.value = 'Left';
-          break;
-        case 39:
-          env.$graphicswindow.lastKey.value = 'Right';
-          break;
-        case 27:
-          env.$graphicswindow.lastKey.value = 'Escape';
-          break;
-      }
+      env.$graphicswindow.lastKey.value = keycodeToString(e.keyCode);
 
       if (env.graphicswindow.keyup.type === DATATYPES.DT_FN) {
         env.$interrupt(env.graphicswindow.keyup.value);
@@ -409,14 +369,8 @@ const impl = {
     el.addEventListener('keyup', env.$graphicswindow.keyuphandler, false);
 
     // TODO: input handling
-    // const phaserGame = this.$graphicswindow.phaserGame;
-    // phaserGame.input.keyboard.onDownCallback = phaserKeydown.bind(this);
-    // phaserGame.input.keyboard.onUpCallback = phaserKeyup.bind(this);
-
-    // phaserGame.input.mouse.enabled = true;
     // phaserGame.input.mouse.mouseDownCallback = phaserMousedown.bind(this);
     // phaserGame.input.mouse.mouseUpCallback = phaserMouseup.bind(this);
-
     // phaserGame.input.addMoveCallback(phaserMousemove, this);
 
     // pre-fill the BG
@@ -424,32 +378,32 @@ const impl = {
   },
 
   hide: function() {
-    // const gw = this.$graphicswindow;
-    // const element = gw.element;
+    const gw = this.$graphicswindow;
+    const element = gw.element;
 
-    // if (element) {
-    //   if (gw.keydownhandler) {
-    //     element.removeEventListener('keydown', gw.keydownhandler);
-    //   }
-    //   if (gw.keyuphandler) {
-    //     element.removeEventListener('keyup', gw.keyuphandler);
-    //   }
-    //   if (gw.mousedownhandler) {
-    //     element.removeEventListener('mousedown', gw.mousedownhandler);
-    //   }
-    //   if (gw.mouseuphandler) {
-    //     element.removeEventListener('mouseup', gw.mouseuphandler);
-    //   }
-    //   if (gw.mousemovehandler) {
-    //     element.removeEventListener('mousemove', gw.mousemovehandler);
-    //   }
+    if (element) {
+      if (gw.keydownhandler) {
+        element.removeEventListener('keydown', gw.keydownhandler);
+      }
+      if (gw.keyuphandler) {
+        element.removeEventListener('keyup', gw.keyuphandler);
+      }
+      if (gw.mousedownhandler) {
+        element.removeEventListener('mousedown', gw.mousedownhandler);
+      }
+      if (gw.mouseuphandler) {
+        element.removeEventListener('mouseup', gw.mouseuphandler);
+      }
+      if (gw.mousemovehandler) {
+        element.removeEventListener('mousemove', gw.mousemovehandler);
+      }
 
-    //   if (element.parentNode) {
-    //     element.parentNode.removeChild(element);
-    //   }
+      if (element.parentNode) {
+        element.parentNode.removeChild(element);
+      }
 
-    //   // TODO destroy
-    // }
+      // TODO destroy Canvs
+    }
   },
 
   showmessage: function(text, title) {
@@ -516,6 +470,7 @@ const impl = {
 
     ctx.fillStyle = colorFromNumber(this.graphicswindow.brushcolor.as_num());
     ctx.font = fontString;
+    ctx.textBaseline = 'top';
     ctx.fillText(t.as_string(), x.as_num(), y.as_num());
   },
 
@@ -535,6 +490,7 @@ const impl = {
 
     ctx.fillStyle = colorFromNumber(this.graphicswindow.brushcolor.as_num());
     ctx.font = fontString;
+    ctx.textBaseline = 'top';
     ctx.fillText(t.as_string(), x.as_num(), y.as_num(), w.as_num());
   },
 
