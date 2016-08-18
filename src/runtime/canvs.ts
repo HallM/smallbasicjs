@@ -43,10 +43,10 @@ class CanvsLayer {
   ctx: CanvasRenderingContext2D
 
   constructor(width: number, height: number) {
-    var canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    var ctx = canvas.getContext('2d');
+    this.canvas = document.createElement('canvas');
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.ctx = this.canvas.getContext('2d');
   }
 }
 

@@ -11,9 +11,7 @@ define(["require", "exports", './data-unit'], function (require, exports, data_u
             }, time); });
         },
         end: function () {
-            var justExitError = new Error('justforexiting');
-            justExitError.issafetoignoreexit = true;
-            throw justExitError;
+            this.$finished = true;
         }
     };
     exports.impl = impl;

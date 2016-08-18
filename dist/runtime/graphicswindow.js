@@ -157,6 +157,111 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
         }
         color.type = data_unit_1.DATATYPES.DT_NUMBER;
     }
+    function keycodeToString(keyCode) {
+        if (keyCode >= 65 && keyCode <= 90) {
+            return String.fromCharCode(keyCode);
+        }
+        if (keyCode >= 48 && keyCode <= 57) {
+            return 'D' + String.fromCharCode(keyCode);
+        }
+        if (keyCode >= 96 && keyCode <= 107) {
+            return 'NumPad' + (keyCode - 96);
+        }
+        if (keyCode >= 112 && keyCode <= 123) {
+            return 'F' + (keyCode - 111);
+        }
+        switch (keyCode) {
+            case 107:
+                return 'Add';
+            case 8:
+                return 'Back';
+            case 20:
+                return 'CapsLock';
+            case 12:
+                return 'Clear';
+            case 110:
+                return 'Decimal';
+            case 46:
+                return 'Delete';
+            case 111:
+                return 'Divide';
+            case 35:
+                return 'End';
+            case 13:
+                return 'Enter';
+            case 36:
+                return 'Home';
+            case 45:
+                return 'Insert';
+            case 18:
+                return 'Alt'; // LeftAlt
+            case 17:
+                return 'Control'; // LeftCtrl
+            case 16:
+                return 'Shift'; // LeftShift
+            case 91:
+                return 'LWin';
+            case 92:
+                return 'RWin';
+            case 106:
+                return 'Multiply';
+            case 34:
+                return 'PageDown'; // Next
+            case 144:
+                return 'NumLock';
+            case 220:
+                return 'OemBackslash';
+            case 221:
+                return 'OemCloseBrackets';
+            case 188:
+                return 'OemComma';
+            case 189:
+                return 'OemMinus';
+            case 219:
+                return 'OemOpenBrackets';
+            case 190:
+                return 'OemPeriod';
+            // case :
+            //   return 'OemPipe';
+            case 187:
+                return 'OemPlus';
+            case 191:
+                return 'OemQuestion';
+            case 222:
+                return 'OemQuotes';
+            case 186:
+                return 'OemSemicolon';
+            case 191:
+                return 'OemTilde';
+            case 19:
+                return 'Pause';
+            case 44:
+                return 'PrintScreen';
+            case 33:
+                return 'PageUp'; // Prior
+            case 145:
+                return 'Scroll';
+            case 93:
+                return 'Select';
+            case 109:
+                return 'Subtract';
+            case 9:
+                return 'Tab';
+            case 32:
+                return 'Space';
+            case 38:
+                return 'Up';
+            case 40:
+                return 'Down';
+            case 37:
+                return 'Left';
+            case 39:
+                return 'Right';
+            case 27:
+                return 'Escape';
+        }
+        return '';
+    }
     var impl = {
         getcolorfromrgb: function (r, g, b) {
             var red = r.as_num() << 16;
@@ -177,15 +282,88 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
             // TODO: what happens when adding shape, clear, then try to access shape?
         },
         show: function () {
-            if (this.$graphicswindow.canvs) {
+            if (this.$graphicswindow.element) {
                 return;
             }
-            var c = new canvs_1.Canvs('gw-background-layer', 'gw-sprites-layer');
             var width = this.graphicswindow.width.as_num();
             var height = this.graphicswindow.height.as_num();
-            c.width = width;
-            c.height = height;
-            this.$graphicswindow.canvs = c;
+            var top = this.graphicswindow.top.as_num();
+            var left = this.graphicswindow.left.as_num();
+            var el = document.createElement('div');
+            el.tabIndex = 1;
+            if (el.classList) {
+                el.classList.add('graphicswindow');
+            }
+            else {
+                el.className += ' graphicswindow';
+            }
+            el.style.position = 'absolute';
+            el.style.top = top + 'px';
+            el.style.left = left + 'px';
+            el.style.width = width;
+            el.style.height = height;
+            var canvs = new canvs_1.Canvs(width, height);
+            el.appendChild(canvs.bglayer.canvas);
+            el.appendChild(canvs.spritelayer.canvas);
+            this.$graphicswindow.canvs = canvs;
+            this.$graphicswindow.element = el;
+            console.log(el);
+            document.body.appendChild(el);
+            el.focus();
+            // TODO: remove any other event listeners
+            var env = this;
+            env.$graphicswindow.keydownhandler = function (e) {
+                switch (e.keyCode) {
+                    case 32:
+                        env.$graphicswindow.lastKey.value = 'Space';
+                        break;
+                    case 38:
+                        env.$graphicswindow.lastKey.value = 'Up';
+                        break;
+                    case 40:
+                        env.$graphicswindow.lastKey.value = 'Down';
+                        break;
+                    case 37:
+                        env.$graphicswindow.lastKey.value = 'Left';
+                        break;
+                    case 39:
+                        env.$graphicswindow.lastKey.value = 'Right';
+                        break;
+                    case 27:
+                        env.$graphicswindow.lastKey.value = 'Escape';
+                        break;
+                }
+                if (env.graphicswindow.keydown.type === data_unit_1.DATATYPES.DT_FN) {
+                    env.$interrupt(env.graphicswindow.keydown.value);
+                }
+            };
+            env.$graphicswindow.keyuphandler = function (e) {
+                switch (e.keyCode) {
+                    case 32:
+                        env.$graphicswindow.lastKey.value = 'Space';
+                        break;
+                    case 38:
+                        env.$graphicswindow.lastKey.value = 'Up';
+                        break;
+                    case 40:
+                        env.$graphicswindow.lastKey.value = 'Down';
+                        break;
+                    case 37:
+                        env.$graphicswindow.lastKey.value = 'Left';
+                        break;
+                    case 39:
+                        env.$graphicswindow.lastKey.value = 'Right';
+                        break;
+                    case 27:
+                        env.$graphicswindow.lastKey.value = 'Escape';
+                        break;
+                }
+                if (env.graphicswindow.keyup.type === data_unit_1.DATATYPES.DT_FN) {
+                    env.$interrupt(env.graphicswindow.keyup.value);
+                }
+            };
+            el.addEventListener('keydown', env.$graphicswindow.keydownhandler, false);
+            el.addEventListener('keyup', env.$graphicswindow.keyuphandler, false);
             // TODO: input handling
             // const phaserGame = this.$graphicswindow.phaserGame;
             // phaserGame.input.keyboard.onDownCallback = phaserKeydown.bind(this);
@@ -195,12 +373,32 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
             // phaserGame.input.mouse.mouseUpCallback = phaserMouseup.bind(this);
             // phaserGame.input.addMoveCallback(phaserMousemove, this);
             // pre-fill the BG
-            var ctx = c.bglayer.ctx;
-            ctx.fillStyle = utils_1.colorFromNumber(this.graphicswindow.backgroundcolor.as_num());
-            ctx.fillRect(0, 0, width, height);
+            impl.clear.apply(this);
         },
         hide: function () {
-            // TODO:
+            // const gw = this.$graphicswindow;
+            // const element = gw.element;
+            // if (element) {
+            //   if (gw.keydownhandler) {
+            //     element.removeEventListener('keydown', gw.keydownhandler);
+            //   }
+            //   if (gw.keyuphandler) {
+            //     element.removeEventListener('keyup', gw.keyuphandler);
+            //   }
+            //   if (gw.mousedownhandler) {
+            //     element.removeEventListener('mousedown', gw.mousedownhandler);
+            //   }
+            //   if (gw.mouseuphandler) {
+            //     element.removeEventListener('mouseup', gw.mouseuphandler);
+            //   }
+            //   if (gw.mousemovehandler) {
+            //     element.removeEventListener('mousemove', gw.mousemovehandler);
+            //   }
+            //   if (element.parentNode) {
+            //     element.parentNode.removeChild(element);
+            //   }
+            //   // TODO destroy
+            // }
         },
         showmessage: function (text, title) {
             return new Promise(function (resolve) {
@@ -374,8 +572,10 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
         var mousedown = new data_unit_1.DataUnit();
         var mouseup = new data_unit_1.DataUnit();
         var backgroundcolor = new data_unit_1.DataUnit(0xffffff, data_unit_1.DATATYPES.DT_NUMBER);
-        var height = new data_unit_1.DataUnit(800, data_unit_1.DATATYPES.DT_NUMBER);
-        var width = new data_unit_1.DataUnit(600, data_unit_1.DATATYPES.DT_NUMBER);
+        var height = new data_unit_1.DataUnit(500, data_unit_1.DATATYPES.DT_NUMBER);
+        var width = new data_unit_1.DataUnit(500, data_unit_1.DATATYPES.DT_NUMBER);
+        var top = new data_unit_1.DataUnit(100, data_unit_1.DATATYPES.DT_NUMBER);
+        var left = new data_unit_1.DataUnit(100, data_unit_1.DATATYPES.DT_NUMBER);
         var penwidth = new data_unit_1.DataUnit(2, data_unit_1.DATATYPES.DT_NUMBER);
         var pencolor = new data_unit_1.DataUnit(0x000000, data_unit_1.DATATYPES.DT_NUMBER);
         var brushcolor = new data_unit_1.DataUnit(0x000000, data_unit_1.DATATYPES.DT_NUMBER);
@@ -383,64 +583,39 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
         var fontbold = new data_unit_1.DataUnit('false', data_unit_1.DATATYPES.DT_STRING);
         var fontname = new data_unit_1.DataUnit("Comic Sans MS", data_unit_1.DATATYPES.DT_STRING);
         var fontsize = new data_unit_1.DataUnit(16, data_unit_1.DATATYPES.DT_NUMBER);
+        width.on_assign(function (value) {
+            if (env.$graphicswindow.canvs) {
+                env.$graphicswindow.canvs.width = value.as_num();
+            }
+        });
+        height.on_assign(function (value) {
+            if (env.$graphicswindow.canvs) {
+                env.$graphicswindow.canvs.height = value.as_num();
+            }
+        });
+        top.on_assign(function (value) {
+            if (env.$graphicswindow.element) {
+                env.$graphicswindow.element.style.top = value.as_num() + 'px';
+            }
+        });
+        left.on_assign(function (value) {
+            if (env.$graphicswindow.element) {
+                env.$graphicswindow.element.style.left = value.as_num() + 'px';
+            }
+        });
         backgroundcolor.on_assign(colorToRgb);
         pencolor.on_assign(colorToRgb);
         brushcolor.on_assign(colorToRgb);
         env.$graphicswindow = {
+            element: null,
             canvs: null,
-            lastKey: new data_unit_1.DataUnit('', data_unit_1.DATATYPES.DT_STRING)
+            keydownhandler: null,
+            keyuphandler: null,
+            mousedownhandler: null,
+            mouseuphandler: null,
+            mousemovehandler: null,
+            lastKey: new data_unit_1.DataUnit('None', data_unit_1.DATATYPES.DT_STRING)
         };
-        // TODO: remove any other event listeners
-        document.getElementById('graphicswindow').addEventListener('keydown', function (e) {
-            switch (e.keyCode) {
-                case 32:
-                    env.$graphicswindow.lastKey.value = 'Space';
-                    break;
-                case 38:
-                    env.$graphicswindow.lastKey.value = 'Up';
-                    break;
-                case 40:
-                    env.$graphicswindow.lastKey.value = 'Down';
-                    break;
-                case 37:
-                    env.$graphicswindow.lastKey.value = 'Left';
-                    break;
-                case 39:
-                    env.$graphicswindow.lastKey.value = 'Right';
-                    break;
-                case 27:
-                    env.$graphicswindow.lastKey.value = 'Escape';
-                    break;
-            }
-            if (env.graphicswindow.keydown.type === data_unit_1.DATATYPES.DT_FN) {
-                env.$interrupt(env.graphicswindow.keydown.value);
-            }
-        }, false);
-        document.getElementById('graphicswindow').addEventListener('keyup', function (e) {
-            switch (e.keyCode) {
-                case 32:
-                    env.$graphicswindow.lastKey.value = 'Space';
-                    break;
-                case 38:
-                    env.$graphicswindow.lastKey.value = 'Up';
-                    break;
-                case 40:
-                    env.$graphicswindow.lastKey.value = 'Down';
-                    break;
-                case 37:
-                    env.$graphicswindow.lastKey.value = 'Left';
-                    break;
-                case 39:
-                    env.$graphicswindow.lastKey.value = 'Right';
-                    break;
-                case 27:
-                    env.$graphicswindow.lastKey.value = 'Escape';
-                    break;
-            }
-            if (env.graphicswindow.keyup.type === data_unit_1.DATATYPES.DT_FN) {
-                env.$interrupt(env.graphicswindow.keyup.value);
-            }
-        }, false);
         return {
             backgroundcolor: backgroundcolor,
             // TODO
@@ -451,12 +626,8 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
             get canresize() {
                 return new data_unit_1.DataUnit();
             },
-            get left() {
-                return new data_unit_1.DataUnit();
-            },
-            get top() {
-                return new data_unit_1.DataUnit();
-            },
+            top: top,
+            left: left,
             penwidth: penwidth,
             pencolor: pencolor,
             brushcolor: brushcolor,
@@ -517,5 +688,9 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
     //     this.$interrupt(this.graphicswindow.mouseup.value);
     //   }
     // }
+    function atexit(env) {
+        impl.hide.apply(env);
+    }
+    exports.atexit = atexit;
 });
 //# sourceMappingURL=graphicswindow.js.map

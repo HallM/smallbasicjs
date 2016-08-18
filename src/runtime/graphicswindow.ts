@@ -176,6 +176,117 @@ function colorToRgb(color) {
   color.type = DATATYPES.DT_NUMBER;
 }
 
+function keycodeToString(keyCode) {
+  if (keyCode >= 65 && keyCode <= 90) {
+     return String.fromCharCode(keyCode);
+  }
+
+  if (keyCode >= 48 && keyCode <= 57) {
+     return 'D' + String.fromCharCode(keyCode);
+  }
+
+  if (keyCode >= 96 && keyCode <= 107) {
+     return 'NumPad' + (keyCode - 96);
+  }
+
+  if (keyCode >= 112 && keyCode <= 123) {
+     return 'F' + (keyCode - 111);
+  }
+
+  switch (keyCode) {
+    case 107:
+      return 'Add';
+    case 8:
+      return 'Back';
+    case 20:
+      return 'CapsLock';
+    case 12:
+      return 'Clear';
+    case 110:
+      return 'Decimal';
+    case 46:
+      return 'Delete';
+    case 111:
+      return 'Divide';
+    case 35:
+      return 'End';
+    case 13:
+      return 'Enter';
+    case 36:
+      return 'Home';
+    case 45:
+      return 'Insert';
+    case 18:
+      return 'Alt'; // LeftAlt
+    case 17:
+      return 'Control'; // LeftCtrl
+    case 16:
+      return 'Shift'; // LeftShift
+    case 91:
+      return 'LWin';
+    case 92:
+      return 'RWin';
+    case 106:
+      return 'Multiply';
+    case 34:
+      return 'PageDown'; // Next
+    case 144:
+      return 'NumLock';
+    case 220:
+      return 'OemBackslash';
+    case 221:
+      return 'OemCloseBrackets';
+    case 188:
+      return 'OemComma';
+    case 189: // TODO: dash?
+      return 'OemMinus';
+    case 219:
+      return 'OemOpenBrackets';
+    case 190:
+      return 'OemPeriod';
+    // case :
+    //   return 'OemPipe';
+    case 187: // TODO: equals?
+      return 'OemPlus';
+    case 191: // TODO: forward slash/
+      return 'OemQuestion';
+    case 222:
+      return 'OemQuotes';
+    case 186:
+      return 'OemSemicolon';
+    case 191: // TODO: grave accent?
+      return 'OemTilde';
+    case 19:
+      return 'Pause';
+    case 44:
+      return 'PrintScreen';
+    case 33:
+      return 'PageUp'; // Prior
+    case 145:
+      return 'Scroll';
+    case 93:
+      return 'Select';
+    case 109:
+      return 'Subtract';
+
+    case 9:
+      return 'Tab';
+    case 32:
+      return 'Space';
+    case 38:
+      return 'Up';
+    case 40:
+      return 'Down';
+    case 37:
+      return 'Left';
+    case 39:
+      return 'Right';
+    case 27:
+      return 'Escape';
+  }
+  return '';
+}
+
 const impl = {
   getcolorfromrgb: function(r, g, b) {
     const red = r.as_num() << 16;
@@ -233,8 +344,69 @@ const impl = {
     this.$graphicswindow.canvs = canvs;
     this.$graphicswindow.element = el;
 
-    document.getElementById('page-container').appendChild(el);
+    console.log(el);
+
+    document.body.appendChild(el);
     el.focus();
+
+    // TODO: remove any other event listeners
+    const env = this;
+    env.$graphicswindow.keydownhandler = function(e) {
+      switch (e.keyCode) {
+        case 32:
+          env.$graphicswindow.lastKey.value = 'Space';
+          break;
+        case 38:
+          env.$graphicswindow.lastKey.value = 'Up';
+          break;
+        case 40:
+          env.$graphicswindow.lastKey.value = 'Down';
+          break;
+        case 37:
+          env.$graphicswindow.lastKey.value = 'Left';
+          break;
+        case 39:
+          env.$graphicswindow.lastKey.value = 'Right';
+          break;
+        case 27:
+          env.$graphicswindow.lastKey.value = 'Escape';
+          break;
+      }
+
+      if (env.graphicswindow.keydown.type === DATATYPES.DT_FN) {
+        env.$interrupt(env.graphicswindow.keydown.value);
+      }
+    };
+
+    env.$graphicswindow.keyuphandler = function(e) {
+      switch (e.keyCode) {
+        case 32:
+          env.$graphicswindow.lastKey.value = 'Space';
+          break;
+        case 38:
+          env.$graphicswindow.lastKey.value = 'Up';
+          break;
+        case 40:
+          env.$graphicswindow.lastKey.value = 'Down';
+          break;
+        case 37:
+          env.$graphicswindow.lastKey.value = 'Left';
+          break;
+        case 39:
+          env.$graphicswindow.lastKey.value = 'Right';
+          break;
+        case 27:
+          env.$graphicswindow.lastKey.value = 'Escape';
+          break;
+      }
+
+      if (env.graphicswindow.keyup.type === DATATYPES.DT_FN) {
+        env.$interrupt(env.graphicswindow.keyup.value);
+      }
+    };
+
+    el.addEventListener('keydown', env.$graphicswindow.keydownhandler, false);
+    el.addEventListener('keyup', env.$graphicswindow.keyuphandler, false);
 
     // TODO: input handling
     // const phaserGame = this.$graphicswindow.phaserGame;
@@ -252,29 +424,32 @@ const impl = {
   },
 
   hide: function() {
-    const gw = this.$graphicswindow;
-    const element = gw.element;
+    // const gw = this.$graphicswindow;
+    // const element = gw.element;
 
-    if (element) {
-      if (gw.keydownhandler) {
-        element.removeEventListener('keydown', gw.keydownhandler);
-      }
-      if (gw.keyuphandler) {
-        element.removeEventListener('keyup', gw.keyuphandler);
-      }
-      if (gw.mousedownhandler) {
-        element.removeEventListener('mousedown', gw.mousedownhandler);
-      }
-      if (gw.mouseuphandler) {
-        element.removeEventListener('mouseup', gw.mouseuphandler);
-      }
-      if (gw.mousemovehandler) {
-        element.removeEventListener('mousemove', gw.mousemovehandler);
-      }
-      element.parentNode.removeChild(element);
+    // if (element) {
+    //   if (gw.keydownhandler) {
+    //     element.removeEventListener('keydown', gw.keydownhandler);
+    //   }
+    //   if (gw.keyuphandler) {
+    //     element.removeEventListener('keyup', gw.keyuphandler);
+    //   }
+    //   if (gw.mousedownhandler) {
+    //     element.removeEventListener('mousedown', gw.mousedownhandler);
+    //   }
+    //   if (gw.mouseuphandler) {
+    //     element.removeEventListener('mouseup', gw.mouseuphandler);
+    //   }
+    //   if (gw.mousemovehandler) {
+    //     element.removeEventListener('mousemove', gw.mousemovehandler);
+    //   }
 
-      // TODO destroy
-    }
+    //   if (element.parentNode) {
+    //     element.parentNode.removeChild(element);
+    //   }
+
+    //   // TODO destroy
+    // }
   },
 
   showmessage: function(text, title) {
@@ -555,64 +730,8 @@ function api(env) {
     mousedownhandler: null,
     mouseuphandler: null,
     mousemovehandler: null,
-    lastKey: new DataUnit('', DATATYPES.DT_STRING)
+    lastKey: new DataUnit('None', DATATYPES.DT_STRING)
   }
-
-  // TODO: remove any other event listeners
-  document.getElementById('graphicswindow').addEventListener('keydown', function(e) {
-    switch (e.keyCode) {
-      case 32:
-        env.$graphicswindow.lastKey.value = 'Space';
-        break;
-      case 38:
-        env.$graphicswindow.lastKey.value = 'Up';
-        break;
-      case 40:
-        env.$graphicswindow.lastKey.value = 'Down';
-        break;
-      case 37:
-        env.$graphicswindow.lastKey.value = 'Left';
-        break;
-      case 39:
-        env.$graphicswindow.lastKey.value = 'Right';
-        break;
-      case 27:
-        env.$graphicswindow.lastKey.value = 'Escape';
-        break;
-    }
-
-    if (env.graphicswindow.keydown.type === DATATYPES.DT_FN) {
-      env.$interrupt(env.graphicswindow.keydown.value);
-    }
-
-  }, false);
-
-  document.getElementById('graphicswindow').addEventListener('keyup', function(e) {
-    switch (e.keyCode) {
-      case 32:
-        env.$graphicswindow.lastKey.value = 'Space';
-        break;
-      case 38:
-        env.$graphicswindow.lastKey.value = 'Up';
-        break;
-      case 40:
-        env.$graphicswindow.lastKey.value = 'Down';
-        break;
-      case 37:
-        env.$graphicswindow.lastKey.value = 'Left';
-        break;
-      case 39:
-        env.$graphicswindow.lastKey.value = 'Right';
-        break;
-      case 27:
-        env.$graphicswindow.lastKey.value = 'Escape';
-        break;
-    }
-
-    if (env.graphicswindow.keyup.type === DATATYPES.DT_FN) {
-      env.$interrupt(env.graphicswindow.keyup.value);
-    }
-  }, false);
 
   return {
     backgroundcolor: backgroundcolor,

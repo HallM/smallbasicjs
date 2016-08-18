@@ -6,9 +6,9 @@ var __extends = (this && this.__extends) || function (d, b) {
 define(["require", "exports"], function (require, exports) {
     "use strict";
     var Canvs = (function () {
-        function Canvs(bglayerid, spritelayerid) {
-            this.bglayer = new OnScreenLayer(bglayerid);
-            this.spritelayer = new SpriteLayer(spritelayerid);
+        function Canvs(width, height) {
+            this.bglayer = new CanvsLayer(width, height);
+            this.spritelayer = new SpriteLayer(width, height);
             this.rendering = true;
             this.boundRender = this.render.bind(this);
             requestAnimationFrame(this.boundRender);
@@ -45,36 +45,18 @@ define(["require", "exports"], function (require, exports) {
     }());
     exports.Canvs = Canvs;
     var CanvsLayer = (function () {
-        function CanvsLayer(canvas, ctx) {
-            this.canvas = canvas;
-            this.ctx = ctx;
+        function CanvsLayer(width, height) {
+            this.canvas = document.createElement('canvas');
+            this.canvas.width = width;
+            this.canvas.height = height;
+            this.ctx = this.canvas.getContext('2d');
         }
         return CanvsLayer;
     }());
-    var OnScreenLayer = (function (_super) {
-        __extends(OnScreenLayer, _super);
-        function OnScreenLayer(canvasid) {
-            var canvas = document.getElementById(canvasid);
-            var ctx = canvas.getContext('2d');
-            _super.call(this, canvas, ctx);
-        }
-        return OnScreenLayer;
-    }(CanvsLayer));
-    var OffScreenLayer = (function (_super) {
-        __extends(OffScreenLayer, _super);
-        function OffScreenLayer(width, height) {
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            _super.call(this, canvas, ctx);
-        }
-        return OffScreenLayer;
-    }(CanvsLayer));
     var SpriteLayer = (function (_super) {
         __extends(SpriteLayer, _super);
-        function SpriteLayer(spritelayerid) {
-            _super.call(this, spritelayerid);
+        function SpriteLayer(width, height) {
+            _super.call(this, width, height);
             this.sprites = [];
             this.tweens = [];
             this.valid = true;
@@ -138,7 +120,7 @@ define(["require", "exports"], function (require, exports) {
         };
         ;
         return SpriteLayer;
-    }(OnScreenLayer));
+    }(CanvsLayer));
     var Sprite = (function (_super) {
         __extends(Sprite, _super);
         function Sprite(width, height, renderer) {
@@ -254,7 +236,7 @@ define(["require", "exports"], function (require, exports) {
             this.canvas = null;
         };
         return Sprite;
-    }(OffScreenLayer));
+    }(CanvsLayer));
     exports.Sprite = Sprite;
     var Tween = (function () {
         function Tween(sprite, toX, toY, timespan) {

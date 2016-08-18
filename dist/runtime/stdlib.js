@@ -28,6 +28,11 @@ define(["require", "exports", './data-unit', './array', './clock', './controls',
         };
     }
     exports.api = api;
+    function atexit(env) {
+        graphicswindow.atexit(env);
+        // textwindow.atexit(env);
+    }
+    exports.atexit = atexit;
     var impl = {
         array: array.impl,
         clock: clock.impl,
