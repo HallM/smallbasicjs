@@ -202,18 +202,39 @@ const impl = {
   },
 
   show: function() {
-    if (this.$graphicswindow.canvs) {
+    if (this.$graphicswindow.element) {
       return;
     }
-
-    const c = new Canvs('gw-background-layer', 'gw-sprites-layer');
 
     const width = this.graphicswindow.width.as_num();
     const height = this.graphicswindow.height.as_num();
 
-    c.width = width;
-    c.height = height;
-    this.$graphicswindow.canvs = c;
+    const top = this.graphicswindow.top.as_num();
+    const left = this.graphicswindow.left.as_num();
+
+    const el = document.createElement('div');
+    el.tabIndex = 1;
+    if (el.classList) {
+      el.classList.add('graphicswindow');
+    } else {
+      el.className += ' graphicswindow';
+    }
+
+    el.style.position = 'absolute';
+    el.style.top = top + 'px';
+    el.style.left = left + 'px';
+    el.style.width = width;
+    el.style.height = height;
+
+    const canvs = new Canvs(width, height);
+    el.appendChild(canvs.bglayer.canvas);
+    el.appendChild(canvs.spritelayer.canvas);
+
+    this.$graphicswindow.canvs = canvs;
+    this.$graphicswindow.element = el;
+
+    document.getElementById('page-container').appendChild(el);
+    el.focus();
 
     // TODO: input handling
     // const phaserGame = this.$graphicswindow.phaserGame;
@@ -227,14 +248,33 @@ const impl = {
     // phaserGame.input.addMoveCallback(phaserMousemove, this);
 
     // pre-fill the BG
-    const ctx = c.bglayer.ctx;
-
-    ctx.fillStyle = colorFromNumber(this.graphicswindow.backgroundcolor.as_num());
-    ctx.fillRect(0, 0, width, height);
+    impl.clear.apply(this);
   },
 
   hide: function() {
-    // TODO:
+    const gw = this.$graphicswindow;
+    const element = gw.element;
+
+    if (element) {
+      if (gw.keydownhandler) {
+        element.removeEventListener('keydown', gw.keydownhandler);
+      }
+      if (gw.keyuphandler) {
+        element.removeEventListener('keyup', gw.keyuphandler);
+      }
+      if (gw.mousedownhandler) {
+        element.removeEventListener('mousedown', gw.mousedownhandler);
+      }
+      if (gw.mouseuphandler) {
+        element.removeEventListener('mouseup', gw.mouseuphandler);
+      }
+      if (gw.mousemovehandler) {
+        element.removeEventListener('mousemove', gw.mousemovehandler);
+      }
+      element.parentNode.removeChild(element);
+
+      // TODO destroy
+    }
   },
 
   showmessage: function(text, title) {
@@ -466,22 +506,55 @@ function api(env) {
   let mouseup = new DataUnit();
 
   let backgroundcolor = new DataUnit(0xffffff, DATATYPES.DT_NUMBER);
-  let height = new DataUnit(800, DATATYPES.DT_NUMBER);
-  let width = new DataUnit(600, DATATYPES.DT_NUMBER);
+
+  let height = new DataUnit(500, DATATYPES.DT_NUMBER);
+  let width = new DataUnit(500, DATATYPES.DT_NUMBER);
+  let top = new DataUnit(100, DATATYPES.DT_NUMBER);
+  let left = new DataUnit(100, DATATYPES.DT_NUMBER);
+
   let penwidth = new DataUnit(2, DATATYPES.DT_NUMBER);
   let pencolor = new DataUnit(0x000000, DATATYPES.DT_NUMBER);
   let brushcolor = new DataUnit(0x000000, DATATYPES.DT_NUMBER);
+
   let fontitalic = new DataUnit('false', DATATYPES.DT_STRING);
   let fontbold = new DataUnit('false', DATATYPES.DT_STRING);
   let fontname = new DataUnit("Comic Sans MS", DATATYPES.DT_STRING);
   let fontsize = new DataUnit(16, DATATYPES.DT_NUMBER);
+
+  width.on_assign(function(value) {
+    if (env.$graphicswindow.canvs) {
+      env.$graphicswindow.canvs.width = value.as_num();
+    }
+  });
+  height.on_assign(function(value) {
+    if (env.$graphicswindow.canvs) {
+      env.$graphicswindow.canvs.height = value.as_num();
+    }
+  });
+
+  top.on_assign(function(value) {
+    if (env.$graphicswindow.element) {
+      env.$graphicswindow.element.style.top = value.as_num() + 'px';
+    }
+  });
+  left.on_assign(function(value) {
+    if (env.$graphicswindow.element) {
+      env.$graphicswindow.element.style.left = value.as_num() + 'px';
+    }
+  });
 
   backgroundcolor.on_assign(colorToRgb);
   pencolor.on_assign(colorToRgb);
   brushcolor.on_assign(colorToRgb);
 
   env.$graphicswindow = {
+    element: null,
     canvs: null,
+    keydownhandler: null,
+    keyuphandler: null,
+    mousedownhandler: null,
+    mouseuphandler: null,
+    mousemovehandler: null,
     lastKey: new DataUnit('', DATATYPES.DT_STRING)
   }
 
@@ -555,13 +628,8 @@ function api(env) {
         return new DataUnit();
     },
 
-    get left() {
-        return new DataUnit();
-    },
-
-    get top() {
-        return new DataUnit();
-    },
+    top: top,
+    left: left,
 
     penwidth: penwidth,
     pencolor: pencolor,
@@ -632,4 +700,8 @@ function api(env) {
 //   }
 // }
 
-export {impl, api};
+function atexit(env) {
+  impl.hide.apply(env);
+}
+
+export {impl, api, atexit};

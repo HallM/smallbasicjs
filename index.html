@@ -34,25 +34,6 @@
         <div id="codeinput"></div>
       </div>
 
-      <div id="output-container">
-
-          <div id="graphicswindow-container" class="output-window-container">
-            <div id="graphicswindow-title" class="output-window-title">Graphics Window</div>
-            <div id="graphicswindow" class="output-window-content" tabindex="1">
-              <canvas id="gw-background-layer"></canvas>
-              <canvas id="gw-sprites-layer"></canvas>
-              <div id="gw-controls-layer"></div>
-            </div>
-          </div>
-
-          <div id="textwindow-container" class="output-window-container">
-            <div id="textwindow-title" class="output-window-title">Text Window</div>
-            <div id="textwindow" class="output-window-content">
-            </div>
-          </div>
-
-      </div>
-
     </div>
 
     <script src="/lib/bluebird/bluebird.min.js"></script>
@@ -93,14 +74,6 @@
 
           // TODO: teardown code
           var runnable = new Function(jssrc);
-          var pg = document.getElementById('page-container');
-          if (pg.classList) {
-            pg.classList.add('running');
-          } else {
-            pg.className += ' running';
-          }
-          document.getElementById('graphicswindow').focus();
-
           runnable();
         }, false);
 

@@ -5,9 +5,9 @@ class Canvs {
   rendering: boolean
   boundRender: (number) => void
 
-  constructor(bglayerid, spritelayerid) {
-    this.bglayer = new OnScreenLayer(bglayerid);
-    this.spritelayer = new SpriteLayer(spritelayerid);
+  constructor(width: number, height: number) {
+    this.bglayer = new CanvsLayer(width, height);
+    this.spritelayer = new SpriteLayer(width, height);
     this.rendering = true;
     this.boundRender = this.render.bind(this);
 
@@ -39,38 +39,25 @@ class Canvs {
 }
 
 class CanvsLayer {
-  constructor(public canvas: HTMLCanvasElement, public ctx: CanvasRenderingContext2D) {
-  }
-}
+  canvas: HTMLCanvasElement
+  ctx: CanvasRenderingContext2D
 
-class OnScreenLayer extends CanvsLayer {
-  constructor(canvasid) {
-    var canvas = document.getElementById(canvasid) as HTMLCanvasElement;
-    var ctx = canvas.getContext('2d');
-
-    super(canvas, ctx);
-  }
-}
-
-class OffScreenLayer extends CanvsLayer {
   constructor(width: number, height: number) {
     var canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     var ctx = canvas.getContext('2d');
-
-    super(canvas, ctx);
   }
 }
 
-class SpriteLayer extends OnScreenLayer {
+class SpriteLayer extends CanvsLayer {
   sprites: Sprite[]
   tweens: Tween[]
   valid: boolean
   lastUpdate: number
 
-  constructor(spritelayerid) {
-    super(spritelayerid);
+  constructor(width: number, height: number) {
+    super(width, height);
     this.sprites = [];
     this.tweens = [];
     this.valid = true;
@@ -149,7 +136,7 @@ class SpriteLayer extends OnScreenLayer {
   };
 }
 
-class Sprite extends OffScreenLayer {
+class Sprite extends CanvsLayer {
   layer: SpriteLayer
 
   private _x: number

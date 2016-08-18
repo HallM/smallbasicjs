@@ -302,7 +302,7 @@ ${stdlibVars}
       var scratch = new DataUnit();
       var retval = new DataUnit();
 
-      while(1) {
+      while(!env.$finished) {
         switch(next) {
   ${stdlibImpl}
 
@@ -325,7 +325,10 @@ ${stdlibVars}
     if (ret) {
       curlabel = ret.next;
       ret.then(runner);
+      return;
     }
+
+    stdlib.atexit(env);
   }
   runner();
 

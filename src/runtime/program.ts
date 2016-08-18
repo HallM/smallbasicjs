@@ -16,9 +16,7 @@ const impl = {
   },
 
   end: function() {
-    const justExitError: any = new Error('justforexiting');
-    justExitError.issafetoignoreexit = true;
-    throw justExitError;
+    this.$finished = true;
   }
 };
 

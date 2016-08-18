@@ -48,6 +48,11 @@ function api(env) {
   };
 }
 
+function atexit(env) {
+  graphicswindow.atexit(env);
+  // textwindow.atexit(env);
+}
+
 const impl = {
   array: array.impl,
   clock: clock.impl,
@@ -71,4 +76,4 @@ const impl = {
   turtle: turtle.impl
 }
 
-export {impl, api, DataUnit, DATATYPES};
+export {impl, api, atexit, DataUnit, DATATYPES};
