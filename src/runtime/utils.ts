@@ -50,6 +50,7 @@ function makeElement(tagName: string, withClass?: string, canFocus?: boolean): H
 }
 
 function makeWindow(title: string, top: number, left: number, width: number, height: number, onClose?: Function): [HTMLElement, HTMLElement, Function] {
+  // TODO: re-using windows, because of DOM memory leak issues
   const windowpane = makeElement('div', 'windowpane', true);
   windowpane.style.top = top + 'px';
   windowpane.style.left = left + 'px';
@@ -84,6 +85,23 @@ function makeWindow(title: string, top: number, left: number, width: number, hei
   windowpane.appendChild(contentpane);
 
   document.body.appendChild(windowpane);
+
+  // TODO: need to properly remove these when the window is closed
+  // TODO: need to wrap this all in a class. really. this is just... yuck. quick and very dirty POC territory
+  let isdragging = false;
+  titlebar.addEventListener('mousedown', function(e) {
+    // TODO: was it the left button?
+    isdragging = true;
+  });
+  titlebar.addEventListener('mouseup', function(e) {
+    // TODO: but was it the left button?
+    isdragging = false;
+  });
+  titlebar.addEventListener('mousemove', function(e) {
+    if (isdragging) {
+      // TODO: get distance, move the panel
+    }
+  });
 
   return [windowpane, contentpane, closehandler];
 }

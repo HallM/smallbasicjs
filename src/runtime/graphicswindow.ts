@@ -765,7 +765,9 @@ function api(env) {
 // }
 
 function atexit(env) {
-  impl.hide.apply(env);
+  // TODO: when the program think's its done, keep the window open and events pumping
+  // until the user closes
+  // impl.hide.apply(env);
 }
 
 export {impl, api, atexit};
