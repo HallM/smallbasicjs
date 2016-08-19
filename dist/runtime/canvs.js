@@ -35,6 +35,12 @@ define(["require", "exports"], function (require, exports) {
             enumerable: true,
             configurable: true
         });
+        Canvs.prototype.destroy = function () {
+            this.rendering = false;
+            this.spritelayer.clear();
+            this.bglayer = null;
+            this.spritelayer = null;
+        };
         Canvs.prototype.render = function (time) {
             if (this.rendering) {
                 this.spritelayer.update(time);
@@ -73,7 +79,8 @@ define(["require", "exports"], function (require, exports) {
                 this.sprites.splice(index, 1);
             }
         };
-        SpriteLayer.prototype.removeAllSprites = function () {
+        SpriteLayer.prototype.clear = function () {
+            this.tweens = [];
             for (var i = 0; i < this.sprites.length; i++) {
                 var sprite = this.sprites[i];
                 sprite.layer = null;

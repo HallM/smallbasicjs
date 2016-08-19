@@ -32,4 +32,60 @@ function makeEllipsePath(ctx: CanvasRenderingContext2D, x: number, y: number, w:
   ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
 }
 
-export {resolvearray, colorFromNumber, makeEllipsePath};
+function makeElement(tagName: string, withClass?: string, canFocus?: boolean): HTMLElement {
+  const el = document.createElement(tagName);
+  if (canFocus) {
+    el.tabIndex = 1;
+  }
+
+  if (withClass && withClass.length) {
+    if (el.classList) {
+      el.classList.add(withClass);
+    } else {
+      el.className += ' ' + withClass;
+    }
+  }
+
+  return el;
+}
+
+function makeWindow(title: string, top: number, left: number, width: number, height: number, onClose?: Function): [HTMLElement, HTMLElement, Function] {
+  const windowpane = makeElement('div', 'windowpane', true);
+  windowpane.style.top = top + 'px';
+  windowpane.style.left = left + 'px';
+  windowpane.style.width = (width + 2) + 'px';
+  windowpane.style.height = (height + 28) + 'px';
+
+  const titlebar = makeElement('div', 'windowpane-titlebar');
+  const titlediv = makeElement('div', 'windowpane-title');
+  titlediv.innerText = title;
+
+  const closebtn = makeElement('button', 'windowpane-titlebar-closebutton');
+  closebtn.innerText = 'x';
+
+  const closehandler = function() {
+    closebtn.removeEventListener('click', closehandler);
+    document.body.removeChild(windowpane);
+
+    if (onClose) {
+      onClose();
+    }
+  };
+  closebtn.addEventListener('click', closehandler, false);
+
+  const contentpane = makeElement('div', 'windowpane-contentpane');
+  contentpane.style.width = width + 'px';
+  contentpane.style.height = height + 'px';
+
+  titlebar.appendChild(titlediv);
+  titlebar.appendChild(closebtn);
+
+  windowpane.appendChild(titlebar);
+  windowpane.appendChild(contentpane);
+
+  document.body.appendChild(windowpane);
+
+  return [windowpane, contentpane, closehandler];
+}
+
+export {resolvearray, colorFromNumber, makeEllipsePath, makeWindow};

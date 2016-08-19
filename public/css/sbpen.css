@@ -27,13 +27,60 @@ html, body {
 .graphicswindow {
   border: 1px solid gray;
 }
-.graphicswindow canvas,
-.graphicswindow div {
+.windowpane-contentpane canvas,
+.windowpane-contentpane div {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
+}
+
+.windowpane {
+  position: absolute;
+  border: 1px solid darkblue;
+  background-color: white;
+  box-shadow: 0 3px 6px rgba(0,0,0,.16),0 3px 6px rgba(0,0,0,.23);
+}
+.windowpane-titlebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 26px;
+  background-color: darkblue;
+}
+.windowpane-title {
+  position: absolute;
+  font-size: 22px;
+  line-height: 26px;
+  top: 0;
+  left: 20px;
+  height: 26px;
+  color: white;
+}
+.windowpane-titlebar-closebutton {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  right: 4px;
+  width: 20px;
+  line-height: 20px;
+  background-color: #cc0000;
+  color: black;
+  border: 1px solid black;
+}
+.windowpane-titlebar-closebutton:hover {
+  background-color: #ff0000;
+  box-shadow: 0 3px 6px rgba(0,0,0,.16),0 3px 6px rgba(0,0,0,.23);
+}
+.windowpane-contentpane {
+  position: absolute;
+  top: 26px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
 }
 
 /*.output-window-title {

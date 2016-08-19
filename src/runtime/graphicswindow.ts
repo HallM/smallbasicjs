@@ -2,7 +2,7 @@
 
 import {DataUnit, DATATYPES} from './data-unit';
 import {Canvs} from './canvs';
-import {colorFromNumber, makeEllipsePath} from './utils';
+import {colorFromNumber, makeEllipsePath, makeWindow} from './utils';
 
 declare var Promise: any;
 declare var swal: any;
@@ -317,38 +317,46 @@ const impl = {
       return;
     }
 
+    const env = this;
+
     const width = this.graphicswindow.width.as_num();
     const height = this.graphicswindow.height.as_num();
 
     const top = this.graphicswindow.top.as_num();
     const left = this.graphicswindow.left.as_num();
 
-    const el = document.createElement('div');
-    el.tabIndex = 1;
-    if (el.classList) {
-      el.classList.add('graphicswindow');
-    } else {
-      el.className += ' graphicswindow';
-    }
+    const windowinfo = makeWindow('Graphics Window', top, left, width, height, function() {
+      env.$finished = true;
+      windowpane.removeEventListener('keydown', env.$graphicswindow.keydownhandler);
+      windowpane.removeEventListener('keyup', env.$graphicswindow.keyuphandler);
 
-    el.style.position = 'absolute';
-    el.style.top = top + 'px';
-    el.style.left = left + 'px';
-    el.style.width = width;
-    el.style.height = height;
+      env.$graphicswindow = {
+        element: null,
+        canvs: null,
+        keydownhandler: null,
+        keyuphandler: null,
+        mousedownhandler: null,
+        mouseuphandler: null,
+        mousemovehandler: null,
+        lastKey: new DataUnit('None', DATATYPES.DT_STRING)
+      };
+    });
+
+    const windowpane = windowinfo[0];
+    const contentpane = windowinfo[1];
 
     const canvs = new Canvs(width, height);
-    el.appendChild(canvs.bglayer.canvas);
-    el.appendChild(canvs.spritelayer.canvas);
+    contentpane.appendChild(canvs.bglayer.canvas);
+    contentpane.appendChild(canvs.spritelayer.canvas);
 
     this.$graphicswindow.canvs = canvs;
-    this.$graphicswindow.element = el;
+    this.$graphicswindow.element = contentpane;
+    this.$graphicswindow.window = windowpane;
+    this.$graphicswindow.closehandler = windowinfo[2];
 
-    document.body.appendChild(el);
-    el.focus();
+    windowpane.focus();
 
     // TODO: remove any other event listeners
-    const env = this;
     env.$graphicswindow.keydownhandler = function(e) {
       env.$graphicswindow.lastKey.value = keycodeToString(e.keyCode);
 
@@ -365,8 +373,8 @@ const impl = {
       }
     };
 
-    el.addEventListener('keydown', env.$graphicswindow.keydownhandler, false);
-    el.addEventListener('keyup', env.$graphicswindow.keyuphandler, false);
+    windowpane.addEventListener('keydown', env.$graphicswindow.keydownhandler, false);
+    windowpane.addEventListener('keyup', env.$graphicswindow.keyuphandler, false);
 
     // TODO: input handling
     // phaserGame.input.mouse.mouseDownCallback = phaserMousedown.bind(this);
@@ -380,29 +388,10 @@ const impl = {
   hide: function() {
     const gw = this.$graphicswindow;
     const element = gw.element;
+    const closehandler = gw.closehandler;
 
-    if (element) {
-      if (gw.keydownhandler) {
-        element.removeEventListener('keydown', gw.keydownhandler);
-      }
-      if (gw.keyuphandler) {
-        element.removeEventListener('keyup', gw.keyuphandler);
-      }
-      if (gw.mousedownhandler) {
-        element.removeEventListener('mousedown', gw.mousedownhandler);
-      }
-      if (gw.mouseuphandler) {
-        element.removeEventListener('mouseup', gw.mouseuphandler);
-      }
-      if (gw.mousemovehandler) {
-        element.removeEventListener('mousemove', gw.mousemovehandler);
-      }
-
-      if (element.parentNode) {
-        element.parentNode.removeChild(element);
-      }
-
-      // TODO destroy Canvs
+    if (closehandler) {
+      closehandler();
     }
   },
 
@@ -638,10 +627,10 @@ function api(env) {
 
   let backgroundcolor = new DataUnit(0xffffff, DATATYPES.DT_NUMBER);
 
-  let height = new DataUnit(500, DATATYPES.DT_NUMBER);
-  let width = new DataUnit(500, DATATYPES.DT_NUMBER);
-  let top = new DataUnit(100, DATATYPES.DT_NUMBER);
-  let left = new DataUnit(100, DATATYPES.DT_NUMBER);
+  let height = new DataUnit(580, DATATYPES.DT_NUMBER);
+  let width = new DataUnit(700, DATATYPES.DT_NUMBER);
+  let top = new DataUnit(10, DATATYPES.DT_NUMBER);
+  let left = new DataUnit(10, DATATYPES.DT_NUMBER);
 
   let penwidth = new DataUnit(2, DATATYPES.DT_NUMBER);
   let pencolor = new DataUnit(0x000000, DATATYPES.DT_NUMBER);

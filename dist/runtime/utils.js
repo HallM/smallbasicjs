@@ -28,5 +28,50 @@ define(["require", "exports", './data-unit'], function (require, exports, data_u
         ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
     }
     exports.makeEllipsePath = makeEllipsePath;
+    function makeElement(tagName, withClass, canFocus) {
+        var el = document.createElement(tagName);
+        if (canFocus) {
+            el.tabIndex = 1;
+        }
+        if (withClass && withClass.length) {
+            if (el.classList) {
+                el.classList.add(withClass);
+            }
+            else {
+                el.className += ' ' + withClass;
+            }
+        }
+        return el;
+    }
+    function makeWindow(title, top, left, width, height, onClose) {
+        var windowpane = makeElement('div', 'windowpane', true);
+        windowpane.style.top = top + 'px';
+        windowpane.style.left = left + 'px';
+        windowpane.style.width = (width + 2) + 'px';
+        windowpane.style.height = (height + 28) + 'px';
+        var titlebar = makeElement('div', 'windowpane-titlebar');
+        var titlediv = makeElement('div', 'windowpane-title');
+        titlediv.innerText = title;
+        var closebtn = makeElement('button', 'windowpane-titlebar-closebutton');
+        closebtn.innerText = 'x';
+        var closehandler = function () {
+            closebtn.removeEventListener('click', closehandler);
+            document.body.removeChild(windowpane);
+            if (onClose) {
+                onClose();
+            }
+        };
+        closebtn.addEventListener('click', closehandler, false);
+        var contentpane = makeElement('div', 'windowpane-contentpane');
+        contentpane.style.width = width + 'px';
+        contentpane.style.height = height + 'px';
+        titlebar.appendChild(titlediv);
+        titlebar.appendChild(closebtn);
+        windowpane.appendChild(titlebar);
+        windowpane.appendChild(contentpane);
+        document.body.appendChild(windowpane);
+        return [windowpane, contentpane, closehandler];
+    }
+    exports.makeWindow = makeWindow;
 });
 //# sourceMappingURL=utils.js.map

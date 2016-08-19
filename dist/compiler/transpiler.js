@@ -254,6 +254,8 @@ define(["require", "exports", './parser'], function (require, exports, parser_1)
                     'next = fn.pop()[0];\n' +
                     'break;\n';
             }).join('\n');
+            // TODO: dont consider app "finished" while graphicswindow/textwindow are open
+            // TODO: should atexit wait until all threads are finished?
             return "require(['runtime/stdlib'], function(stdlib) {\n  var DataUnit = stdlib.DataUnit;\n  var DATATYPES = stdlib.DATATYPES;\n\n  const env = {\n" + varOutput + "\n  };\n\n  var stdlibApi = stdlib.api(env);\n" + stdlibVars + "\n\n  function thread(fn) {\n    var tmp = [];\n    var fn = fn || [];\n\n    return function execute(next, val) {\n      var params = null;\n      var scratch = new DataUnit();\n      var retval = new DataUnit();\n\n      while(!env.$finished) {\n        switch(next) {\n  " + stdlibImpl + "\n\n          case '':\n  " + code + "\n          default:\n            return null;\n        }\n        if (!next) {\n          return null;\n        }\n      }\n    }\n  }\n\n  var curlabel = '';\n  var mainThread = thread();\n  function runner(val) {\n    var ret = mainThread(curlabel, val);\n    if (ret) {\n      curlabel = ret.next;\n      ret.then(runner);\n      return;\n    }\n\n    stdlib.atexit(env);\n  }\n  runner();\n\n  env.$interrupt = function interrupt(fnname) {\n    var intlabel = fnname;\n    var intThread = thread([null, []]);\n\n    function intrun(val) {\n      var ret = intThread(intlabel, val);\n      if (ret) {\n        intlabel = ret.next;\n        ret.then(intrun);\n      }\n    }\n\n    intrun();\n  }\n});\n";
         };
         CodeGenerator.prototype.process_block = function (node) {

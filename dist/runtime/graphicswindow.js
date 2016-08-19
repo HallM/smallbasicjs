@@ -278,97 +278,59 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
             var height = canvs.height;
             ctx.fillStyle = utils_1.colorFromNumber(this.graphicswindow.backgroundcolor.as_num());
             ctx.fillRect(0, 0, width, height);
-            // TODO: remove all shapes/sprites too
-            // TODO: what happens when adding shape, clear, then try to access shape?
+            // TODO: is this sufficient?
+            canvs.spritelayer.clear();
         },
         show: function () {
             if (this.$graphicswindow.element) {
                 return;
             }
+            var env = this;
             var width = this.graphicswindow.width.as_num();
             var height = this.graphicswindow.height.as_num();
             var top = this.graphicswindow.top.as_num();
             var left = this.graphicswindow.left.as_num();
-            var el = document.createElement('div');
-            el.tabIndex = 1;
-            if (el.classList) {
-                el.classList.add('graphicswindow');
-            }
-            else {
-                el.className += ' graphicswindow';
-            }
-            el.style.position = 'absolute';
-            el.style.top = top + 'px';
-            el.style.left = left + 'px';
-            el.style.width = width;
-            el.style.height = height;
+            var windowinfo = utils_1.makeWindow('Graphics Window', top, left, width, height, function () {
+                env.$finished = true;
+                windowpane.removeEventListener('keydown', env.$graphicswindow.keydownhandler);
+                windowpane.removeEventListener('keyup', env.$graphicswindow.keyuphandler);
+                env.$graphicswindow = {
+                    element: null,
+                    canvs: null,
+                    keydownhandler: null,
+                    keyuphandler: null,
+                    mousedownhandler: null,
+                    mouseuphandler: null,
+                    mousemovehandler: null,
+                    lastKey: new data_unit_1.DataUnit('None', data_unit_1.DATATYPES.DT_STRING)
+                };
+            });
+            var windowpane = windowinfo[0];
+            var contentpane = windowinfo[1];
             var canvs = new canvs_1.Canvs(width, height);
-            el.appendChild(canvs.bglayer.canvas);
-            el.appendChild(canvs.spritelayer.canvas);
+            contentpane.appendChild(canvs.bglayer.canvas);
+            contentpane.appendChild(canvs.spritelayer.canvas);
             this.$graphicswindow.canvs = canvs;
-            this.$graphicswindow.element = el;
-            console.log(el);
-            document.body.appendChild(el);
-            el.focus();
+            this.$graphicswindow.element = contentpane;
+            this.$graphicswindow.window = windowpane;
+            this.$graphicswindow.closehandler = windowinfo[2];
+            windowpane.focus();
             // TODO: remove any other event listeners
-            var env = this;
             env.$graphicswindow.keydownhandler = function (e) {
-                switch (e.keyCode) {
-                    case 32:
-                        env.$graphicswindow.lastKey.value = 'Space';
-                        break;
-                    case 38:
-                        env.$graphicswindow.lastKey.value = 'Up';
-                        break;
-                    case 40:
-                        env.$graphicswindow.lastKey.value = 'Down';
-                        break;
-                    case 37:
-                        env.$graphicswindow.lastKey.value = 'Left';
-                        break;
-                    case 39:
-                        env.$graphicswindow.lastKey.value = 'Right';
-                        break;
-                    case 27:
-                        env.$graphicswindow.lastKey.value = 'Escape';
-                        break;
-                }
+                env.$graphicswindow.lastKey.value = keycodeToString(e.keyCode);
                 if (env.graphicswindow.keydown.type === data_unit_1.DATATYPES.DT_FN) {
                     env.$interrupt(env.graphicswindow.keydown.value);
                 }
             };
             env.$graphicswindow.keyuphandler = function (e) {
-                switch (e.keyCode) {
-                    case 32:
-                        env.$graphicswindow.lastKey.value = 'Space';
-                        break;
-                    case 38:
-                        env.$graphicswindow.lastKey.value = 'Up';
-                        break;
-                    case 40:
-                        env.$graphicswindow.lastKey.value = 'Down';
-                        break;
-                    case 37:
-                        env.$graphicswindow.lastKey.value = 'Left';
-                        break;
-                    case 39:
-                        env.$graphicswindow.lastKey.value = 'Right';
-                        break;
-                    case 27:
-                        env.$graphicswindow.lastKey.value = 'Escape';
-                        break;
-                }
+                env.$graphicswindow.lastKey.value = keycodeToString(e.keyCode);
                 if (env.graphicswindow.keyup.type === data_unit_1.DATATYPES.DT_FN) {
                     env.$interrupt(env.graphicswindow.keyup.value);
                 }
             };
-            el.addEventListener('keydown', env.$graphicswindow.keydownhandler, false);
-            el.addEventListener('keyup', env.$graphicswindow.keyuphandler, false);
+            windowpane.addEventListener('keydown', env.$graphicswindow.keydownhandler, false);
+            windowpane.addEventListener('keyup', env.$graphicswindow.keyuphandler, false);
             // TODO: input handling
-            // const phaserGame = this.$graphicswindow.phaserGame;
-            // phaserGame.input.keyboard.onDownCallback = phaserKeydown.bind(this);
-            // phaserGame.input.keyboard.onUpCallback = phaserKeyup.bind(this);
-            // phaserGame.input.mouse.enabled = true;
             // phaserGame.input.mouse.mouseDownCallback = phaserMousedown.bind(this);
             // phaserGame.input.mouse.mouseUpCallback = phaserMouseup.bind(this);
             // phaserGame.input.addMoveCallback(phaserMousemove, this);
@@ -376,29 +338,12 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
             impl.clear.apply(this);
         },
         hide: function () {
-            // const gw = this.$graphicswindow;
-            // const element = gw.element;
-            // if (element) {
-            //   if (gw.keydownhandler) {
-            //     element.removeEventListener('keydown', gw.keydownhandler);
-            //   }
-            //   if (gw.keyuphandler) {
-            //     element.removeEventListener('keyup', gw.keyuphandler);
-            //   }
-            //   if (gw.mousedownhandler) {
-            //     element.removeEventListener('mousedown', gw.mousedownhandler);
-            //   }
-            //   if (gw.mouseuphandler) {
-            //     element.removeEventListener('mouseup', gw.mouseuphandler);
-            //   }
-            //   if (gw.mousemovehandler) {
-            //     element.removeEventListener('mousemove', gw.mousemovehandler);
-            //   }
-            //   if (element.parentNode) {
-            //     element.parentNode.removeChild(element);
-            //   }
-            //   // TODO destroy
-            // }
+            var gw = this.$graphicswindow;
+            var element = gw.element;
+            var closehandler = gw.closehandler;
+            if (closehandler) {
+                closehandler();
+            }
         },
         showmessage: function (text, title) {
             return new Promise(function (resolve) {
@@ -574,10 +519,10 @@ define(["require", "exports", './data-unit', './canvs', './utils'], function (re
         var mousedown = new data_unit_1.DataUnit();
         var mouseup = new data_unit_1.DataUnit();
         var backgroundcolor = new data_unit_1.DataUnit(0xffffff, data_unit_1.DATATYPES.DT_NUMBER);
-        var height = new data_unit_1.DataUnit(500, data_unit_1.DATATYPES.DT_NUMBER);
-        var width = new data_unit_1.DataUnit(500, data_unit_1.DATATYPES.DT_NUMBER);
-        var top = new data_unit_1.DataUnit(100, data_unit_1.DATATYPES.DT_NUMBER);
-        var left = new data_unit_1.DataUnit(100, data_unit_1.DATATYPES.DT_NUMBER);
+        var height = new data_unit_1.DataUnit(580, data_unit_1.DATATYPES.DT_NUMBER);
+        var width = new data_unit_1.DataUnit(700, data_unit_1.DATATYPES.DT_NUMBER);
+        var top = new data_unit_1.DataUnit(10, data_unit_1.DATATYPES.DT_NUMBER);
+        var left = new data_unit_1.DataUnit(10, data_unit_1.DATATYPES.DT_NUMBER);
         var penwidth = new data_unit_1.DataUnit(2, data_unit_1.DATATYPES.DT_NUMBER);
         var pencolor = new data_unit_1.DataUnit(0x000000, data_unit_1.DATATYPES.DT_NUMBER);
         var brushcolor = new data_unit_1.DataUnit(0x000000, data_unit_1.DATATYPES.DT_NUMBER);
